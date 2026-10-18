@@ -14,7 +14,7 @@ Sistema web para gestión y comercialización de entradas de cine. Permite a los
 
 ## Estructura del Proyecto
 - `core/` — configuración del proyecto Django (settings, urls, wsgi/asgi)
-- `movieUp/` — app Django principal (models, views, admin, migrations)
+- `movie_up/` — app Django principal (models, views, admin, migrations)
 - `manage.py` — utilidad de línea de comandos de Django
 - `openspec/` — especificaciones (`specs/`) y cambios (`changes/`)
 - `requirements.txt` — dependencias Python (fuente de verdad de versiones)
@@ -31,7 +31,7 @@ Sistema web para gestión y comercialización de entradas de cine. Permite a los
 
 ## Arquitectura (MVT de Django)
 - Patrón **Modelo-Vista-Template** de Django: los datos viven en `models.py`, la lógica en `views.py` y la presentación en templates.
-- El código se organiza en apps de Django (hoy: `movieUp`); se agregarán apps por dominio a medida que crezca.
+- El código se organiza en apps de Django (hoy: `movie_up`); se agregarán apps por dominio a medida que crezca.
 
 ## Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés
@@ -62,6 +62,15 @@ Definidas en `.env` (nunca versionar):
 - Flujo de trabajo: /opsx:explore -> /opsx:propose -> /opsx:apply -> /opsx:archive
 - Comandos adicionales: /opsx:sync (sincronizar specs), /opsx:update (revisar el plan)
 - Definir specs antes de implementar cualquier nueva funcionalidad
+
+## Agentes
+
+### readme-maintainer — activación automática
+- **Cuándo se activa:** automáticamente después de crear o modificar cualquier archivo del proyecto. No requiere que el usuario lo pida.
+- **Quién lo dispara:** el agente principal de la sesión lo invoca tras cada creación o edición de archivos (es un subagente de OpenCode).
+- **Evaluación propia:** el agente lee el cambio realizado y el README, y decide si vale la pena registrarlo. Si no aporta al registro de ingeniería, responde "sin cambios" y no escribe nada.
+- **Si hay información relevante:** presenta todos los cambios propuestos de una sola vez (sección destino, texto propuesto y tipo: fusionar / reemplazar / agregar) y espera `ok` antes de tocar README.md.
+- **Permisos:** solo puede editar `README.md`.
 
 ## Registro de Cambios en AGENTS.md
 - Toda edición de este archivo se registra en `LogsMD.txt` (leer `.opencode\skills\log-agents-changes\SKILL.md`).
