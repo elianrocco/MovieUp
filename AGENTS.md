@@ -50,6 +50,14 @@ Definidas en `.env` (nunca versionar):
 - Los tests de Django van en `<app>/tests.py` y se corren con `python manage.py test`.
 - (A definir: cobertura esperada y convenciones)
 
+## Utilización de MCPs
+### Verificación de UI
+- Antes de dar por hecha una vista, verificarla en navegador real vía Playwright MCP (levantar con `docker compose up --build` y navegar `http://localhost:8000/`)
+- La referencia de configuración de MCPs vive en README.md sección 4
+
+### Consulta de Documentación
+- Consultar docs actualizadas de librerías/APIs vía Context7 antes de asumir firmas o flags
+
 ## Autenticación y Roles
 - Roles: Cliente y Administrador/Empleado
 - Login local de Django; (planificado) Google OAuth

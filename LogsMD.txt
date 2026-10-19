@@ -72,3 +72,14 @@
 [71] [- **Evaluación propia:** el agente lee el cambio realizado y el README, y decide si vale la pena registrarlo. Si no aporta al registro de ingeniería, responde "sin cambios" y no escribe nada.] [];
 [72] [- **Si hay información relevante:** presenta todos los cambios propuestos de una sola vez (sección destino, texto propuesto y tipo: fusionar / reemplazar / agregar) y espera `ok` antes de tocar README.md.] [];
 [73] [- **Permisos:** solo puede editar `README.md`.] [];
+
+          /*/*/* M5 18/10/2026 */*/*/
+[53] [## Verificación de UI] [];
+[54] [- Antes de dar por hecha una vista, verificarla en navegador real vía Playwright MCP (levantar con `docker compose up --build` y navegar `http://localhost:8000/`)] [];
+[55] [- La referencia de configuración de MCPs vive en README.md sección 4] [];
+
+          /*/*/* M6 18/10/2026 */*/*/
+[53] [## Utilización de MCPs] [## Verificación de UI];
+[54] [### Verificación de UI] [];
+[58] [### Consulta de Documentación] [];
+[59] [- Consultar docs actualizadas de librerías/APIs vía Context7 antes de asumir firmas o flags] [];

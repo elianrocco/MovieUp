@@ -33,7 +33,7 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 - `Dockerfile`, `docker-compose.yml`, `docker-entrypoint.sh` — entorno Docker [AGENTS.md:21](AGENTS.md#L21)
 - `.env` — variables de entorno (NO versionar) [AGENTS.md:22](AGENTS.md#L22)
 - `.opencode/` — configuración de agentes, comandos, skills y MCP [opencode.json](C:/Users/anlle/.config/opencode/opencode.json), [.opencode/](.opencode/)
-- `LogsMD.txt` — registro de cambios a AGENTS.md [AGENTS.md:76](AGENTS.md#L76)
+- `LogsMD.txt` — registro de cambios a AGENTS.md [AGENTS.md:80](AGENTS.md#L80)
 
 ### Configuración y despliegue con Docker
 **Fuentes:** [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml), [docker-entrypoint.sh](docker-entrypoint.sh), [core/settings.py:80-89](core/settings.py#L80-L89)
@@ -51,6 +51,7 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 - Crear superusuario: `docker compose exec web python manage.py createsuperuser` [AGENTS.md:28](AGENTS.md#L28)
 - Correr tests: `docker compose exec web python manage.py test` [AGENTS.md:29](AGENTS.md#L29)
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`) [AGENTS.md:30](AGENTS.md#L30)
+- **Estado verificado (smoke test vía Docker + Playwright):** `docker compose up --build` levanta correctamente; `http://localhost:8000/` sirve la página DEBUG por defecto de Django (aún no hay URLs raíz configuradas — `movie_up` no está en `INSTALLED_APPS`), mientras `/admin/login/` renderiza correctamente. Playwright genera artefactos de snapshot en `.playwright-mcp/` en la raíz del proyecto (sin versionar).
 
 ### Configuración Django
 - **DEBUG/SECRET_KEY** desde variables de entorno [core/settings.py:24,27](core/settings.py#L24-L27)
@@ -66,39 +67,39 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 - Tests: en `<app>/tests.py`, ejecutados con `python manage.py test` [AGENTS.md:50](AGENTS.md#L50)
 
 ### Autenticación y roles
-- Roles: Cliente y Administrador/Empleado [AGENTS.md:54](AGENTS.md#L54)
-- Login local de Django; (planificado) Google OAuth [AGENTS.md:55](AGENTS.md#L55)
-- (A definir): cómo se otorga el rol admin — `is_staff` [AGENTS.md:56](AGENTS.md#L56)
+- Roles: Cliente y Administrador/Empleado [AGENTS.md:58](AGENTS.md#L58)
+- Login local de Django; (planificado) Google OAuth [AGENTS.md:59](AGENTS.md#L59)
+- (A definir): cómo se otorga el rol admin — `is_staff` [AGENTS.md:60](AGENTS.md#L60)
 
 ### Desarrollo dirigido por especificaciones (OpenSpec)
-**Fuentes:** [AGENTS.md:58-64](AGENTS.md#L58-L64), [openspec/](openspec/), [openspec/config.yaml](openspec/config.yaml), [opsx-propose.md](.opencode/commands/opsx-propose.md)
+**Fuentes:** [AGENTS.md:62-68](AGENTS.md#L62-L68), [openspec/](openspec/), [openspec/config.yaml](openspec/config.yaml), [opsx-propose.md](.opencode/commands/opsx-propose.md)
 
-- El proyecto usa **OpenSpec** para desarrollo dirigido por especificaciones (spec-driven development) [AGENTS.md:59](AGENTS.md#L59)
-- Especificaciones de verdad en `openspec/specs/` (organizadas por dominio) y cambios propuestos en `openspec/changes/` [AGENTS.md:60](AGENTS.md#L60)
-- Cada cambio incluye `proposal.md` (por qué), `specs/` (qué cambia), `design.md` (cómo) y `tasks.md` (pasos) [AGENTS.md:61](AGENTS.md#L61)
-- Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md:62](AGENTS.md#L62)
-- Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md:63](AGENTS.md#L63)
-- Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md:64](AGENTS.md#L64)
+- El proyecto usa **OpenSpec** para desarrollo dirigido por especificaciones (spec-driven development) [AGENTS.md:63](AGENTS.md#L63)
+- Especificaciones de verdad en `openspec/specs/` (organizadas por dominio) y cambios propuestos en `openspec/changes/` [AGENTS.md:64](AGENTS.md#L64)
+- Cada cambio incluye `proposal.md` (por qué), `specs/` (qué cambia), `design.md` (cómo) y `tasks.md` (pasos) [AGENTS.md:65](AGENTS.md#L65)
+- Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md:66](AGENTS.md#L66)
+- Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md:67](AGENTS.md#L67)
+- Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md:68](AGENTS.md#L68)
 - Estado actual: `openspec/specs/` y `openspec/changes/archive/` contienen `.gitkeep` (sin specs/cambios activos) [openspec/specs/.gitkeep](openspec/specs/.gitkeep), [openspec/changes/archive/.gitkeep](openspec/changes/archive/.gitkeep)
 
 
 ## 2. Casos de uso (10 canónicos)
 
-**Fuente:** [AGENTS.md:78-92](AGENTS.md#L78-L92) - Mirror exacto de AGENTS.md. No se agregan, eliminan ni reformulan casos de uso.
+**Fuente:** [AGENTS.md:82-96](AGENTS.md#L82-L96) - Mirror exacto de AGENTS.md. No se agregan, eliminan ni reformulan casos de uso.
 
 ### Cliente (4 casos de uso)
-1. Comprar entradas (selección de asientos + pago con Mercado Pago) [AGENTS.md:81](AGENTS.md#L81)
-2. Consultar y gestionar entradas desde la cuenta [AGENTS.md:82](AGENTS.md#L82)
-3. Reembolsar entradas [AGENTS.md:83](AGENTS.md#L83)
-4. Vincular cuenta de Google [AGENTS.md:84](AGENTS.md#L84)
+1. Comprar entradas (selección de asientos + pago con Mercado Pago) [AGENTS.md:85](AGENTS.md#L85)
+2. Consultar y gestionar entradas desde la cuenta [AGENTS.md:86](AGENTS.md#L86)
+3. Reembolsar entradas [AGENTS.md:87](AGENTS.md#L87)
+4. Vincular cuenta de Google [AGENTS.md:88](AGENTS.md#L88)
 
 ### Administrador/Empleado (6 casos de uso)
-5. Gestionar películas (CRUD) [AGENTS.md:87](AGENTS.md#L87)
-6. Gestionar funciones (CRUD) [AGENTS.md:88](AGENTS.md#L88)
-7. Gestionar salas (CRUD) [AGENTS.md:89](AGENTS.md#L89)
-8. Gestionar ventas (CRUD) [AGENTS.md:90](AGENTS.md#L90)
-9. Consultar métricas de ventas [AGENTS.md:91](AGENTS.md#L91)
-10. Validar entradas mediante código [AGENTS.md:92](AGENTS.md#L92)
+5. Gestionar películas (CRUD) [AGENTS.md:91](AGENTS.md#L91)
+6. Gestionar funciones (CRUD) [AGENTS.md:92](AGENTS.md#L92)
+7. Gestionar salas (CRUD) [AGENTS.md:93](AGENTS.md#L93)
+8. Gestionar ventas (CRUD) [AGENTS.md:94](AGENTS.md#L94)
+9. Consultar métricas de ventas [AGENTS.md:95](AGENTS.md#L95)
+10. Validar entradas mediante código [AGENTS.md:96](AGENTS.md#L96)
 
 
 ## 3. Justificación de Ingeniería con IA
@@ -118,9 +119,10 @@ La directiva de IA está organizada de forma modular con las siguientes capas:
 [PENDIENTE: No se han registrado prompts específicos ejecutados para construir el sistema en fuentes disponibles (AGENTS.md, LogsMD.txt, .opencode, código). No se inventará contenido.]
 
 ### 3.3 Metodología de iteración
-- **Desarrollo dirigido por especificaciones (Spec-Driven Development)**: Uso obligatorio de OpenSpec. Las specs (`openspec/specs/`) son fuente de verdad; los cambios pasan por artefactos estructurados (proposal, specs, design, tasks) antes de implementar [AGENTS.md:58-64](AGENTS.md#L58-L64).
-- **Registro trazable de cambios**: Toda edición de AGENTS.md se registra en `LogsMD.txt` con header de modificación (M[n], fecha DD/MM/YYYY), número de línea, nuevo contenido y contenido anterior [AGENTS.md:76](AGENTS.md#L76), [log-agents-changes/SKILL.md:12-31](.opencode/skills/log-agents-changes/SKILL.md#L12-L31). Se observan 4 modificaciones registradas (M1-M4) en [LogsMD.txt](LogsMD.txt).
-- **Mantenimiento controlado de README**: El agente `readme-maintainer` se activa automáticamente tras cada creación o modificación de archivos, evalúa si el cambio aporta al registro de ingeniería, y si es relevante presenta todos los cambios propuestos de una sola vez (sección, texto, tipo: fusionar/reemplazar/agregar) esperando `ok` antes de editar [AGENTS.md:68-74](AGENTS.md#L68-L74), [readme-maintainer.md:62-67](.opencode/agent/readme-maintainer.md#L62-L67).
+- **Desarrollo dirigido por especificaciones (Spec-Driven Development)**: Uso obligatorio de OpenSpec. Las specs (`openspec/specs/`) son fuente de verdad; los cambios pasan por artefactos estructurados (proposal, specs, design, tasks) antes de implementar [AGENTS.md:62-68](AGENTS.md#L62-L68).
+- **Registro trazable de cambios**: Toda edición de AGENTS.md se registra en `LogsMD.txt` con header de modificación (M[n], fecha DD/MM/YYYY), número de línea, nuevo contenido y contenido anterior [AGENTS.md:80](AGENTS.md#L80), [log-agents-changes/SKILL.md:12-31](.opencode/skills/log-agents-changes/SKILL.md#L12-L31). Se observan 5 modificaciones registradas (M1-M5) en [LogsMD.txt](LogsMD.txt). Nota: M5 (18/10/2026) agregó la sección "Verificación de UI" a AGENTS.md.
+- **Mantenimiento controlado de README**: El agente `readme-maintainer` se activa automáticamente tras cada creación o modificación de archivos, evalúa si el cambio aporta al registro de ingeniería, y si es relevante presenta todos los cambios propuestos de una sola vez (sección, texto, tipo: fusionar/reemplazar/agregar) esperando `ok` antes de editar [AGENTS.md:72-77](AGENTS.md#L72-L77), [readme-maintainer.md:62-67](.opencode/agent/readme-maintainer.md#L62-L67).
+- **Verificación de UI en navegador real (directiva AGENTS.md)**: Antes de dar por hecha una vista, verificarla en navegador real vía Playwright MCP (levantar con `docker compose up --build` y navegar `http://localhost:8000/`). La referencia de configuración de MCPs vive en README.md sección 4 [AGENTS.md:53-55](AGENTS.md#L53-L55).
 - **Arquitectura containerizada desde el inicio**: Setup Docker con multi-stage build, healthcheck, entrypoint con espera de DB y migraciones automáticas [Dockerfile](Dockerfile), [docker-entrypoint.sh](docker-entrypoint.sh), [AGENTS.md:26](AGENTS.md#L26).
 
 ### 3.4 Bucles de autocorrección automatizados
@@ -147,6 +149,16 @@ Según las especificaciones del agente `readme-maintainer` y la configuración r
 - **Comando:** `C:\Users\anlle\AppData\Local\engram\bin\engram.exe mcp --tools=agent` [opencode.json:175-179](C:/Users/anlle/.config/opencode/opencode.json#L175-L179), [readme-maintainer.md:36](.opencode/agent/readme-maintainer.md#L36)
 - **Propósito:** Servidor MCP local para memoria persistente (Engram). Habilitado con tools=agent [opencode.json:178](C:/Users/anlle/.config/opencode/opencode.json#L178).
 - **Rol en desarrollo:** Proporciona memoria persistente entre sesiones para guardar decisiones, descubrimientos, bugs, convenciones y contexto del proyecto [según instrucciones de Engram en el sistema]. 
+
+### 4.3 playwright
+- **Tipo:** local [opencode.json:183](C:/Users/anlle/.config/opencode/opencode.json#L183)
+- **Comando:** `npx -y @playwright/mcp@latest --browser msedge` (timeout 60000) [opencode.json:184-192](C:/Users/anlle/.config/opencode/opencode.json#L184-L192)
+- **Propósito:** Servidor MCP local de Microsoft (`@playwright/mcp`) para que el agente verifique los flujos de UI de MovieUp en un navegador real (selección de asientos, checkout, vistas de administrador).
+- **Rol en desarrollo:** Validación automatizada de la interfaz contra el stack Docker real, complementando la verificación por código/tests con evidencia visual y funcional en navegador. Además ejecuta la directiva de AGENTS.md: antes de dar por hecha una vista, verificarla en navegador real vía Playwright MCP (levantar con `docker compose up --build` y navegar `http://localhost:8000/`); la referencia de configuración de MCPs vive en README.md sección 4 [AGENTS.md:53-55](AGENTS.md#L53-L55).
+- **Decisiones no obvias:**
+  - Se usa `--browser msedge` porque la máquina de desarrollo no tiene Chrome instalado, solo Edge.
+  - Se mantuvo deliberadamente la forma plana V1 del bloque `mcp` tras revisar la guía de migración de OpenCode: migrar a la forma V2 no era necesario y la forma V1 evita riesgos de rotura de configuración.
+  - Se creó backup previo en `opencode.json.bak`.
 
 **Nota de configuración:** No se copian valores secretos. Solo se describe forma/configuración y rol, tal como se indica en [readme-maintainer.md:30-31,37](.opencode/agent/readme-maintainer.md#L30-L31,L37). 
 
