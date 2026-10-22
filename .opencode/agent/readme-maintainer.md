@@ -26,7 +26,7 @@ You own `README.md` for MovieUp: a Django + MySQL + Mercado Pago web system for 
 
 ## Sources of truth (read before writing; never invent)
 - AGENTS.md; .opencode/skills/**; .opencode/commands/**; .opencode/agent/**
-- LogsMD.txt; openspec/**; core/**; movie_up/**
+- openspec/**; core/**; movie_up/**
 - ~/.config/opencode/opencode.jsonc (MCP config) — NEVER copy secrets;
   {env:...} placeholders are fine.
 

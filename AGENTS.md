@@ -80,9 +80,6 @@ Definidas en `.env` (nunca versionar):
 - **Si hay información relevante:** presenta todos los cambios propuestos de una sola vez (sección destino, texto propuesto y tipo: fusionar / reemplazar / agregar) y espera `ok` antes de tocar README.md.
 - **Permisos:** solo puede editar `README.md`.
 
-## Registro de Cambios en AGENTS.md
-- Toda edición de este archivo se registra en `LogsMD.txt` (leer `.opencode\skills\log-agents-changes\SKILL.md`).
-
 ## Casos de Uso
 
 ### Cliente

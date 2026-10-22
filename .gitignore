@@ -24,3 +24,5 @@ env/
 .idea/
 .vscode/
 .DS_Store
+# Local AI runtime state
+.atl/
