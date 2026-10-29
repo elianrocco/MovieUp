@@ -68,6 +68,8 @@ do not wait for `ok`.
 
 ## Style
 - Write README.md in Spanish (project documentation convention).
-- Cite the file each non-obvious claim comes from.
+- Cite the file each non-obvious claim comes from using `[FILENAME](PATH)`.
+  No line numbers in the link text, no line anchors (`#L...`) in the URL,
+  and never cite the same file twice on the same line.
 - Update incrementally; preserve correct existing content; change only what is outdated.
 - Use plain ASCII for any diagram.
