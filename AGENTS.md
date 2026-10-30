@@ -13,13 +13,52 @@
 Sistema web para gestión y comercialización de entradas de cine. Permite a los usuarios comprar entradas, gestionar sus compras, y a los administradores gestionar películas, salas, funciones y ventas.
 
 ## Estructura del Proyecto
-- `core/` — configuración del proyecto Django (settings, urls, wsgi/asgi)
-- `movie_up/` — app Django principal (models, views, admin, migrations)
-- `manage.py` — utilidad de línea de comandos de Django
-- `openspec/` — especificaciones (`specs/`) y cambios (`changes/`)
-- `requirements.txt` — dependencias Python (fuente de verdad de versiones)
-- `Dockerfile`, `docker-compose.yml`, `docker-entrypoint.sh` — entorno Docker
-- `.env` — variables de entorno (NO versionar)
+
+```
+MovieUp/
+├── .dockerignore
+├── .env                          # NO versionar
+├── .gitignore
+├── AGENTS.md
+├── docker-compose.yml
+├── docker-entrypoint.sh
+├── Dockerfile
+├── README.md
+├── requirements.txt
+│
+├── .atl/                         # caché del skill-registry
+├── .opencode/
+│   ├── agent/
+│   │   └── readme-maintainer.md
+│   ├── commands/
+│   │   ├── opsx-apply.md
+│   │   ├── opsx-archive.md
+│   │   ├── opsx-explore.md
+│   │   ├── opsx-propose.md
+│   │   ├── opsx-sync.md
+│   │   └── opsx-update.md
+│   └── skills/
+│       ├── django-app-creator/
+│       │   └── SKILL.md
+│       └── openspec-*/           # 6 skills (explore, propose, apply, archive, sync, update)
+│           └── SKILL.md
+├── .playwright-mcp/              # logs de Playwright
+├── movie_up/
+│   ├── manage.py
+│   └── core/
+│       ├── __init__.py
+│       ├── asgi.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+└── openspec/
+    ├── config.yaml
+    ├── changes/
+    │   └── archive/
+    │       └── .gitkeep
+    └── specs/
+        └── .gitkeep
+```
 
 ## Cómo Ejecutar
 - Levantar todo: `docker compose up --build`
@@ -36,7 +75,11 @@ Sistema web para gestión y comercialización de entradas de cine. Permite a los
 ## Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés
 - Documentación (AGENTS.md, OpenSpec): español
-- Commits: conventional commits, sin atribución a IA
+
+### Reglas de Git (obligatorio)
+- **PROHIBIDO** hacer `git add`, `git commit`, `git push` o cualquier operación de staging/commit sin consultar primero al usuario.
+- El agente SIEMPRE debe mostrar los cambios pendientes y esperar confirmación explícita antes de ejecutar cualquier operación de Git.
+- Commits: conventional commits, sin atribución a IA.
 
 ## Variables de Entorno
 Definidas en `.env` (nunca versionar):
@@ -70,6 +113,17 @@ Definidas en `.env` (nunca versionar):
 - Flujo de trabajo: /opsx:explore -> /opsx:propose -> /opsx:apply -> /opsx:archive
 - Comandos adicionales: /opsx:sync (sincronizar specs), /opsx:update (revisar el plan)
 - Definir specs antes de implementar cualquier nueva funcionalidad
+
+## Skills
+
+### django-app-creator
+- **Trigger:** `crea app [nombre]`
+- **Ubicación:** `.opencode/skills/django-app-creator/SKILL.md`
+- **Qué hace:**
+  - Ejecuta `python manage.py startapp <nombre>` desde `movie_up/`
+  - Registra la app en `INSTALLED_APPS` de `movie_up/core/settings.py`
+  - Crea estructura de templates con namespacing: `templates/<nombre>/.gitkeep`
+  - Crea `urls.py` con imports base (`from django.urls import path`, `from . import views`)
 
 ## Agentes
 

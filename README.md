@@ -25,14 +25,53 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 - **Flujo de petición:** `urls.py` → `views.py` → `models.py` → `templates/`.
 
 ### Estructura del proyecto
-- `core/` — configuración del proyecto Django (settings, urls, wsgi/asgi) [AGENTS.md](AGENTS.md), [core/](core/)
-- `movie_up/` — app Django principal (models, views, admin, migrations) [AGENTS.md](AGENTS.md), [movie_up/](movie_up/)
-- `manage.py` — utilidad de línea de comandos de Django [AGENTS.md](AGENTS.md)
-- `openspec/` — especificaciones (`specs/`) y cambios (`changes/`) para desarrollo dirigido por especificaciones [AGENTS.md](AGENTS.md), [openspec/](openspec/)
-- `requirements.txt` — dependencias Python (fuente de verdad de versiones) [AGENTS.md](AGENTS.md)
-- `Dockerfile`, `docker-compose.yml`, `docker-entrypoint.sh` — entorno Docker [AGENTS.md](AGENTS.md)
-- `.env` — variables de entorno (NO versionar) [AGENTS.md](AGENTS.md)
-- `.opencode/` — configuración de agentes, comandos, skills y MCP [opencode.json](C:/Users/anlle/.config/opencode/opencode.json), [.opencode/](.opencode/)
+Según [AGENTS.md](AGENTS.md), la estructura completa del proyecto es:
+
+```
+MovieUp/
+├── .dockerignore
+├── .env                          # NO versionar
+├── .gitignore
+├── AGENTS.md
+├── docker-compose.yml
+├── docker-entrypoint.sh
+├── Dockerfile
+├── README.md
+├── requirements.txt
+│
+├── .atl/                         # caché del skill-registry
+├── .opencode/
+│   ├── agent/
+│   │   └── readme-maintainer.md
+│   ├── commands/
+│   │   ├── opsx-apply.md
+│   │   ├── opsx-archive.md
+│   │   ├── opsx-explore.md
+│   │   ├── opsx-propose.md
+│   │   ├── opsx-sync.md
+│   │   └── opsx-update.md
+│   └── skills/
+│       ├── django-app-creator/
+│       │   └── SKILL.md
+│       └── openspec-*/           # 6 skills (explore, propose, apply, archive, sync, update)
+│           └── SKILL.md
+├── .playwright-mcp/              # logs de Playwright
+├── movie_up/
+│   ├── manage.py
+│   └── core/
+│       ├── __init__.py
+│       ├── asgi.py
+│       ├── settings.py
+│       ├── urls.py
+│       └── wsgi.py
+└── openspec/
+    ├── config.yaml
+    ├── changes/
+    │   └── archive/
+    │       └── .gitkeep
+    └── specs/
+        └── .gitkeep
+```
 
 ### Configuración y despliegue con Docker
 **Fuentes:** [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml), [docker-entrypoint.sh](docker-entrypoint.sh), [core/settings.py](core/settings.py)
@@ -62,8 +101,13 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 ### Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés [AGENTS.md](AGENTS.md)
 - Documentación (AGENTS.md, OpenSpec): español [AGENTS.md](AGENTS.md)
-- Commits: conventional commits, sin atribución a IA [AGENTS.md](AGENTS.md)
 - Tests: en `<app>/tests.py`, ejecutados con `python manage.py test` [AGENTS.md](AGENTS.md)
+
+#### Reglas de Git (obligatorio)
+Según [AGENTS.md](AGENTS.md):
+- **PROHIBIDO** hacer `git add`, `git commit`, `git push` o cualquier operación de staging/commit sin consultar primero al usuario
+- El agente SIEMPRE debe mostrar los cambios pendientes y esperar confirmación explícita antes de ejecutar cualquier operación de Git
+- Commits: conventional commits, sin atribución a IA
 
 ### Autenticación y roles
 - Roles: Cliente y Administrador/Empleado [AGENTS.md](AGENTS.md)
@@ -110,7 +154,8 @@ La directiva de IA está organizada de forma modular con las siguientes capas:
 
 - **AGENTS.md (raíz)**: Define el contexto del proyecto, stack, arquitectura, convenciones, casos de uso, flujo de trabajo OpenSpec, y agentes definidos. Actúa como fuente de verdad para el proyecto [AGENTS.md](AGENTS.md).
 - **Agentes subagentes (.opencode/agent/)**: Definen comportamientos especializados. Específicamente `readme-maintainer.md` define un agente con permisos restrictivos (solo puede editar `README.md`, otros permisos requieren confirmación), un protocolo estricto de edición con puerta de confirmación `ok`, y la convención de cita obligatoria del registro: `[FILENAME](PATH)`, sin números de línea en el texto del enlace, sin anclas `#L...` en la URL y sin citar dos veces el mismo archivo en una misma línea [readme-maintainer.md](.opencode/agent/readme-maintainer.md).
-- **Skills (.opencode/skills/)**: Capacidades reutilizables activables por disparadores. Por ejemplo, los skills `openspec-*` implementan los flujos de OpenSpec (explorar, proponer, aplicar, archivar, sincronizar, actualizar el plan) [.opencode/skills/](.opencode/skills/).
+- **Skills (.opencode/skills/)**: Capacidades reutilizables activables por disparadores. Los skills `openspec-*` implementan los flujos de OpenSpec (explorar, proponer, aplicar, archivar, sincronizar, actualizar el plan) [.opencode/skills/](.opencode/skills/). Skills específicas del proyecto:
+  - **`django-app-creator`** — Trigger: `crea app [nombre]`. Automatiza la creación de apps Django con estructura completa: ejecuta `python manage.py startapp <nombre>` desde `movie_up/`, registra la app en `INSTALLED_APPS` de [settings.py](core/settings.py), crea estructura de templates con namespacing doble (`templates/<nombre>/`) para evitar colisiones, crea `urls.py` con imports base, y mantiene la documentación del proyecto actualizada (`.opencode/skills/django-app-creator/SKILL.md`). **Convenciones de mantenimiento documental:** tras crear la app, actualiza las secciones `## Estructura del Proyecto` en `AGENTS.md` y `README.md` con orden `manage.py` → apps (alfabético) → `core/`. Si es la primera app (distinta de `core/`): incluye comentario horizontal detallando todos los archivos (`__init__.py`, `admin.py`, `apps.py`, `models.py`, `views.py`, `tests.py`, `migrations/`, `templates/`, `urls.py`). Si ya existen otras apps: agrega solo el nombre de la carpeta sin comentario. Registrada en [AGENTS.md](AGENTS.md) bajo `## Skills`.
 - **Comandos (.opencode/commands/)**: Comandos slash para flujos OpenSpec (`/opsx:explore`, `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:sync`, `/opsx:update`) que implementan workflows con restricciones de planificación vs implementación [opsx-propose.md](.opencode/commands/opsx-propose.md).
 - **Config global (opencode.json)**: Define agentes del sistema, MCPs habilitados y permisos por agente [opencode.json](C:/Users/anlle/.config/opencode/opencode.json).
 
