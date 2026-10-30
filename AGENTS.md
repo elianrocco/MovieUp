@@ -69,12 +69,14 @@ MovieUp/
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`)
 
 ## Arquitectura (MVT de Django)
-- Patrón **Modelo-Vista-Template** de Django: los datos viven en `models.py`, la lógica en `views.py` y la presentación en templates.
+- Patrón **Modelo-Vista-Template** de Django: los datos viven en `models.py`, la presentación en templates.
+- **Service Layer**: la lógica de negocio se concentra en `services.py`. Las vistas (`views.py`) delegan la lógica a los services, manteniéndose delgadas (request → service → response).
+- **Convención**: toda app debe incluir `services.py`. Usarlo siempre que sea posible para mantener consistencia entre las apps.
 - El código se organiza en apps de Django (hoy: `movie_up`); se agregarán apps por dominio a medida que crezca.
 
 ## Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés
-- Documentación (AGENTS.md, OpenSpec): español
+- Documentación (AGENTS.md, OpenSpec, skills, agents): español
 
 ### Reglas de Git (obligatorio)
 - **PROHIBIDO** hacer `git add`, `git commit`, `git push` o cualquier operación de staging/commit sin consultar primero al usuario.

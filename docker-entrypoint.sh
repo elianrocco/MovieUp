@@ -4,7 +4,7 @@
 # aborta el script si algun comando falla
 set -e
 
-# solo inicializa si estamos en un proyecto Django (existe manage.py)
+# solo inicializa si estamos en un proyecto Django (existe movie_up/manage.py)
 if [ -f "movie_up/manage.py" ]; then
     # solo espera la base de datos si se definio la variable DB_HOST
     if [ -n "$DB_HOST" ]; then

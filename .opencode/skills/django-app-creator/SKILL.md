@@ -1,6 +1,6 @@
 ---
 name: django-app-creator
-description: "Trigger: crea app [nombre]. Crea una nueva app Django con estructura completa (startapp, INSTALLED_APPS, templates, urls.py)."
+description: "Trigger: crea app [nombre]. Crea una nueva app Django con estructura completa (startapp, INSTALLED_APPS, templates, urls.py, services.py)."
 license: Apache-2.0
 metadata:
   author: "Elian"
@@ -21,6 +21,7 @@ Cargar esta skill cuando el usuario escriba "crea app" seguido de un nombre de a
 - El `.gitkeep` va completamente vacío.
 - Los imports en `urls.py` son `from django.urls import path` y `from . import views` (NUNCA incluir `.py` en imports).
 - Verificar que la app no exista ya antes de crearla.
+- Crear `services.py` vacío para lógica de negocio (convención: toda app debe tenerlo).
 - Después de crear la app, SIEMPRE actualizar la sección `## Estructura del Proyecto` en `AGENTS.md` y `README.md`.
 - Orden del árbol en `movie_up/`: `manage.py` → apps (alfabético) → `core/`.
 - Si es la primera app (distinta de `core/`): incluir comentario horizontal con TODOS los archivos.
@@ -33,19 +34,20 @@ Cargar esta skill cuando el usuario escriba "crea app" seguido de un nombre de a
 3. **Registrar en settings**: editar `movie_up/core/settings.py`, agregar `'<nombre>',` en la lista `INSTALLED_APPS` después de las apps de Django.
 4. **Crear estructura de templates**: crear directorio `movie_up/<nombre>/templates/<nombre>/` y colocar `.gitkeep` vacío dentro.
 5. **Crear urls.py**: crear `movie_up/<nombre>/urls.py` con el contenido base (ver Output Contract).
-6. **Actualizar AGENTS.md y README.md**: editar la sección `## Estructura del Proyecto` en ambos archivos para incluir la nueva app en el árbol de `movie_up/`.
+6. **Crear services.py**: crear `movie_up/<nombre>/services.py` vacío (archivo para lógica de negocio).
+7. **Actualizar AGENTS.md y README.md**: editar la sección `## Estructura del Proyecto` en ambos archivos para incluir la nueva app en el árbol de `movie_up/`.
    - Orden: `manage.py` → apps (alfabético) → `core/`.
-   - Si es la primera app (no hay otras apps además de `core/`): agregar línea `├── <nombre>/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py`.
+   - Si es la primera app (no hay otras apps además de `core/`): agregar línea `├── <nombre>/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py`.
    - Si ya existen otras apps: agregar línea `├── <nombre>/` (sin comentario).
    - Ajustar conectores del árbol: cambiar `└── core/` a `├── core/` si había `core/` como último elemento, y mantener `└──` para el último elemento después de agregar la app.
-7. **Confirmar**: mostrar al usuario los archivos creados, el cambio en settings.py, y la actualización del árbol en AGENTS.md/README.md.
+8. **Confirmar**: mostrar al usuario los archivos creados, el cambio en settings.py, y la actualización del árbol en AGENTS.md/README.md.
 
 ## Output Contract
 
 Después de crear la app, reportar:
 - Ruta de la app creada
 - Línea agregada en `INSTALLED_APPS`
-- Archivos/directorios creados (templates con .gitkeep, urls.py)
+- Archivos/directorios creados (templates con .gitkeep, urls.py, services.py)
 - Cambio realizado en el árbol de `AGENTS.md` y `README.md` (sección `movie_up/`)
 - Estructura final de la app
 
@@ -59,7 +61,7 @@ Usuario: `crea app billing`
 ```
 ├── movie_up/
 │   ├── manage.py
-│   ├── billing/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py
+│   ├── billing/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
 │   └── core/
 │       ├── __init__.py
 │       ├── asgi.py
@@ -76,7 +78,7 @@ Usuario: `crea app payments`
 ```
 ├── movie_up/
 │   ├── manage.py
-│   ├── billing/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py
+│   ├── billing/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
 │   ├── payments/
 │   └── core/
 │       ├── __init__.py
