@@ -79,17 +79,18 @@ MovieUp/
 - **Multi-stage build** (builder/runtime): el builder compila dependencias como wheels usando `python:3.14.7-slim-trixie`, el runtime instala únicamente wheels precompilados con usuario no privilegiado (`appuser`) [Dockerfile](Dockerfile)
 - **Servicios**: `db` (MySQL 9.7.2) y `web` (Django app) [docker-compose.yml](docker-compose.yml)
 - **Variables de entorno**: inyectadas via `.env` y `env_file`; `DB_HOST=db`, `DB_PORT` se sobreescriben para el contenedor web [docker-compose.yml](docker-compose.yml)
-- **Punto de entrada**: `docker-entrypoint.sh` espera a que la base de datos responda vía TCP, luego ejecuta `python manage.py migrate --noinput` automáticamente [docker-entrypoint.sh](docker-entrypoint.sh), [AGENTS.md](AGENTS.md)
+- **Punto de entrada**: `docker-entrypoint.sh` espera a que la base de datos responda vía TCP, luego ejecuta `python movie_up/manage.py migrate --noinput` automáticamente [docker-entrypoint.sh](docker-entrypoint.sh), [AGENTS.md](AGENTS.md)
 - **Healthcheck**: verifica respuesta HTTP en puerto 8000 cada 30s [Dockerfile](Dockerfile)
 
 **Cómo ejecutar (según AGENTS.md):**
 - Levantar todo: `docker compose up --build` [AGENTS.md](AGENTS.md)
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh) [AGENTS.md](AGENTS.md)
-- Migraciones manuales: `docker compose exec web python manage.py migrate` [AGENTS.md](AGENTS.md)
-- Crear superusuario: `docker compose exec web python manage.py createsuperuser` [AGENTS.md](AGENTS.md)
-- Correr tests: `docker compose exec web python manage.py test` [AGENTS.md](AGENTS.md)
+- Migraciones manuales: `docker compose exec web python movie_up/manage.py migrate` [AGENTS.md](AGENTS.md)
+- Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser` [AGENTS.md](AGENTS.md)
+- Correr tests: `docker compose exec web python movie_up/manage.py test` [AGENTS.md](AGENTS.md)
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`) [AGENTS.md](AGENTS.md)
 - **Estado verificado (smoke test vía Docker + Playwright):** `docker compose up --build` levanta correctamente; `http://localhost:8000/` sirve la página DEBUG por defecto de Django (aún no hay URLs raíz configuradas — `movie_up` no está en `INSTALLED_APPS`), mientras `/admin/login/` renderiza correctamente. Playwright genera artefactos de snapshot en `.playwright-mcp/` en la raíz del proyecto (sin versionar).
+- **Gotcha crítica resuelta (2026-10-30):** La estructura del proyecto coloca `manage.py` en `movie_up/manage.py` (no en la raíz), lo cual es atípico en Django. Un bug inicial en [Dockerfile](Dockerfile) y [docker-entrypoint.sh](docker-entrypoint.sh) usaba rutas incorrectas (`manage.py` en vez de `movie_up/manage.py`), causando que el contenedor web no iniciara y las migraciones automáticas no se ejecutaran (bug silencioso). Todos los comandos `docker compose exec` y el entrypoint fueron actualizados consistentemente para usar la ruta correcta. **Lección:** En proyectos Django con estructura no estándar, verificar siempre la ruta relativa de `manage.py` en Dockerfile, entrypoint y documentación.
 
 ### Configuración Django
 - **DEBUG/SECRET_KEY** desde variables de entorno [core/settings.py](core/settings.py)
@@ -101,7 +102,7 @@ MovieUp/
 ### Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés [AGENTS.md](AGENTS.md)
 - Documentación (AGENTS.md, OpenSpec): español [AGENTS.md](AGENTS.md)
-- Tests: en `<app>/tests.py`, ejecutados con `python manage.py test` [AGENTS.md](AGENTS.md)
+- Tests: en `<app>/tests.py`, ejecutados con `python movie_up/manage.py test` [AGENTS.md](AGENTS.md)
 
 #### Reglas de Git (obligatorio)
 Según [AGENTS.md](AGENTS.md):

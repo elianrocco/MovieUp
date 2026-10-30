@@ -63,9 +63,9 @@ MovieUp/
 ## Cómo Ejecutar
 - Levantar todo: `docker compose up --build`
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh)
-- Migraciones manuales (tras crear una migración sin reiniciar): `docker compose exec web python manage.py migrate`
-- Crear superusuario: `docker compose exec web python manage.py createsuperuser`
-- Correr tests: `docker compose exec web python manage.py test`
+- Migraciones manuales (tras crear una migración sin reiniciar): `docker compose exec web python movie_up/manage.py migrate`
+- Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser`
+- Correr tests: `docker compose exec web python movie_up/manage.py test`
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`)
 
 ## Arquitectura (MVT de Django)
@@ -90,7 +90,7 @@ Definidas en `.env` (nunca versionar):
 - `DB_HOST`, `DB_PORT` — inyectadas por docker-compose al servicio web
 
 ## Testing
-- Los tests de Django van en `<app>/tests.py` y se corren con `python manage.py test`.
+- Los tests de Django van en `<app>/tests.py` y se corren con `python movie_up/manage.py test`.
 - (A definir: cobertura esperada y convenciones)
 
 ## Utilización de MCPs

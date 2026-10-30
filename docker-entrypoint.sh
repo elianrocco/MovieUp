@@ -5,7 +5,7 @@
 set -e
 
 # solo inicializa si estamos en un proyecto Django (existe manage.py)
-if [ -f "manage.py" ]; then
+if [ -f "movie_up/manage.py" ]; then
     # solo espera la base de datos si se definio la variable DB_HOST
     if [ -n "$DB_HOST" ]; then
         # usa el puerto de DB_PORT o 3306 por defecto
@@ -30,7 +30,7 @@ if [ -f "manage.py" ]; then
 
     # las migraciones son archivos que funcionan como un historial de cambios de la reprecentacion de la bd en el codigo de python
     # aplica las migraciones de Django sin pedir confirmacion(actualiza la BD real segun el historial de cambios)
-    python manage.py migrate --noinput
+    python movie_up/manage.py migrate --noinput
 fi
 
 # reemplaza el proceso actual por el comando CMD del Dockerfile
