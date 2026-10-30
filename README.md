@@ -58,6 +58,7 @@ MovieUp/
 ├── .playwright-mcp/              # logs de Playwright
 ├── movie_up/
 │   ├── manage.py
+│   ├── test/                     # __init__.py, admin.py, apps.py, models.py, tests.py, views.py, migrations/, templates/, urls.py
 │   └── core/
 │       ├── __init__.py
 │       ├── asgi.py

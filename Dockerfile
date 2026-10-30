@@ -81,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
 # script que espera la base de datos y aplica migraciones antes de arrancar
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 # comando por defecto: servidor de desarrollo de Django en 0.0.0.0:8000
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "movie_up/manage.py", "runserver", "0.0.0.0:8000"]
