@@ -18,14 +18,17 @@ def pelicula_detail(request, pk):
         raise
 
 
-def pelicula_create(request):#
+def pelicula_create(request):
     """Vista para crear una nueva película."""
     if request.method == 'POST':
         data = request.POST.dict()
         data['en_cartelera'] = 'en_cartelera' in request.POST
         image_file = request.FILES.get('imagen_portada')
-        services.create_pelicula(data, image_file)
-        return redirect('pelicula_list')
+        try:
+            services.create_pelicula(data, image_file)
+            return redirect('peliculas:pelicula_list')
+        except ValueError as e:
+            return render(request, 'peliculas/form.html', {'error': str(e)})
     return render(request, 'peliculas/form.html')
 
 
@@ -40,12 +43,11 @@ def pelicula_update(request, pk):
             if request.POST.get(field):
                 data[field] = request.POST.get(field)
         
-        if 'en_cartelera' in request.POST:
-            data['en_cartelera'] = request.POST.get('en_cartelera') == 'on'
+        data['en_cartelera'] = 'en_cartelera' in request.POST
         
         image_file = request.FILES.get('imagen_portada')
         services.update_pelicula(pk, data, image_file)
-        return redirect('pelicula_detail', pk=pk)
+        return redirect('peliculas:pelicula_detail', pk=pk)
     
     return render(request, 'peliculas/form.html', {'pelicula': pelicula})
 
@@ -54,7 +56,7 @@ def pelicula_delete(request, pk):
     """Vista para eliminar una película."""
     if request.method == 'POST':
         services.delete_pelicula(pk)
-        return redirect('pelicula_list')
+        return redirect('peliculas:pelicula_list')
     
     pelicula = services.get_pelicula(pk)
     return render(request, 'peliculas/confirm_delete.html', {'pelicula': pelicula})

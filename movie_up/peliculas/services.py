@@ -26,7 +26,14 @@ def create_pelicula(data, image_file):
     
     Returns:
         La instancia de Pelicula creada
+    
+    Raises:
+        ValueError: Si ya existe una película con el mismo título
     """
+    titulo = data.get('titulo', '').strip()
+    if Pelicula.objects.filter(titulo=titulo).exists():
+        raise ValueError(f"Ya existe una película con el título '{titulo}'")
+    
     pelicula = Pelicula(
         titulo=data['titulo'],
         genero=data['genero'],
@@ -61,7 +68,7 @@ def update_pelicula(pk, data, image_file=None):
     
     # Actualizar solo campos no vacíos
     for field, value in data.items():
-        if value:  # Solo actualizar si el valor no está vacío
+        if value is not None and value != '':
             setattr(pelicula, field, value)
     
     # Manejo de imagen

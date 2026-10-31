@@ -21,7 +21,7 @@ env/
 .playwright-mcp/
 
 # Uploaded media files
-/imgs/
+movie_up/imgs/
 
 # Editores / SO
 .idea/

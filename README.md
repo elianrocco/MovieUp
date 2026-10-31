@@ -19,10 +19,14 @@ MovieUp es un sistema web para la gestión y comercialización de entradas de ci
 ### Arquitectura (Patrón MVT de Django)
 El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arquitectura base, extendido con **Service Layer** [AGENTS.md](AGENTS.md).
 
-- **Modelo (Model):** Define la estructura de datos y la persistencia en MySQL mediante `models.py`. Actualmente sin modelos definidos - estado inicial del proyecto [movie_up/models.py](movie_up/models.py).
-- **Vista (View):** Lógica HTTP delgada en `views.py` (request → service → response), enrutada desde `urls.py`. Actualmente sin vistas implementadas [movie_up/views.py](movie_up/views.py).
+- **Modelo (Model):** Define la estructura de datos y la persistencia en MySQL mediante `models.py`. La app `peliculas` contiene el modelo `Pelicula` con 9 campos (título, género, duración, descripción, clasificación, fecha de estreno, URL del tráiler, imagen de portada, en cartelera) [models.py](movie_up/peliculas/models.py).
+- **Vista (View):** Lógica HTTP delgada en `views.py` (request → service → response), enrutada desde `urls.py`. La app `peliculas` implementa 5 vistas funcionales: list, detail, create, update y delete [views.py](movie_up/peliculas/views.py).
 - **Template:** Presentación mediante el motor de plantillas de Django con HTML/CSS/JS.
 - **Service Layer:** Lógica de negocio concentrada en `services.py`. Toda app incluye este archivo para mantener consistencia entre apps [AGENTS.md](AGENTS.md).
+
+#### Actualizaciones parciales y valores booleanos
+`update_pelicula()` omite solo valores `None` y `''`; aplica `False` como valor explícito para permitir desmarcar `en_cartelera` [services.py](movie_up/peliculas/services.py). En un POST de edición, la vista asigna `False` si el checkbox no está presente [views.py](movie_up/peliculas/views.py). Las pruebas cubren los valores `True` y `False` en el servicio, además del POST con el checkbox desmarcado [tests.py](movie_up/peliculas/tests.py). Esta regla también está documentada en el diseño del CRUD [design.md](openspec/changes/crud-peliculas/design.md).
+
 - **Flujo de petición:** `urls.py` → `views.py` → `services.py` → `models.py` → `templates/`.
 
 ### Estructura del proyecto
@@ -95,11 +99,23 @@ MovieUp/
 - **Gotcha crítica resuelta (2026-10-30):** La estructura del proyecto coloca `manage.py` en `movie_up/manage.py` (no en la raíz), lo cual es atípico en Django. Un bug inicial en [Dockerfile](Dockerfile) y [docker-entrypoint.sh](docker-entrypoint.sh) usaba rutas incorrectas (`manage.py` en vez de `movie_up/manage.py`), causando que el contenedor web no iniciara y las migraciones automáticas no se ejecutaran (bug silencioso). Todos los comandos `docker compose exec` y el entrypoint fueron actualizados consistentemente para usar la ruta correcta. **Lección:** En proyectos Django con estructura no estándar, verificar siempre la ruta relativa de `manage.py` en Dockerfile, entrypoint y documentación.
 
 ### Configuración Django
-- **DEBUG/SECRET_KEY** desde variables de entorno [core/settings.py](core/settings.py)
-- **ALLOWED_HOSTS** incluye `localhost`, `0.0.0.0`, `127.0.0.1` [core/settings.py](core/settings.py)
-- **Base de datos MySQL** configurada con credenciales desde `.env` [core/settings.py](core/settings.py)
-- **Apps instaladas:** `django.contrib.*` únicamente (sin `movie_up` aún registrada) [core/settings.py](core/settings.py)
-- **EMAIL_BACKEND:** `console.EmailBackend` (configuración para desarrollo) [core/settings.py](core/settings.py)
+- **DEBUG/SECRET_KEY** desde variables de entorno [settings.py](movie_up/core/settings.py)
+- **ALLOWED_HOSTS** incluye `localhost`, `0.0.0.0`, `127.0.0.1` [settings.py](movie_up/core/settings.py)
+- **Base de datos MySQL** configurada con credenciales desde `.env` [settings.py](movie_up/core/settings.py)
+- **Apps instaladas:** `django.contrib.*`, `peliculas` [settings.py](movie_up/core/settings.py)
+- **MEDIA_ROOT** configurado como `BASE_DIR / 'imgs'` para almacenamiento de imágenes subidas [settings.py](movie_up/core/settings.py)
+- **MEDIA_URL** configurado como `/imgs/` para acceso a archivos multimedia [settings.py](movie_up/core/settings.py)
+- **EMAIL_BACKEND:** `console.EmailBackend` (configuración para desarrollo) [settings.py](movie_up/core/settings.py)
+
+### Configuración de ImageField en Django containerizado
+Para soportar subida de imágenes (imagen de portada de películas), se configuró Django con `ImageField`:
+
+- **Dependencia:** `Pillow==11.0.0` agregado a `requirements.txt` para procesamiento de imágenes [requirements.txt](requirements.txt)
+- **Docker:** El `Dockerfile` instala `libjpeg-dev` y `zlib1g-dev` (dependencias del sistema requeridas por Pillow para compilar) [Dockerfile](Dockerfile)
+- **Storage:** `ImageField` guarda archivos en `MEDIA_ROOT/imgs/` y almacena solo la ruta relativa en la base de datos
+- **Git:** `/imgs/` agregado a `.gitignore` para no versionar archivos subidos por usuarios [.gitignore](.gitignore)
+
+**Lección:** En proyectos Django containerizados, `ImageField` requiere (1) Pillow en requirements, (2) dependencias del sistema en Dockerfile (`libjpeg-dev`, `zlib1g-dev`), (3) configuración de `MEDIA_ROOT`/`MEDIA_URL`. Sin estas librerías, Pillow falla al compilar durante `docker compose build`.
 
 ### Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés [AGENTS.md](AGENTS.md)
@@ -126,7 +142,7 @@ Según [AGENTS.md](AGENTS.md):
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: `openspec/specs/` y `openspec/changes/archive/` contienen `.gitkeep` (sin specs/cambios activos) [openspec/specs/.gitkeep](openspec/specs/.gitkeep), [openspec/changes/archive/.gitkeep](openspec/changes/archive/.gitkeep)
+- Estado actual: El primer change implementado fue `crud-peliculas` (CRUD completo de películas con Service Layer), documentado en `openspec/changes/crud-peliculas/` con todos los artefactos completados (proposal, specs, design, tasks) [openspec/changes/crud-peliculas/](openspec/changes/crud-peliculas/). Este change valida el flujo completo de OpenSpec: exploración → propuesta → implementación → tests → verificación con Playwright MCP.
 
 
 ## 2. Casos de uso (10 canónicos)

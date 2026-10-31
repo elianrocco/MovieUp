@@ -10,6 +10,12 @@
     <form method="post" enctype="multipart/form-data" action="{% if pelicula %}{% url 'peliculas:pelicula_update' pelicula.pk %}{% else %}{% url 'peliculas:pelicula_create' %}{% endif %}">
         {% csrf_token %}
         
+        {% if error %}
+        <div style="color: red; margin-bottom: 15px; padding: 10px; border: 1px solid red;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+        
         <p>
             <label for="titulo">Título:</label><br>
             <input type="text" id="titulo" name="titulo" maxlength="150" 
