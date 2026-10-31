@@ -49,15 +49,23 @@ The target DB schema for `pelicula` was provided as MySQL DDL. Django will creat
 
 ### 4. Partial update via dict filtering in service
 
-**Decision:** In `update_pelicula`, iterate over provided data dict. Only update fields whose values are truthy/non-empty. For the image: if a new file is provided, delete the old file from disk before saving the new one.
+**Decision:** In `update_pelicula`, iterate over the provided data dict and apply every value that is neither `None` nor `''` — an explicit `False` is a real value and must be applied. For the image: if a new file is provided, delete the old file from disk before saving the new one.
 
-**Rationale:** Simple, explicit, and aligns with option A (user confirmed). No need for a separate `ModelForm` per field.
+**Rationale:** Simple, explicit, and aligns with option A (user confirmed). No need for a separate `ModelForm` per field. A truthiness check (`if value:`) silently drops `False`, which made it impossible to uncheck `en_cartelera` from Yes to No.
+
+**Trade-off:** `False` and `0` are treated as intended values, so a caller must omit a field (rather than send an empty value) to leave it untouched.
 
 ### 5. Commented-out future `funciones` integration
 
 **Decision:** In `delete_pelicula`, include a commented block that would import from `funciones.models` and check for associated records. Add a comment explaining what to uncomment when the app exists.
 
-**Rationale:** The spec explicitly requires preparation without breaking tests. Commented code with clear TODO markers is the standard approach.
+**Rationale:** The spec explicitly requires preparation without breaking tests. Commented code with clear TODO markers is the standard approach. The block stays commented so no query against `funciones` ever runs while the app does not exist — an uncommented import would break every delete at URL-conf time.
+
+### 10. Templates are plain HTML (no CSS, no JavaScript)
+
+**Decision:** The four templates render bare semantic HTML. Styling and client-side behavior are out of scope for this change.
+
+**Rationale:** Consistent with the Non-Goals. The UI is verified for structure and data binding, not presentation. Adding a design system later is a separate change that does not alter the behavior specified in `specs/movies/spec.md`.
 
 ### 6. HTML5 validation only (no custom form classes)
 

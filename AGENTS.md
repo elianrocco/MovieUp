@@ -56,9 +56,19 @@ MovieUp/
     ├── config.yaml
     ├── changes/
     │   └── archive/
-    │       └── .gitkeep
+    │       ├── .gitkeep
+    │       └── 2026-10-31-crud-peliculas/
+    │           ├── .openspec.yaml
+    │           ├── design.md
+    │           ├── proposal.md
+    │           ├── specs/
+    │           │   └── movies/
+    │           │       └── spec.md
+    │           └── tasks.md
     └── specs/
-        └── .gitkeep
+        ├── .gitkeep
+        └── movies/
+            └── spec.md
 ```
 
 ## Cómo Ejecutar
@@ -77,7 +87,7 @@ MovieUp/
 
 ## Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés
-- Documentación (AGENTS.md, OpenSpec, skills, agents): español
+- Documentación (AGENTS.md, OpenSpec, skills, agents): español — en OpenSpec el texto va en español y las palabras clave de formato quedan en inglés (ver sección OpenSpec)
 
 ### Reglas de Git (obligatorio)
 - **PROHIBIDO** hacer `git add`, `git commit`, `git push` o cualquier operación de staging/commit sin consultar primero al usuario.
@@ -116,6 +126,17 @@ Definidas en `.env` (nunca versionar):
 - Flujo de trabajo: /opsx:explore -> /opsx:propose -> /opsx:apply -> /opsx:archive
 - Comandos adicionales: /opsx:sync (sincronizar specs), /opsx:update (revisar el plan)
 - Definir specs antes de implementar cualquier nueva funcionalidad
+
+### Idioma de los artefactos OpenSpec
+- El texto (propósito, requisitos, escenarios, decisiones, tareas) se escribe en español.
+- Las palabras clave que OpenSpec parsea y valida se escriben en inglés, sin traducir ni cambiar mayúsculas:
+  - Secciones: `## Purpose`, `## ADDED Requirements`, `## MODIFIED Requirements`, `## REMOVED Requirements`, `## RENAMED Requirements`
+  - Requisitos: `### Requirement: <nombre>`
+  - Escenarios: `#### Scenario: <nombre>` (exactamente 4 `#`)
+  - Pasos de escenario: `**WHEN**`, `**THEN**`
+  - Normativos RFC 2119: `SHALL`, `MUST`, `SHOULD`, `MAY`
+- Traducir estas palabras clave rompe el parseo: sin `## ADDED Requirements` el CLI reporta "No delta sections found" y el archive termina sin escribir nada en `openspec/specs/`.
+- Verificación obligatoria antes de archivar un cambio: `openspec validate --specs --strict`
 
 ## Skills
 

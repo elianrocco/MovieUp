@@ -25,7 +25,7 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 - **Service Layer:** Lógica de negocio concentrada en `services.py`. Toda app incluye este archivo para mantener consistencia entre apps [AGENTS.md](AGENTS.md).
 
 #### Actualizaciones parciales y valores booleanos
-`update_pelicula()` omite solo valores `None` y `''`; aplica `False` como valor explícito para permitir desmarcar `en_cartelera` [services.py](movie_up/peliculas/services.py). En un POST de edición, la vista asigna `False` si el checkbox no está presente [views.py](movie_up/peliculas/views.py). Las pruebas cubren los valores `True` y `False` en el servicio, además del POST con el checkbox desmarcado [tests.py](movie_up/peliculas/tests.py). Esta regla también está documentada en el diseño del CRUD [design.md](openspec/changes/crud-peliculas/design.md).
+`update_pelicula()` omite solo valores `None` y `''`; aplica `False` como valor explícito para permitir desmarcar `en_cartelera` [services.py](movie_up/peliculas/services.py). El filtro es explícito y no por truthiness: `if value:` descartaba `False` y hacía imposible pasar `en_cartelera` de Sí a No [design.md](openspec/changes/archive/2026-10-31-crud-peliculas/design.md). En un POST de edición, la vista asigna `False` si el checkbox no está presente [views.py](movie_up/peliculas/views.py). Las pruebas cubren los valores `True` y `False` en el servicio, además del POST con el checkbox desmarcado [tests.py](movie_up/peliculas/tests.py). **Contrapartida:** `False` y `0` se tratan como valores intencionales, así que un llamador debe omitir el campo —no enviarlo vacío— para dejarlo sin modificar.
 
 - **Flujo de petición:** `urls.py` → `views.py` → `services.py` → `models.py` → `templates/`.
 
@@ -74,9 +74,19 @@ MovieUp/
     ├── config.yaml
     ├── changes/
     │   └── archive/
-    │       └── .gitkeep
+    │       ├── .gitkeep
+    │       └── 2026-10-31-crud-peliculas/
+    │           ├── .openspec.yaml
+    │           ├── design.md
+    │           ├── proposal.md
+    │           ├── specs/
+    │           │   └── movies/
+    │           │       └── spec.md
+    │           └── tasks.md
     └── specs/
-        └── .gitkeep
+        ├── .gitkeep
+        └── movies/
+            └── spec.md
 ```
 
 ### Configuración y despliegue con Docker
@@ -119,7 +129,7 @@ Para soportar subida de imágenes (imagen de portada de películas), se configur
 
 ### Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés [AGENTS.md](AGENTS.md)
-- Documentación (AGENTS.md, OpenSpec): español [AGENTS.md](AGENTS.md)
+- Documentación (AGENTS.md, OpenSpec, skills, agents): español; en los artefactos OpenSpec el texto va en español y las palabras clave de formato quedan en inglés [AGENTS.md](AGENTS.md)
 - Tests: en `<app>/tests.py`, ejecutados con `python movie_up/manage.py test` [AGENTS.md](AGENTS.md)
 
 #### Reglas de Git (obligatorio)
@@ -142,7 +152,19 @@ Según [AGENTS.md](AGENTS.md):
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: El primer change implementado fue `crud-peliculas` (CRUD completo de películas con Service Layer), documentado en `openspec/changes/crud-peliculas/` con todos los artefactos completados (proposal, specs, design, tasks) [openspec/changes/crud-peliculas/](openspec/changes/crud-peliculas/). Este change valida el flujo completo de OpenSpec: exploración → propuesta → implementación → tests → verificación con Playwright MCP.
+- Estado actual: el primer change implementado fue `crud-peliculas` (CRUD completo de películas con Service Layer), archivado en `openspec/changes/archive/2026-10-31-crud-peliculas/` con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md). El archive escribió la primera spec de verdad del proyecto en `openspec/specs/movies/spec.md`: 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md). Con el change archivado, `openspec list` devuelve `changes: []` y `openspec validate --specs --strict` pasa con exit 0 y cero warnings.
+
+
+#### Parseo y validación de specs (gotcha)
+
+OpenSpec parsea los artefactos con tokens estructurales fijos en inglés. Traducirlos produce un archivo que se lee bien pero que el CLI no puede interpretar [AGENTS.md](AGENTS.md).
+
+- **Tokens intocables:** `## Purpose` y `## Requirements` en la spec principal, `## ADDED Requirements` en el delta, requisitos `### Requirement: <nombre>`, escenarios `#### Scenario: <nombre>` con exactamente 4 `#`, pasos `**WHEN**` / `**THEN**` [spec.md](openspec/specs/movies/spec.md), [spec delta](openspec/changes/archive/2026-10-31-crud-peliculas/specs/movies/spec.md).
+- **Fallo silencioso:** sin `## ADDED Requirements`, `openspec validate` reporta `No delta sections found` / `Change must have at least one delta`, y el archive completa sin escribir nada en `openspec/specs/`. Marcar todas las tareas no protege de esto: un change con 19 de 19 tareas completas puede archivar sin producir la spec [AGENTS.md](AGENTS.md), [tasks.md](openspec/changes/archive/2026-10-31-crud-peliculas/tasks.md).
+- **RFC 2119 literal:** `--strict` busca las palabras `SHALL` / `MUST`; `DEBE` / `DEBEN` falla la validación. Convención adoptada: prosa en español con las keywords normativas en inglés [AGENTS.md](AGENTS.md).
+- **Mapeo normativo del proyecto:** `SHALL` describe la capacidad que el sistema provee; `MUST` marca obligaciones y condiciones de error (404 en identificadores inexistentes, rechazo de título duplicado, reemplazo de la imagen anterior, bloqueo del borrado con funciones asociadas) [spec.md](openspec/specs/movies/spec.md).
+- **Puerta de verificación:** `openspec validate --specs --strict` con exit 0 y cero warnings es obligatorio antes de archivar; es la única señal de que la spec va a llegar efectivamente a la fuente de verdad [AGENTS.md](AGENTS.md).
+- **Separación spec / design:** la spec describe solo comportamiento observable; las restricciones de implementación (tipos de campo derivados del DDL, `ImageField`, delegación a `services.py`, templates HTML puro sin CSS/JS, bloque comentado de `funciones`) permanecen en el design del change [design.md](openspec/changes/archive/2026-10-31-crud-peliculas/design.md).
 
 
 ## 2. Casos de uso (10 canónicos)
@@ -191,6 +213,8 @@ La directiva de IA está organizada de forma modular con las siguientes capas:
 ### 3.4 Bucles de autocorrección automatizados
 [PENDIENTE: No se identifican bucles de autocorrección automatizados explícitos (loops de auto-corrección con ejecución iterativa) documentados en las fuentes consultadas (AGENTS.md, skills, commands, agent configs). Solo se identifican mecanismos de control/validación (puerta de confirmación para README, workflow OpenSpec estructurado).]
 
+**Mecanismo de corrección observado:** el único ciclo de corrección registrado no es automático, sino de validación por herramienta. Un change con las 19 tareas marcadas como completas en `tasks.md` puede tener un spec no parseable, y en ese caso es `openspec validate` —no la revisión del contenido— el que detecta el problema y fuerza la reescritura del artefacto con los tokens estructurales en inglés. El detalle técnico está en la sección 1 [tasks.md](openspec/changes/archive/2026-10-31-crud-peliculas/tasks.md), [AGENTS.md](AGENTS.md).
+
 ### 3.5 Estructura de instrucciones (resumen)
 La estructura sigue un enfoque jerárquico y restrictivo: instrucciones a nivel proyecto (AGENTS.md), políticas de agentes (agent/*.md con permisos), habilidades especializadas (skills con triggers), comandos operativos (commands con workflows), y configuración de runtime (opencode.json con MCPs y permisos). Esto permite dirigir la construcción con IA de forma controlada, trazable y con puntos de confirmación explícitos. [Fuentes: AGENTS.md, .opencode/*, opencode.json]
 
@@ -228,3 +252,5 @@ Según las especificaciones del agente `readme-maintainer` y la configuración r
 
 ## 5. Pending inputs
 [PENDIENTE: No existen fuentes para determinar prompts específicos clave ejecutados durante la construcción del sistema, ni bucles de autocorrección automatizados explícitos con detalles de implementación. Estos elementos requerirían logs de ejecución/iteración con IA que no están presentes en AGENTS.md, .opencode, código o configuración MCP.]
+
+[PENDIENTE: Registro de la verificación en navegador del flujo CRUD de películas vía Playwright MCP. AGENTS.md la exige antes de dar por hecha una vista, pero los artefactos disponibles en [.playwright-mcp/](.playwright-mcp/) son del 18/10/2026 (anteriores al change, creado el 30/10 según `.openspec.yaml`) y no incluyen ninguna navegación a `/peliculas/`.]
