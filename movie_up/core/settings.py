@@ -126,6 +126,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Media files (user-uploaded content)
+MEDIA_URL = '/imgs/'
+MEDIA_ROOT = BASE_DIR / 'imgs'
+
 
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration

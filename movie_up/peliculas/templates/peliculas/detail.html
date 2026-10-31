@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ pelicula.titulo }}</title>
+</head>
+<body>
+    <h1>{{ pelicula.titulo }}</h1>
+    
+    <p><strong>Imagen de Portada:</strong></p>
+    <img src="{{ pelicula.imagen_portada.url }}" alt="{{ pelicula.titulo }}" style="max-width: 300px;">
+    
+    <p><strong>Género:</strong> {{ pelicula.genero }}</p>
+    <p><strong>Duración:</strong> {{ pelicula.duracion_minutos }} minutos</p>
+    <p><strong>Descripción:</strong> {{ pelicula.descripcion }}</p>
+    <p><strong>Clasificación:</strong> {{ pelicula.clasificacion }}</p>
+    <p><strong>Fecha de Estreno:</strong> {{ pelicula.fecha_estreno }}</p>
+    <p><strong>URL del Trailer:</strong> <a href="{{ pelicula.url_trailer }}">{{ pelicula.url_trailer }}</a></p>
+    <p><strong>En Cartelera:</strong> {% if pelicula.en_cartelera %}Sí{% else %}No{% endif %}</p>
+    
+    <a href="{% url 'peliculas:pelicula_update' pelicula.pk %}">Editar</a>
+    <a href="{% url 'peliculas:pelicula_delete' pelicula.pk %}">Eliminar</a>
+    <a href="{% url 'peliculas:pelicula_list' %}">Volver al Listado</a>
+</body>
+</html>

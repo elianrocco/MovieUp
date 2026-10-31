@@ -10,12 +10,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1
 
-# instala compilador y cabeceras necesarias para compilar mysqlclient
+# instala compilador y cabeceras necesarias para compilar mysqlclient y Pillow
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         build-essential \
         pkg-config \
         default-libmysqlclient-dev \
+        libjpeg-dev \
+        zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # crea y accede a la carpeta de trabajo donde se guardaran los paquetes .whl
@@ -38,10 +40,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1
 
-# instala la libreria de MySQL para runtime y curl (usado por el healthcheck)
+# instala la libreria de MySQL para runtime, curl (usado por el healthcheck) y libjpeg para Pillow
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libmariadb3 \
+        libjpeg62-turbo \
         curl \
     && rm -rf /var/lib/apt/lists/*
 

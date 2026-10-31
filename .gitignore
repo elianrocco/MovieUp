@@ -20,6 +20,9 @@ env/
 .ruff_cache/
 .playwright-mcp/
 
+# Uploaded media files
+/imgs/
+
 # Editores / SO
 .idea/
 .vscode/

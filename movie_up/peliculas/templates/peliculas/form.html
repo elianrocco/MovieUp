@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{% if pelicula %}Editar Película{% else %}Crear Película{% endif %}</title>
+</head>
+<body>
+    <h1>{% if pelicula %}Editar Película{% else %}Crear Nueva Película{% endif %}</h1>
+    
+    <form method="post" enctype="multipart/form-data" action="{% if pelicula %}{% url 'peliculas:pelicula_update' pelicula.pk %}{% else %}{% url 'peliculas:pelicula_create' %}{% endif %}">
+        {% csrf_token %}
+        
+        <p>
+            <label for="titulo">Título:</label><br>
+            <input type="text" id="titulo" name="titulo" maxlength="150" 
+                   value="{{ pelicula.titulo|default:'' }}" 
+                   {% if not pelicula %}required{% endif %}>
+        </p>
+        
+        <p>
+            <label for="genero">Género:</label><br>
+            <input type="text" id="genero" name="genero" maxlength="45" 
+                   value="{{ pelicula.genero|default:'' }}" 
+                   {% if not pelicula %}required{% endif %}>
+        </p>
+        
+        <p>
+            <label for="duracion_minutos">Duración (minutos):</label><br>
+            <input type="number" id="duracion_minutos" name="duracion_minutos" min="1" 
+                   value="{{ pelicula.duracion_minutos|default:'' }}" 
+                   {% if not pelicula %}required{% endif %}>
+        </p>
+        
+        <p>
+            <label for="descripcion">Descripción:</label><br>
+            <textarea id="descripcion" name="descripcion" rows="5" cols="50" 
+                      {% if not pelicula %}required{% endif %}>{{ pelicula.descripcion|default:'' }}</textarea>
+        </p>
+        
+        <p>
+            <label for="clasificacion">Clasificación:</label><br>
+            <input type="text" id="clasificacion" name="clasificacion" maxlength="10" 
+                   value="{{ pelicula.clasificacion|default:'' }}" 
+                   {% if not pelicula %}required{% endif %}>
+        </p>
+        
+        <p>
+            <label for="fecha_estreno">Fecha de Estreno:</label><br>
+            <input type="date" id="fecha_estreno" name="fecha_estreno" 
+                   value="{{ pelicula.fecha_estreno|default:'' }}" 
+                   {% if not pelicula %}required{% endif %}>
+        </p>
+        
+        <p>
+            <label for="url_trailer">URL del Trailer:</label><br>
+            <input type="url" id="url_trailer" name="url_trailer" maxlength="255" 
+                   value="{{ pelicula.url_trailer|default:'' }}" 
+                   {% if not pelicula %}required{% endif %}>
+        </p>
+        
+        <p>
+            <label for="imagen_portada">Imagen de Portada{% if pelicula %} (dejar vacío para mantener actual){% endif %}:</label><br>
+            {% if pelicula and pelicula.imagen_portada %}
+                <p>Imagen actual: <img src="{{ pelicula.imagen_portada.url }}" alt="{{ pelicula.titulo }}" style="max-width: 150px;"></p>
+            {% endif %}
+            <input type="file" id="imagen_portada" name="imagen_portada" accept="image/*" 
+                   {% if not pelicula %}required{% endif %}>
+        </p>
+        
+        <p>
+            <label for="en_cartelera">
+                <input type="checkbox" id="en_cartelera" name="en_cartelera" 
+                       {% if pelicula.en_cartelera %}checked{% endif %}>
+                En Cartelera
+            </label>
+        </p>
+        
+        <button type="submit">{% if pelicula %}Actualizar{% else %}Crear{% endif %}</button>
+    </form>
+    
+    <a href="{% url 'peliculas:pelicula_list' %}">Volver al Listado</a>
+</body>
+</html>

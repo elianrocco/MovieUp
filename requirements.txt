@@ -3,3 +3,4 @@ langchain==1.4.0
 mysqlclient==2.2.8
 mercadopago==3.5.0
 gunicorn==23.0.0
+Pillow==11.0.0
