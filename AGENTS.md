@@ -46,6 +46,7 @@ MovieUp/
 ├── movie_up/
 │   ├── manage.py
 │   ├── peliculas/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
+│   ├── salas/
 │   └── core/
 │       ├── __init__.py
 │       ├── asgi.py
