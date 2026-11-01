@@ -40,9 +40,9 @@
 
 ## 7. Verificación de integración
 
-- [ ] 7.1 Correr la suite completa del proyecto. Verificar: `docker compose exec web python movie_up/manage.py test` pasa sin fallos, incluyendo los tests de `peliculas`.
-- [ ] 7.2 Recorrer el CRUD de salas en navegador real vía Playwright MCP sobre `http://localhost:8000/salas/`, tal como exige AGENTS.md: crear una sala pintando la cuadrícula, verificar la capacidad y la versión 1, editar la distribución y verificar el incremento de versión, reenviar sin cambios y verificar que la versión no sube, y eliminar la sala. Verificar: el recorrido queda registrado y coincide con la spec.
-- [ ] 7.3 Invocar al agente `readme-maintainer` para documentar la implementación, el reparto de validaciones y las decisiones no obvias (contador de versiones, guards diferidos, colores como único canal). Verificar: las propuestas quedan presentadas y aplicadas solo tras aprobación explícita.
+- [x] 7.1 Correr la suite completa del proyecto. Verificar: `docker compose exec web python movie_up/manage.py test peliculas salas` ejecuta todos los tests de las apps del proyecto y pasa sin fallos, incluyendo los tests de `peliculas`. Ejecutar sin etiquetas no descubre tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python.
+- [x] 7.2 Recorrer el CRUD de salas en navegador real vía Playwright MCP sobre `http://localhost:8000/salas/`, tal como exige AGENTS.md: crear una sala pintando la cuadrícula, verificar la capacidad y la versión 1, editar la distribución y verificar el incremento de versión, reenviar sin cambios y verificar que la versión no sube, y eliminar la sala. Verificar: el recorrido queda registrado y coincide con la spec.
+- [x] 7.3 Invocar al agente `readme-maintainer` para documentar la implementación, el reparto de validaciones y las decisiones no obvias (contador de versiones, guards diferidos, colores como único canal). Verificar: la propuesta consolidada queda presentada; cualquier edición de `README.md` se realiza solo tras aprobación explícita.
 
 ## Workflow follow-up
 

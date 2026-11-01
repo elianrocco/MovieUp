@@ -77,7 +77,8 @@ MovieUp/
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh)
 - Migraciones manuales (tras crear una migración sin reiniciar): `docker compose exec web python movie_up/manage.py migrate`
 - Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser`
-- Correr tests: `docker compose exec web python movie_up/manage.py test`
+- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas` (agregar cada app nueva a la lista)
+  - Gotcha: sin etiquetas el comando termina con código 0 descubriendo 0 tests — el contenedor arranca en `/app`, que queda fuera de los paquetes de las apps, y el discovery de Django no entra a `movie_up/`
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`)
 
 ## Arquitectura (MVT de Django)
