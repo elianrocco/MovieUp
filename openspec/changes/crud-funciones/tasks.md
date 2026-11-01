@@ -2,14 +2,14 @@
 
 ## 1. Scaffolding de la app y configuración
 
-- [ ] 1.1 Crear la app `funciones` con `startapp` desde `movie_up/`, registrarla en `INSTALLED_APPS`, crear `templates/funciones/.gitkeep` y `urls.py` con `app_name` base; verificar con `python movie_up/manage.py check` sin errores.
-- [ ] 1.2 Cambiar `TIME_ZONE` a `America/Argentina/Buenos_Aires` manteniendo `USE_TZ = True` en `movie_up/core/settings.py`; verificar con `python movie_up/manage.py shell -c "from django.utils import timezone; print(timezone.get_default_timezone())"` que imprime la zona de Buenos Aires.
-- [ ] 1.3 Actualizar los árboles de `AGENTS.md` y `README.md` y el comando de tests documentado (agregar `funciones`); verificar que todas las rutas citadas en los árboles existan.
+- [x] 1.1 Crear la app `funciones` con `startapp` desde `movie_up/`, registrarla en `INSTALLED_APPS`, crear `templates/funciones/.gitkeep` y `urls.py` con `app_name` base; verificar con `python movie_up/manage.py check` sin errores.
+- [x] 1.2 Cambiar `TIME_ZONE` a `America/Argentina/Buenos_Aires` manteniendo `USE_TZ = True` en `movie_up/core/settings.py`; verificar con `python movie_up/manage.py shell -c "from django.utils import timezone; print(timezone.get_default_timezone())"` que imprime la zona de Buenos Aires.
+- [x] 1.3 Actualizar los árboles de `AGENTS.md` y `README.md` y el comando de tests documentado (agregar `funciones`); verificar que todas las rutas citadas en los árboles existan.
 
 ## 2. Modelo y administración
 
-- [ ] 2.1 Definir el modelo `Funcion` (campos del esquema, `entradas_compradas` con default 0, `fin` y `disponibilidad` persistidos, FKs con `on_delete=PROTECT`); generar `migrations/0001_initial.py` y verificar con `python movie_up/manage.py migrate` que aplica limpio sobre MySQL.
-- [ ] 2.2 Registrar `Funcion` en Django Admin; verificar con `python movie_up/manage.py check` y que el modelo sea visible en `/admin/`.
+- [x] 2.1 Definir el modelo `Funcion` (campos del esquema, `entradas_compradas` con default 0, `fin` y `disponibilidad` persistidos, FKs con `on_delete=PROTECT`); generar `migrations/0001_initial.py` y verificar con `python movie_up/manage.py migrate` que aplica limpio sobre MySQL.
+- [x] 2.2 Registrar `Funcion` en Django Admin; verificar con `python movie_up/manage.py check` y que el modelo sea visible en `/admin/`.
 
 ## 3. Service Layer
 

@@ -70,6 +70,7 @@ MovieUp/
 ├── .playwright-mcp/              # logs de Playwright
 ├── movie_up/
 │   ├── manage.py
+│   ├── funciones/
 │   ├── peliculas/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
 │   ├── salas/
 │   └── core/
@@ -105,7 +106,7 @@ MovieUp/
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh) [AGENTS.md](AGENTS.md)
 - Migraciones manuales: `docker compose exec web python movie_up/manage.py migrate` [AGENTS.md](AGENTS.md)
 - Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser` [AGENTS.md](AGENTS.md)
-- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas` [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md)
+- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones` [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md)
 - **Gotcha de discovery:** ejecutar `test` sin etiquetas termina con código 0, pero descubre cero tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python; indicar las apps evita ese falso positivo [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md).
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`) [AGENTS.md](AGENTS.md)
 - **Estado verificado (smoke test vía Docker + Playwright):** `docker compose up --build` levanta correctamente; `http://localhost:8000/` sirve la página DEBUG por defecto de Django (aún no hay URLs raíz configuradas — `movie_up` no está en `INSTALLED_APPS`), mientras `/admin/login/` renderiza correctamente. Playwright genera artefactos de snapshot en `.playwright-mcp/` en la raíz del proyecto (sin versionar).
@@ -155,7 +156,7 @@ Según [AGENTS.md](AGENTS.md):
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: los dos changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`, y `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`, ambos con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), y `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md). Con ambos changes archivados, `openspec list` devuelve `changes: []` y `openspec validate --specs --strict` pasa con exit 0 y cero warnings para movies y salas.
+- Estado actual: los dos changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`, y `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`, ambos con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), y `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md). Al 2026-11-01 existe un change activo en fase de planificación, `crud-funciones` (capability `funciones`, 16 requisitos ADDED y 26 escenarios, 0/17 tareas, sin implementación), por lo que `openspec list` muestra ese change en lugar de `changes: []` y `openspec validate crud-funciones --strict` pasa con exit 0; `openspec validate --specs --strict` sigue en verde para movies y salas. Su documentación de ingeniería (specs, design, tasks) se registrará en el README al archivarlo, como en los dos anteriores [proposal.md](openspec/changes/crud-funciones/proposal.md), [tasks.md](openspec/changes/crud-funciones/tasks.md).
 
 
 #### Parseo y validación de specs (gotcha)
