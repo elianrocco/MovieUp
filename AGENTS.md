@@ -38,6 +38,8 @@ MovieUp/
 │   │   ├── opsx-sync.md
 │   │   └── opsx-update.md
 │   └── skills/
+│       ├── crud-conventions/
+│       │   └── SKILL.md
 │       ├── django-app-creator/
 │       │   └── SKILL.md
 │       └── openspec-*/           # 6 skills (explore, propose, apply, archive, sync, update)
@@ -136,6 +138,11 @@ Definidas en `.env` (nunca versionar):
 - Verificación obligatoria antes de archivar un cambio: `openspec validate --specs --strict`
 
 ## Skills
+
+### crud-conventions
+- **Trigger:** planificar la spec de un CRUD (p. ej. "planifiquemos la spec del CRUD de funciones")
+- **Ubicación:** `.opencode/skills/crud-conventions/SKILL.md`
+- **Qué hace:** inyecta las convenciones genéricas de MovieUp (Service Layer, contrato de errores `ValueError`/`Http404`, update parcial, unicidad, datos derivados, guards con TODO) al planificar la spec de cualquier CRUD en OpenSpec. Complementa a `django-app-creator`, que cubre el esqueleto de la app.
 
 ### django-app-creator
 - **Trigger:** `crea app [nombre]`
