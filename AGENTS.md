@@ -59,27 +59,11 @@ MovieUp/
     │   └── archive/
     │       ├── .gitkeep
     │       ├── 2026-10-31-crud-peliculas/
-    │       │   ├── .openspec.yaml
-    │       │   ├── design.md
-    │       │   ├── proposal.md
-    │       │   ├── specs/
-    │       │   │   └── movies/
-    │       │   │       └── spec.md
-    │       │   └── tasks.md
     │       └── 2026-11-01-crud-salas/
-    │           ├── .openspec.yaml
-    │           ├── design.md
-    │           ├── proposal.md
-    │           ├── specs/
-    │           │   └── salas/
-    │           │       └── spec.md
-    │           └── tasks.md
     └── specs/
         ├── .gitkeep
         ├── movies/
-        │   └── spec.md
         └── salas/
-            └── spec.md
 ```
 
 ## Cómo Ejecutar
@@ -138,6 +122,7 @@ Definidas en `.env` (nunca versionar):
 - Flujo de trabajo: /opsx:explore -> /opsx:propose -> /opsx:apply -> /opsx:archive
 - Comandos adicionales: /opsx:sync (sincronizar specs), /opsx:update (revisar el plan)
 - Definir specs antes de implementar cualquier nueva funcionalidad
+- **Formato del árbol tras archivar:** al archivar un change, el árbol de estructura de AGENTS.md lista en `openspec/changes/archive/` únicamente el nombre de la carpeta archivada (p. ej. `2026-11-01-crud-salas/`) sin desplegar su contenido, y en `openspec/specs/` únicamente las carpetas de dominio (p. ej. `movies/`, `salas/`) sin su `spec.md`. Mantener ese formato en cada archivado futuro.
 
 ### Idioma de los artefactos OpenSpec
 - El texto (propósito, requisitos, escenarios, decisiones, tareas) se escribe en español.

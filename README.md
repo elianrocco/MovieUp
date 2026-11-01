@@ -82,27 +82,11 @@ MovieUp/
     │   └── archive/
     │       ├── .gitkeep
     │       ├── 2026-10-31-crud-peliculas/
-    │       │   ├── .openspec.yaml
-    │       │   ├── design.md
-    │       │   ├── proposal.md
-    │       │   ├── specs/
-    │       │   │   └── movies/
-    │       │   │       └── spec.md
-    │       │   └── tasks.md
     │       └── 2026-11-01-crud-salas/
-    │           ├── .openspec.yaml
-    │           ├── design.md
-    │           ├── proposal.md
-    │           ├── specs/
-    │           │   └── salas/
-    │           │       └── spec.md
-    │           └── tasks.md
     └── specs/
         ├── .gitkeep
         ├── movies/
-        │   └── spec.md
         └── salas/
-            └── spec.md
 ```
 
 ### Configuración y despliegue con Docker
