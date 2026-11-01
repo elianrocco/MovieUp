@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if sala %}Editar sala{% else %}Crear sala{% endif %}</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+    <script src="{% static 'salas/js/grid.js' %}" defer></script>
+</head>
+<body>
+<main>
+    <h1>{% if sala %}Editar sala{% else %}Crear sala{% endif %}</h1>
+
+    {% if error %}
+    <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" data-grid-form>
+        {% csrf_token %}
+
+        <div class="form-field">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" maxlength="45"
+                   value="{{ form_values.nombre }}" {% if not sala %}required{% endif %}>
+        </div>
+        <div class="form-field">
+            <label for="tipo-sala">Tipo de sala</label>
+            <input id="tipo-sala" name="tipo_sala" type="text" maxlength="45"
+                   value="{{ form_values.tipo_sala }}" {% if not sala %}required{% endif %}>
+        </div>
+        <div class="form-field">
+            <label for="tipo-sonido">Tipo de sonido</label>
+            <input id="tipo-sonido" name="tipo_sonido" type="text" maxlength="45"
+                   value="{{ form_values.tipo_sonido }}" {% if not sala %}required{% endif %}>
+        </div>
+
+        <fieldset>
+            <legend>Distribución</legend>
+            <div class="grid-controls">
+                <label for="grid-width">Ancho (columnas)
+                    <input id="grid-width" data-grid-width type="number" min="1" max="100" value="10" required>
+                </label>
+                <label for="grid-height">Largo (filas)
+                    <input id="grid-height" data-grid-height type="number" min="1" max="100" value="10" required>
+                </label>
+                <button type="button" data-grid-resize>Aplicar tamaño</button>
+            </div>
+            <div class="seat-grid-viewport">
+                <div class="seat-grid" data-seat-grid></div>
+            </div>
+            <input type="hidden" name="distribucion" data-distribution-input>
+            {{ initial_distribution|json_script:"initial-distribution" }}
+        </fieldset>
+
+        <div class="actions">
+            <button type="submit">{% if sala %}Guardar cambios{% else %}Crear sala{% endif %}</button>
+            {% if sala %}
+                <a href="{% url 'salas:sala_detail' sala.pk %}">Cancelar</a>
+            {% else %}
+                <a href="{% url 'salas:sala_list' %}">Cancelar</a>
+            {% endif %}
+        </div>
+    </form>
+</main>
+</body>
+</html>

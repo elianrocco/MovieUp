@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Eliminar sala</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+</head>
+<body>
+<main>
+    <h1>Eliminar sala</h1>
+    <p>¿Confirmás que querés eliminar la sala <strong>{{ sala.nombre }}</strong>?</p>
+    <form method="post" action="{% url 'salas:sala_delete' sala.pk %}">
+        {% csrf_token %}
+        <button type="submit">Sí, eliminar</button>
+        <a href="{% url 'salas:sala_detail' sala.pk %}">Cancelar</a>
+    </form>
+</main>
+</body>
+</html>

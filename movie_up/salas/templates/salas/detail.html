@@ -1,0 +1,42 @@
+{% load static %}
+{% load salas_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ sala.nombre }}</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+</head>
+<body>
+<main>
+    <h1>{{ sala.nombre }}</h1>
+    <dl>
+        <dt>Tipo de sala</dt>
+        <dd>{{ sala.tipo_sala }}</dd>
+        <dt>Tipo de sonido</dt>
+        <dd>{{ sala.tipo_sonido }}</dd>
+        <dt>Capacidad</dt>
+        <dd>{{ sala.capacidad }}</dd>
+    </dl>
+
+    <h2>Distribución</h2>
+    <div class="seat-grid-viewport">
+        <div class="seat-grid" style="--grid-columns: {{ sala.distribucion.filas.0|length }};" aria-label="Distribución de la sala">
+            {% for fila in sala.distribucion.filas %}
+                {% for celda in fila|make_list %}
+                    <span class="seat-grid__cell {{ celda|celda_clase }}"></span>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <nav class="actions">
+        <a href="{% url 'salas:sala_update' sala.pk %}">Editar</a>
+        <a href="{% url 'salas:sala_delete' sala.pk %}">Eliminar</a>
+        <a href="{% url 'salas:sala_list' %}">Volver al listado</a>
+    </nav>
+</main>
+</body>
+</html>
