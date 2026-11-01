@@ -2,7 +2,7 @@
 
 ## 1. Visión general y arquitectura del sistema
 
-**Fuente:** [AGENTS.md](AGENTS.md), [core/settings.py](core/settings.py), [core/urls.py](core/urls.py), [movie_up/](movie_up/), [requirements.txt](requirements.txt), [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml)
+**Fuente:** [AGENTS.md](AGENTS.md), [core/settings.py](movie_up/core/settings.py), [core/urls.py](movie_up/core/urls.py), [movie_up/](movie_up/), [requirements.txt](requirements.txt), [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml)
 
 ### Propósito del proyecto
 MovieUp es un sistema web para la gestión y comercialización de entradas de cine. Permite a los usuarios comprar entradas, gestionar sus compras, y a los administradores gestionar películas, salas, funciones y ventas. [AGENTS.md](AGENTS.md)
@@ -10,7 +10,7 @@ MovieUp es un sistema web para la gestión y comercialización de entradas de ci
 ### Stack tecnológico
 - **Backend:** Python 3.14.7 con Django 6.1.1 y LangChain 1.4.0 [AGENTS.md](AGENTS.md), [requirements.txt](requirements.txt), [Dockerfile](Dockerfile)
 - **Frontend:** HTML (Living Standard), CSS3 (Snapshot 2023) y JavaScript (ES2025) [AGENTS.md](AGENTS.md)
-- **Base de datos:** MySQL 9.7.2 LTS [AGENTS.md](AGENTS.md), [docker-compose.yml](docker-compose.yml), [core/settings.py](core/settings.py)
+- **Base de datos:** MySQL 9.7.2 LTS [AGENTS.md](AGENTS.md), [docker-compose.yml](docker-compose.yml), [core/settings.py](movie_up/core/settings.py)
 - **Pasarela de pagos:** Mercado Pago SDK Python 3.5.0 [AGENTS.md](AGENTS.md), [requirements.txt](requirements.txt)
 - **Control de versiones:** Git + GitHub [AGENTS.md](AGENTS.md)
 - **Containerización:** Docker 29.8.0 [AGENTS.md](AGENTS.md), [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml)
@@ -28,9 +28,9 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 `update_pelicula()` omite solo valores `None` y `''`; aplica `False` como valor explícito para permitir desmarcar `en_cartelera` [services.py](movie_up/peliculas/services.py). El filtro es explícito y no por truthiness: `if value:` descartaba `False` y hacía imposible pasar `en_cartelera` de Sí a No [design.md](openspec/changes/archive/2026-10-31-crud-peliculas/design.md). En un POST de edición, la vista asigna `False` si el checkbox no está presente [views.py](movie_up/peliculas/views.py). Las pruebas cubren los valores `True` y `False` en el servicio, además del POST con el checkbox desmarcado [tests.py](movie_up/peliculas/tests.py). **Contrapartida:** `False` y `0` se tratan como valores intencionales, así que un llamador debe omitir el campo —no enviarlo vacío— para dejarlo sin modificar.
 
 #### CRUD de salas (`crud-salas`, lotes 1–3)
-- **Lote 1 — modelo y Service Layer:** `Sala` persiste la distribución como JSON. El service valida y normaliza filas de hasta 100×100 con celdas `P`, `A` y `R`, deriva la capacidad contando `A` y `R`, y guarda dentro del JSON una versión que solo aumenta ante cambios reales de la distribución normalizada. Los guards para funciones activas quedan comentados hasta que exista la app `funciones`, evitando imports a módulos inexistentes [models.py](movie_up/salas/models.py), [services.py](movie_up/salas/services.py), [design.md](openspec/changes/crud-salas/design.md).
-- **Lote 2 — interfaz y administración:** el CRUD web usa vistas y rutas con namespace, templates y registro en Django Admin. El editor JavaScript alterna `P` → `A` → `R` → `P` y permite redimensionar conservando la intersección; el detalle renderiza la misma distribución en modo de solo lectura [urls.py](movie_up/salas/urls.py), [views.py](movie_up/salas/views.py), [admin.py](movie_up/salas/admin.py), [grid.js](movie_up/salas/static/salas/js/grid.js), [salas.css](movie_up/salas/static/salas/css/salas.css), [design.md](openspec/changes/crud-salas/design.md).
-- **Lote 3 — integración:** la verificación cubrió los tests de `peliculas` y `salas`, además del recorrido CRUD de salas en navegador real con Playwright [tasks.md](openspec/changes/crud-salas/tasks.md).
+- **Lote 1 — modelo y Service Layer:** `Sala` persiste la distribución como JSON. El service valida y normaliza filas de hasta 100×100 con celdas `P`, `A` y `R`, deriva la capacidad contando `A` y `R`, y guarda dentro del JSON una versión que solo aumenta ante cambios reales de la distribución normalizada. Los guards para funciones activas quedan comentados hasta que exista la app `funciones`, evitando imports a módulos inexistentes [models.py](movie_up/salas/models.py), [services.py](movie_up/salas/services.py), [design.md](openspec/changes/archive/2026-11-01-crud-salas/design.md).
+- **Lote 2 — interfaz y administración:** el CRUD web usa vistas y rutas con namespace, templates y registro en Django Admin. El editor JavaScript alterna `P` → `A` → `R` → `P` y permite redimensionar conservando la intersección; el detalle renderiza la misma distribución en modo de solo lectura [urls.py](movie_up/salas/urls.py), [views.py](movie_up/salas/views.py), [admin.py](movie_up/salas/admin.py), [grid.js](movie_up/salas/static/salas/js/grid.js), [salas.css](movie_up/salas/static/salas/css/salas.css), [design.md](openspec/changes/archive/2026-11-01-crud-salas/design.md).
+- **Lote 3 — integración:** la verificación cubrió los tests de `peliculas` y `salas`, además del recorrido CRUD de salas en navegador real con Playwright [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md).
 
 - **Flujo de petición:** `urls.py` → `views.py` → `services.py` → `models.py` → `templates/`.
 
@@ -81,22 +81,32 @@ MovieUp/
     ├── changes/
     │   └── archive/
     │       ├── .gitkeep
-    │       └── 2026-10-31-crud-peliculas/
+    │       ├── 2026-10-31-crud-peliculas/
+    │       │   ├── .openspec.yaml
+    │       │   ├── design.md
+    │       │   ├── proposal.md
+    │       │   ├── specs/
+    │       │   │   └── movies/
+    │       │   │       └── spec.md
+    │       │   └── tasks.md
+    │       └── 2026-11-01-crud-salas/
     │           ├── .openspec.yaml
     │           ├── design.md
     │           ├── proposal.md
     │           ├── specs/
-    │           │   └── movies/
+    │           │   └── salas/
     │           │       └── spec.md
     │           └── tasks.md
     └── specs/
         ├── .gitkeep
-        └── movies/
+        ├── movies/
+        │   └── spec.md
+        └── salas/
             └── spec.md
 ```
 
 ### Configuración y despliegue con Docker
-**Fuentes:** [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml), [docker-entrypoint.sh](docker-entrypoint.sh), [core/settings.py](core/settings.py)
+**Fuentes:** [Dockerfile](Dockerfile), [docker-compose.yml](docker-compose.yml), [docker-entrypoint.sh](docker-entrypoint.sh), [core/settings.py](movie_up/core/settings.py)
 
 - **Multi-stage build** (builder/runtime): el builder compila dependencias como wheels usando `python:3.14.7-slim-trixie`, el runtime instala únicamente wheels precompilados con usuario no privilegiado (`appuser`) [Dockerfile](Dockerfile)
 - **Servicios**: `db` (MySQL 9.7.2) y `web` (Django app) [docker-compose.yml](docker-compose.yml)
@@ -109,8 +119,8 @@ MovieUp/
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh) [AGENTS.md](AGENTS.md)
 - Migraciones manuales: `docker compose exec web python movie_up/manage.py migrate` [AGENTS.md](AGENTS.md)
 - Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser` [AGENTS.md](AGENTS.md)
-- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas` [tasks.md](openspec/changes/crud-salas/tasks.md)
-- **Gotcha de discovery:** ejecutar `test` sin etiquetas termina con código 0, pero descubre cero tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python; indicar las apps evita ese falso positivo [tasks.md](openspec/changes/crud-salas/tasks.md).
+- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas` [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md)
+- **Gotcha de discovery:** ejecutar `test` sin etiquetas termina con código 0, pero descubre cero tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python; indicar las apps evita ese falso positivo [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md).
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`) [AGENTS.md](AGENTS.md)
 - **Estado verificado (smoke test vía Docker + Playwright):** `docker compose up --build` levanta correctamente; `http://localhost:8000/` sirve la página DEBUG por defecto de Django (aún no hay URLs raíz configuradas — `movie_up` no está en `INSTALLED_APPS`), mientras `/admin/login/` renderiza correctamente. Playwright genera artefactos de snapshot en `.playwright-mcp/` en la raíz del proyecto (sin versionar).
 - **Gotcha crítica resuelta (2026-10-30):** La estructura del proyecto coloca `manage.py` en `movie_up/manage.py` (no en la raíz), lo cual es atípico en Django. Un bug inicial en [Dockerfile](Dockerfile) y [docker-entrypoint.sh](docker-entrypoint.sh) usaba rutas incorrectas (`manage.py` en vez de `movie_up/manage.py`), causando que el contenedor web no iniciara y las migraciones automáticas no se ejecutaran (bug silencioso). Todos los comandos `docker compose exec` y el entrypoint fueron actualizados consistentemente para usar la ruta correcta. **Lección:** En proyectos Django con estructura no estándar, verificar siempre la ruta relativa de `manage.py` en Dockerfile, entrypoint y documentación.
@@ -159,7 +169,7 @@ Según [AGENTS.md](AGENTS.md):
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: el primer change implementado fue `crud-peliculas` (CRUD completo de películas con Service Layer), archivado en `openspec/changes/archive/2026-10-31-crud-peliculas/` con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md). El archive escribió la primera spec de verdad del proyecto en `openspec/specs/movies/spec.md`: 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md). Con el change archivado, `openspec list` devuelve `changes: []` y `openspec validate --specs --strict` pasa con exit 0 y cero warnings.
+- Estado actual: los dos changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`, y `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`, ambos con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), y `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md). Con ambos changes archivados, `openspec list` devuelve `changes: []` y `openspec validate --specs --strict` pasa con exit 0 y cero warnings para movies y salas.
 
 
 #### Parseo y validación de specs (gotcha)
@@ -203,7 +213,7 @@ La directiva de IA está organizada de forma modular con las siguientes capas:
 - **AGENTS.md (raíz)**: Define el contexto del proyecto, stack, arquitectura, convenciones, casos de uso, flujo de trabajo OpenSpec, y agentes definidos. Actúa como fuente de verdad para el proyecto [AGENTS.md](AGENTS.md).
 - **Agentes subagentes (.opencode/agent/)**: Definen comportamientos especializados. Específicamente `readme-maintainer.md` define un agente con permisos restrictivos (solo puede editar `README.md`, otros permisos requieren confirmación), un protocolo estricto de edición con puerta de confirmación `ok`, y la convención de cita obligatoria del registro: `[FILENAME](PATH)`, sin números de línea en el texto del enlace, sin anclas `#L...` en la URL y sin citar dos veces el mismo archivo en una misma línea [readme-maintainer.md](.opencode/agent/readme-maintainer.md).
 - **Skills (.opencode/skills/)**: Capacidades reutilizables activables por disparadores. Los skills `openspec-*` implementan los flujos de OpenSpec (explorar, proponer, aplicar, archivar, sincronizar, actualizar el plan) [.opencode/skills/](.opencode/skills/). Skills específicas del proyecto:
-  - **`django-app-creator`** — Trigger: `crea app [nombre]`. Automatiza la creación de apps Django con estructura completa: ejecuta `python manage.py startapp <nombre>` desde `movie_up/`, registra la app en `INSTALLED_APPS` de [settings.py](core/settings.py), crea estructura de templates con namespacing doble (`templates/<nombre>/`) para evitar colisiones, crea `urls.py` con imports base, crea `services.py` para institucionalizar el Service Layer como convención oficial (toda app nueva nace con lógica de negocio separada de las vistas, consistente con AGENTS.md), y mantiene la documentación del proyecto actualizada (`.opencode/skills/django-app-creator/SKILL.md`). **Convenciones de mantenimiento documental:** tras crear la app, actualiza las secciones `## Estructura del Proyecto` en `AGENTS.md` y `README.md` con orden `manage.py` → apps (alfabético) → `core/`. Si es la primera app (distinta de `core/`): incluye comentario horizontal detallando todos los archivos (`__init__.py`, `admin.py`, `apps.py`, `models.py`, `views.py`, `tests.py`, `migrations/`, `templates/`, `urls.py`, `services.py`). Si ya existen otras apps: agrega solo el nombre de la carpeta sin comentario. Registrada en [AGENTS.md](AGENTS.md) bajo `## Skills`.
+  - **`django-app-creator`** — Trigger: `crea app [nombre]`. Automatiza la creación de apps Django con estructura completa: ejecuta `python manage.py startapp <nombre>` desde `movie_up/`, registra la app en `INSTALLED_APPS` de [settings.py](movie_up/core/settings.py), crea estructura de templates con namespacing doble (`templates/<nombre>/`) para evitar colisiones, crea `urls.py` con imports base, crea `services.py` para institucionalizar el Service Layer como convención oficial (toda app nueva nace con lógica de negocio separada de las vistas, consistente con AGENTS.md), y mantiene la documentación del proyecto actualizada (`.opencode/skills/django-app-creator/SKILL.md`). **Convenciones de mantenimiento documental:** tras crear la app, actualiza las secciones `## Estructura del Proyecto` en `AGENTS.md` y `README.md` con orden `manage.py` → apps (alfabético) → `core/`. Si es la primera app (distinta de `core/`): incluye comentario horizontal detallando todos los archivos (`__init__.py`, `admin.py`, `apps.py`, `models.py`, `views.py`, `tests.py`, `migrations/`, `templates/`, `urls.py`, `services.py`). Si ya existen otras apps: agrega solo el nombre de la carpeta sin comentario. Registrada en [AGENTS.md](AGENTS.md) bajo `## Skills`.
 - **Comandos (.opencode/commands/)**: Comandos slash para flujos OpenSpec (`/opsx:explore`, `/opsx:propose`, `/opsx:apply`, `/opsx:archive`, `/opsx:sync`, `/opsx:update`) que implementan workflows con restricciones de planificación vs implementación [opsx-propose.md](.opencode/commands/opsx-propose.md).
 - **Config global (opencode.json)**: Define agentes del sistema, MCPs habilitados y permisos por agente [opencode.json](C:/Users/anlle/.config/opencode/opencode.json).
 

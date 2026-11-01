@@ -58,17 +58,27 @@ MovieUp/
     ├── changes/
     │   └── archive/
     │       ├── .gitkeep
-    │       └── 2026-10-31-crud-peliculas/
+    │       ├── 2026-10-31-crud-peliculas/
+    │       │   ├── .openspec.yaml
+    │       │   ├── design.md
+    │       │   ├── proposal.md
+    │       │   ├── specs/
+    │       │   │   └── movies/
+    │       │   │       └── spec.md
+    │       │   └── tasks.md
+    │       └── 2026-11-01-crud-salas/
     │           ├── .openspec.yaml
     │           ├── design.md
     │           ├── proposal.md
     │           ├── specs/
-    │           │   └── movies/
+    │           │   └── salas/
     │           │       └── spec.md
     │           └── tasks.md
     └── specs/
         ├── .gitkeep
-        └── movies/
+        ├── movies/
+        │   └── spec.md
+        └── salas/
             └── spec.md
 ```
 
