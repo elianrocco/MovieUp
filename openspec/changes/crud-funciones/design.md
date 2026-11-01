@@ -2,7 +2,7 @@
 
 ## Context
 
-Ver `proposal.md` (Why). El estado actual: existen las apps `peliculas` (con `duracion_minutos`) y `salas` (con `distribucion` como JSON `{"version": n, "filas": [...]}` y `capacidad` derivada contando `A` + `R`), ambas con Service Layer, tests y CRUD verificado. `movie_up/core/settings.py` tiene `TIME_ZONE = 'UTC'` y `USE_TZ = True`. Los guards de `salas` y `peliculas` hacia funciones ya existen comentados con TODO. La spec `salas` ya contrata el formato de distribución y su versionado; esta change agrega la capacidad `funciones`.
+Ver `proposal.md` (Why). El estado actual: existen las apps `peliculas` (con `duracion_minutos`) y `salas` (con `distribucion` como JSON `{"version": n, "filas": [...]}` y `capacidad` derivada contando `A` + `R`), ambas con Service Layer, tests y CRUD verificado. `movie_up/core/settings.py` tiene `TIME_ZONE = 'America/Argentina/Buenos_Aires'` y `USE_TZ = True`. Los guards de `salas` y `peliculas` hacia funciones ya existen comentados con TODO. La spec `salas` ya contrata el formato de distribución y su versionado; esta change agrega la capacidad `funciones`.
 
 Restricciones del alcance definido por el usuario: solo CRUD administrativo; sin CSS/JS nuevo salvo el reutilizado del detalle de salas; la desactivación automática por vencimiento, la compra de entradas y la validación de duración mínima de películas quedan para specs futuras.
 
@@ -34,7 +34,7 @@ Restricciones del alcance definido por el usuario: solo CRUD administrativo; sin
 
 6. **Guard de entradas con contador, no con derivados**: `entradas_compradas > 0` bloquea update y delete. Se descartó `disponibilidad == count(A)` porque la compra futura decrementa ambos lados y la igualdad se preservaría. Invariante: al crear `entradas_compradas = 0` y `disponibilidad = count(A)`; como cada update queda bloqueado una vez que hay entradas, ningún recálculo del CRUD puede romper los derivados después de la primera venta.
 
-7. **Activación vencida**: `funcion_activa` es un booleano en el formulario (elegido al crear). En update se aplica con la semántica de update parcial (`False` explícito sí aplica), salvo que `fin <= now(Buenos_Aires)`: en ese caso se rechaza solo el intento de ponerlo en `true` y el resto de la actualización sigue las demás reglas.
+7. **Activación vencida**: `funcion_activa` es un booleano en el formulario (elegido al crear). En update se aplica con la semántica de update parcial (`False` explícito sí aplica). Si `fin <= now(Buenos_Aires)`, se rechaza la transición de `false` a `true`; reenviar `true` cuando ya era el valor almacenado no se considera una nueva activación.
 
 8. **Reutilización visual del detalle de salas**: la plantilla de detalle carga el filtro `celda_clase` del módulo `salas.templatetags.salas_tags` y los estáticos `salas/css/salas.css` y `salas/js/grid.js` en modo solo lectura (sin listeners de clic). Alternativa descartada: duplicar CSS/JS (diverge en cada fix).
 

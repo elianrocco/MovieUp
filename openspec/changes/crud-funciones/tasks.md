@@ -13,11 +13,11 @@
 
 ## 3. Service Layer
 
-- [ ] 3.1 Implementar `list_funciones` y `get_funcion` (traducir `DoesNotExist` en `Http404`) en `services.py`; verificar con tests de listado y de 404 para id inexistente en `funciones/tests.py`.
-- [ ] 3.2 Implementar `create_funcion` con las validaciones de servicio (inicio presente o futuro en hora de Buenos Aires, precio >= 0, idioma obligatorio hasta 45) y los derivados (`fin` = inicio + duración, copia profunda de la distribución de la sala, `disponibilidad` = conteo de `A`, `entradas_compradas` = 0); verificar con tests de creación válida y de cada rechazo.
-- [ ] 3.3 Implementar la validación de solapamiento `[inicio, fin)` por sala dentro de la transacción de guardado con bloqueo de fila de sala, aplicada a activas e inactivas, permitiendo el contacto exacto y excluyendo el propio registro en update; verificar con tests: solapamiento rechazado (incluido un segundo), funciones consecutivas aceptadas, función inactiva bloquea y update sin auto-conflicto.
-- [ ] 3.4 Implementar `update_funcion` con update parcial (ausente = conservar), recálculo de `fin` ante cambio de inicio o película, recopia de distribución y recálculo de disponibilidad al cambiar de sala, bloqueo total por `entradas_compradas > 0` y rechazo de activar una función vencida; verificar con tests de cada rama y de 404.
-- [ ] 3.5 Implementar `delete_funcion` con bloqueo por `entradas_compradas > 0` y sin eliminar película ni sala; verificar con tests de bloqueo, de borrado exitoso y de 404.
+- [x] 3.1 Implementar `list_funciones` y `get_funcion` (traducir `DoesNotExist` en `Http404`) en `services.py`; verificar con tests de listado y de 404 para id inexistente en `funciones/tests.py`.
+- [x] 3.2 Implementar `create_funcion` con las validaciones de servicio (inicio presente o futuro en hora de Buenos Aires, precio >= 0, idioma obligatorio hasta 45) y los derivados (`fin` = inicio + duración, copia profunda de la distribución de la sala, `disponibilidad` = conteo de `A`, `entradas_compradas` = 0); verificar con tests de creación válida y de cada rechazo.
+- [x] 3.3 Implementar la validación de solapamiento `[inicio, fin)` por sala dentro de la transacción de guardado con bloqueo de fila de sala, aplicada a activas e inactivas, permitiendo el contacto exacto y excluyendo el propio registro en update; verificar con tests: solapamiento rechazado (incluido un segundo), funciones consecutivas aceptadas, función inactiva bloquea y update sin auto-conflicto.
+- [x] 3.4 Implementar `update_funcion` con update parcial (ausente = conservar), recálculo de `fin` ante cambio de inicio o película, recopia de distribución y recálculo de disponibilidad al cambiar de sala, bloqueo total por `entradas_compradas > 0` y rechazo de activar una función vencida; verificar con tests de cada rama y de 404.
+- [x] 3.5 Implementar `delete_funcion` con bloqueo por `entradas_compradas > 0` y sin eliminar película ni sala; verificar con tests de bloqueo, de borrado exitoso y de 404.
 
 ## 4. Vistas, rutas y templates
 

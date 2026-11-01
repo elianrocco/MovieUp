@@ -49,12 +49,22 @@ Los formularios de creación y actualización SHALL ofrecer la película y la sa
 
 ### Requirement: Inicio presente o futuro
 
-El sistema MUST rechazar un inicio anterior al momento de registrar la función, interpretando ambos momentos en el horario local de Buenos Aires.
+El sistema MUST rechazar un inicio anterior al momento actual al crear una función o cambiar su inicio, interpretando ambos momentos en el horario local de Buenos Aires. En una actualización, reenviar sin cambios un inicio almacenado que ya pasó SHALL conservarlo y no bloquear la edición de otros campos.
 
 #### Scenario: Rechazar un inicio en el pasado
 
 - **WHEN** el administrador intenta registrar una función con un inicio ya transcurrido
 - **THEN** el sistema rechaza la operación, no persiste nada y muestra el motivo
+
+#### Scenario: Rechazar cambiar el inicio a una fecha pasada
+
+- **WHEN** el administrador cambia el inicio de una función a una fecha ya transcurrida
+- **THEN** el sistema rechaza la operación sin modificar la función
+
+#### Scenario: Permitir actualizar otros campos con un inicio pasado sin cambios
+
+- **WHEN** una función ya tiene un inicio transcurrido y el administrador actualiza otro campo reenviando ese mismo inicio
+- **THEN** el sistema conserva el inicio y permite la actualización si se cumplen las demás reglas
 
 ### Requirement: Fin derivado de la duración de la película
 
