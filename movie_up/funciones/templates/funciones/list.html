@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Funciones</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+</head>
+<body>
+<main>
+    <h1>Funciones</h1>
+    <p><a class="button-link" href="{% url 'funciones:funcion_create' %}">Crear función</a></p>
+
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>Película</th>
+            <th>Sala</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+            <th>Estado</th>
+            <th>Disponibilidad</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for funcion in funciones %}
+        <tr>
+            <td>{{ funcion.pelicula.titulo }}</td>
+            <td>{{ funcion.sala.nombre }}</td>
+            <td>{{ funcion.inicio|date:"d/m/Y H:i" }}</td>
+            <td>{{ funcion.fin|date:"d/m/Y H:i" }}</td>
+            <td>{{ funcion.funcion_activa|yesno:"Activa,Inactiva" }}</td>
+            <td>{{ funcion.disponibilidad }}</td>
+            <td>{{ funcion.precio_entrada|floatformat:2 }}</td>
+            <td>
+                <a href="{% url 'funciones:funcion_detail' funcion.pk %}">Ver</a>
+                <a href="{% url 'funciones:funcion_update' funcion.pk %}">Editar</a>
+                <a href="{% url 'funciones:funcion_delete' funcion.pk %}">Eliminar</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8">No hay funciones registradas.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

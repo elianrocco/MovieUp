@@ -1,0 +1,25 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Eliminar función</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+</head>
+<body>
+<main>
+    <h1>Eliminar función</h1>
+    {% if error %}
+    <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+    <p>¿Confirmás que querés eliminar la función de <strong>{{ funcion.pelicula.titulo }}</strong> en <strong>{{ funcion.sala.nombre }}</strong> del {{ funcion.inicio|date:"d/m/Y H:i" }}?</p>
+    <form method="post" action="{% url 'funciones:funcion_delete' funcion.pk %}">
+        {% csrf_token %}
+        <button type="submit">Sí, eliminar</button>
+        <a href="{% url 'funciones:funcion_detail' funcion.pk %}">Cancelar</a>
+    </form>
+</main>
+</body>
+</html>

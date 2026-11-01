@@ -21,16 +21,16 @@
 
 ## 4. Vistas, rutas y templates
 
-- [ ] 4.1 Crear las rutas con `app_name='funciones'` y las vistas delgadas de las cinco operaciones (request → servicio → respuesta, `ValueError` → formulario con `error`); verificar con tests de cliente Django que cada ruta responde y que un `ValueError` re-renderiza el formulario sin 500.
-- [ ] 4.2 Crear el template de listado con las columnas película, sala, inicio, fin, estado, disponibilidad y precio; verificar con un test que muestra las funciones de fixture con esos datos.
-- [ ] 4.3 Crear el template de detalle que muestra película y sala solo por nombre (sin ids) y renderiza la distribución como cuadrícula de solo lectura reutilizando `salas.templatetags.salas_tags`, `salas.css` y `grid.js`; verificar con tests de render: nombres presentes, ids ausentes y clases de celda correctas.
-- [ ] 4.4 Crear el formulario de creación con menús desplegables de película y sala, `datetime-local` con mínimo, `precio` con `min=0`, campos obligatorios y selección de estado activo; verificar con tests de POST válido (derivados correctos) y de POST inválido rechazado por el servicio.
-- [ ] 4.5 Crear el formulario de actualización precargado con los mismos menús y la vista de eliminación con confirmación; verificar con tests de precarga, de actualización parcial y de confirmación de borrado.
+- [x] 4.1 Crear las rutas con `app_name='funciones'` y las vistas delgadas de las cinco operaciones (request → servicio → respuesta, `ValueError` → formulario con `error`); verificar con tests de cliente Django que cada ruta responde y que un `ValueError` re-renderiza el formulario sin 500.
+- [x] 4.2 Crear el template de listado con las columnas película, sala, inicio, fin, estado, disponibilidad y precio; verificar con un test que muestra las funciones de fixture con esos datos.
+- [x] 4.3 Crear el template de detalle que muestra película y sala solo por nombre (sin ids) y renderiza la distribución como cuadrícula de solo lectura reutilizando `salas.templatetags.salas_tags`, `salas.css` y `grid.js`; verificar con tests de render: nombres presentes, ids ausentes y clases de celda correctas.
+- [x] 4.4 Crear el formulario de creación con menús desplegables de película y sala, `datetime-local` con mínimo, `precio` con `min=0`, campos obligatorios y selección de estado activo; verificar con tests de POST válido (derivados correctos) y de POST inválido rechazado por el servicio.
+- [x] 4.5 Crear el formulario de actualización precargado con los mismos menús y la vista de eliminación con confirmación; verificar con tests de precarga, de actualización parcial y de confirmación de borrado.
 
 ## 5. Verificación de integración
 
-- [ ] 5.1 Correr la suite completa `docker compose exec web python movie_up/manage.py test peliculas salas funciones` y verificar 0 fallos con tests descubiertos.
-- [ ] 5.2 Verificar en navegador real vía Playwright crear, editar y eliminar una función en `http://localhost:8000/`, incluida la cuadrícula de solo lectura del detalle y los rechazos visibles, con la consola del navegador sin errores.
+- [x] 5.1 Correr la suite completa `docker compose exec web python movie_up/manage.py test peliculas salas funciones` y verificar 0 fallos con tests descubiertos.
+- [x] 5.2 Verificar en navegador real vía Playwright crear, editar y eliminar una función en `http://localhost:8000/`, incluida la cuadrícula de solo lectura del detalle y los rechazos visibles, con la consola del navegador sin errores.
 
 ## Workflow follow-up
 

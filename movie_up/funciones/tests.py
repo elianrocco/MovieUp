@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.http import Http404
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from peliculas.models import Pelicula
@@ -445,3 +446,194 @@ class FuncionDeleteServiceTests(FuncionTestDataMixin, TestCase):
     def test_delete_raises_http_404_for_unknown_id(self):
         with self.assertRaises(Http404):
             delete_funcion(999)
+
+
+class FuncionViewTests(FuncionTestDataMixin, TestCase):
+    def form_data(self, **overrides):
+        data = self.valid_data()
+        data['inicio'] = self.future_start().strftime('%Y-%m-%dT%H:%M')
+        data.update(overrides)
+        return data
+
+    def test_list_view_shows_summary_for_all_functions(self):
+        create_funcion(self.valid_data())
+        create_funcion(
+            self.valid_data(
+                inicio=self.future_start(days=4),
+                funcion_activa='false',
+                precio_entrada='0',
+            )
+        )
+
+        response = self.client.get(reverse('funciones:funcion_list'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'funciones/list.html')
+        for value in (
+            'Película base', 'Sala base', 'Activa', 'Disponibilidad',
+            'Precio', '1500.00',
+        ):
+            self.assertContains(response, value)
+        self.assertContains(response, 'Inactiva')
+
+    def test_list_view_shows_empty_state(self):
+        response = self.client.get(reverse('funciones:funcion_list'))
+
+        self.assertContains(response, 'No hay funciones registradas.')
+
+    def test_detail_view_shows_names_fields_and_read_only_grid(self):
+        funcion = create_funcion(self.valid_data())
+
+        response = self.client.get(
+            reverse('funciones:funcion_detail', args=[funcion.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'funciones/detail.html')
+        self.assertContains(response, 'Película base')
+        self.assertContains(response, 'Sala base')
+        self.assertContains(response, 'Español')
+        self.assertContains(response, 'Entradas compradas')
+        self.assertContains(response, 'Versión de distribución')
+        self.assertContains(response, 'celda--pasillo')
+        self.assertContains(response, 'celda--asiento')
+        self.assertContains(response, 'celda--reservado')
+        self.assertNotContains(response, 'data-seat-grid')
+        self.assertNotContains(response, 'data-row=')
+        self.assertNotContains(response, 'pelicula_id')
+        self.assertNotContains(response, 'sala_id')
+
+    def test_detail_view_returns_404_for_unknown_id(self):
+        response = self.client.get(
+            reverse('funciones:funcion_detail', args=[999])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_create_form_has_named_dropdowns_and_browser_constraints(self):
+        response = self.client.get(reverse('funciones:funcion_create'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, f'<option value="{self.pelicula.pk}"', html=False)
+        self.assertContains(response, 'Película base')
+        self.assertContains(response, f'<option value="{self.sala.pk}"', html=False)
+        self.assertContains(response, 'Sala base')
+        self.assertContains(response, 'type="datetime-local"', html=False)
+        self.assertContains(response, 'min="', html=False)
+        self.assertContains(response, 'name="idioma"', html=False)
+        self.assertContains(response, 'maxlength="45"', html=False)
+        self.assertContains(response, 'min="0"', html=False)
+
+    def test_create_view_persists_function_and_redirects_to_list(self):
+        response = self.client.post(
+            reverse('funciones:funcion_create'),
+            data=self.form_data(),
+        )
+
+        self.assertRedirects(response, reverse('funciones:funcion_list'))
+        funcion = Funcion.objects.get()
+        self.assertEqual(funcion.pelicula, self.pelicula)
+        self.assertEqual(funcion.sala, self.sala)
+        self.assertEqual(funcion.disponibilidad, 5)
+        self.assertEqual(funcion.entradas_compradas, 0)
+
+    def test_create_view_rerenders_form_with_service_error(self):
+        data = self.form_data()
+        create_funcion(data)
+
+        response = self.client.post(
+            reverse('funciones:funcion_create'),
+            data=data,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'funciones/form.html')
+        self.assertContains(response, 'otra función en ese horario')
+        self.assertEqual(Funcion.objects.count(), 1)
+
+    def test_update_form_is_prefilled_with_current_values(self):
+        funcion = create_funcion(self.valid_data())
+
+        response = self.client.get(
+            reverse('funciones:funcion_update', args=[funcion.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['form_values']['pelicula'], str(self.pelicula.pk))
+        self.assertEqual(response.context['form_values']['sala'], str(self.sala.pk))
+        self.assertEqual(response.context['form_values']['idioma'], 'Español')
+        self.assertEqual(response.context['form_values']['funcion_activa'], 'true')
+        self.assertContains(response, 'Fin calculado actual')
+
+    def test_update_view_applies_partial_fields_and_redirects_to_detail(self):
+        funcion = create_funcion(self.valid_data())
+        original_end = funcion.fin
+
+        response = self.client.post(
+            reverse('funciones:funcion_update', args=[funcion.pk]),
+            data={'idioma': 'Inglés'},
+        )
+
+        self.assertRedirects(
+            response,
+            reverse('funciones:funcion_detail', args=[funcion.pk]),
+        )
+        funcion.refresh_from_db()
+        self.assertEqual(funcion.idioma, 'Inglés')
+        self.assertEqual(funcion.fin, original_end)
+
+    def test_update_view_rerenders_form_when_service_rejects(self):
+        funcion = create_funcion(self.valid_data())
+        past_start = timezone.localtime(timezone.now()) - timedelta(hours=1)
+
+        response = self.client.post(
+            reverse('funciones:funcion_update', args=[funcion.pk]),
+            data={'inicio': past_start.strftime('%Y-%m-%dT%H:%M')},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'funciones/form.html')
+        self.assertContains(response, 'anterior al momento actual')
+
+    def test_update_view_returns_404_for_unknown_id(self):
+        response = self.client.get(
+            reverse('funciones:funcion_update', args=[999])
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_view_confirms_then_deletes_only_function(self):
+        funcion = create_funcion(self.valid_data())
+        confirm = self.client.get(
+            reverse('funciones:funcion_delete', args=[funcion.pk])
+        )
+        response = self.client.post(
+            reverse('funciones:funcion_delete', args=[funcion.pk])
+        )
+
+        self.assertEqual(confirm.status_code, 200)
+        self.assertTemplateUsed(confirm, 'funciones/confirm_delete.html')
+        self.assertRedirects(response, reverse('funciones:funcion_list'))
+        self.assertFalse(Funcion.objects.filter(pk=funcion.pk).exists())
+        self.assertTrue(Pelicula.objects.filter(pk=self.pelicula.pk).exists())
+        self.assertTrue(Sala.objects.filter(pk=self.sala.pk).exists())
+
+    def test_delete_view_shows_service_error_for_purchased_entries(self):
+        funcion = create_funcion(self.valid_data())
+        Funcion.objects.filter(pk=funcion.pk).update(entradas_compradas=1)
+
+        response = self.client.post(
+            reverse('funciones:funcion_delete', args=[funcion.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'funciones/confirm_delete.html')
+        self.assertContains(response, 'entradas compradas')
+        self.assertTrue(Funcion.objects.filter(pk=funcion.pk).exists())
+
+    def test_delete_view_returns_404_for_unknown_id(self):
+        response = self.client.get(
+            reverse('funciones:funcion_delete', args=[999])
+        )
+
+        self.assertEqual(response.status_code, 404)

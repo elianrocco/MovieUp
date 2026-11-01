@@ -1,0 +1,64 @@
+{% load static %}
+{% load salas_tags %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Detalle de función</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+    <script src="{% static 'salas/js/grid.js' %}" defer></script>
+</head>
+<body>
+<main>
+    <h1>Detalle de función</h1>
+    <dl>
+        <dt>Película</dt>
+        <dd>{{ funcion.pelicula.titulo }}</dd>
+        <dt>Sala</dt>
+        <dd>{{ funcion.sala.nombre }}</dd>
+        <dt>Estado</dt>
+        <dd>{{ funcion.funcion_activa|yesno:"Activa,Inactiva" }}</dd>
+        <dt>Inicio</dt>
+        <dd>{{ funcion.inicio|date:"d/m/Y H:i" }}</dd>
+        <dt>Fin</dt>
+        <dd>{{ funcion.fin|date:"d/m/Y H:i" }}</dd>
+        <dt>Idioma</dt>
+        <dd>{{ funcion.idioma }}</dd>
+        <dt>Subtitulada</dt>
+        <dd>{{ funcion.subtitulada|yesno:"Sí,No" }}</dd>
+        <dt>Disponibilidad</dt>
+        <dd>{{ funcion.disponibilidad }}</dd>
+        <dt>Precio de entrada</dt>
+        <dd>{{ funcion.precio_entrada|floatformat:2 }}</dd>
+        <dt>Entradas compradas</dt>
+        <dd>{{ funcion.entradas_compradas }}</dd>
+        <dt>Versión de distribución</dt>
+        <dd>{{ funcion.distribucion.version }}</dd>
+    </dl>
+
+    <h2>Distribución de la función</h2>
+    <div class="seat-grid-viewport">
+        <div class="seat-grid"
+             style="--grid-columns: {{ funcion.distribucion.filas.0|length }};"
+             role="img"
+             aria-label="Distribución de la función">
+            {% for fila in funcion.distribucion.filas %}
+                {% for celda in fila|make_list %}
+                    <span class="seat-grid__cell {{ celda|celda_clase }}"
+                          aria-label="Fila {{ forloop.parentloop.counter }}, columna {{ forloop.counter }}: {{ celda }}"
+                          title="{{ celda }}"></span>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <nav class="actions">
+        <a href="{% url 'funciones:funcion_update' funcion.pk %}">Editar</a>
+        <a href="{% url 'funciones:funcion_delete' funcion.pk %}">Eliminar</a>
+        <a href="{% url 'funciones:funcion_list' %}">Volver al listado</a>
+    </nav>
+</main>
+</body>
+</html>

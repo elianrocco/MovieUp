@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if funcion %}Editar función{% else %}Crear función{% endif %}</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+</head>
+<body>
+<main>
+    <h1>{% if funcion %}Editar función{% else %}Crear función{% endif %}</h1>
+
+    {% if error %}
+    <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-field">
+            <label for="pelicula">Película</label>
+            <select id="pelicula" name="pelicula" {% if not funcion %}required{% endif %}>
+                <option value="" {% if not form_values.pelicula %}selected{% endif %}>
+                    {% if funcion %}Sin cambios{% else %}Seleccionar película{% endif %}
+                </option>
+                {% for pelicula in peliculas %}
+                <option value="{{ pelicula.pk }}" {% if form_values.pelicula == pelicula.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ pelicula.titulo }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="sala">Sala</label>
+            <select id="sala" name="sala" {% if not funcion %}required{% endif %}>
+                <option value="" {% if not form_values.sala %}selected{% endif %}>
+                    {% if funcion %}Sin cambios{% else %}Seleccionar sala{% endif %}
+                </option>
+                {% for sala in salas %}
+                <option value="{{ sala.pk }}" {% if form_values.sala == sala.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ sala.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="inicio">Inicio (hora de Buenos Aires)</label>
+            <input id="inicio" name="inicio" type="datetime-local"
+                   value="{{ form_values.inicio }}"
+                   {% if min_inicio %}min="{{ min_inicio }}"{% endif %}
+                   {% if not funcion %}required{% endif %}>
+        </div>
+
+        {% if funcion %}
+        <p>Fin calculado actual: {{ funcion.fin|date:"d/m/Y H:i" }}. Se recalcula si cambia el inicio o la película.</p>
+        {% else %}
+        <p>El fin se calcula automáticamente según el inicio y la duración de la película.</p>
+        {% endif %}
+
+        <div class="form-field">
+            <label for="idioma">Idioma</label>
+            <input id="idioma" name="idioma" type="text" maxlength="45"
+                   value="{{ form_values.idioma }}" {% if not funcion %}required{% endif %}>
+        </div>
+
+        <div class="form-field">
+            <label for="subtitulada">Subtitulada</label>
+            <select id="subtitulada" name="subtitulada" {% if not funcion %}required{% endif %}>
+                <option value="" {% if not form_values.subtitulada %}selected{% endif %}>
+                    {% if funcion %}Sin cambios{% else %}Seleccionar opción{% endif %}
+                </option>
+                <option value="true" {% if form_values.subtitulada == 'true' %}selected{% endif %}>Sí</option>
+                <option value="false" {% if form_values.subtitulada == 'false' %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="funcion-activa">Estado</label>
+            <select id="funcion-activa" name="funcion_activa" {% if not funcion %}required{% endif %}>
+                <option value="" {% if not form_values.funcion_activa %}selected{% endif %}>
+                    {% if funcion %}Sin cambios{% else %}Seleccionar estado{% endif %}
+                </option>
+                <option value="true" {% if form_values.funcion_activa == 'true' %}selected{% endif %}>Activa</option>
+                <option value="false" {% if form_values.funcion_activa == 'false' %}selected{% endif %}>Inactiva</option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="precio-entrada">Precio de entrada</label>
+            <input id="precio-entrada" name="precio_entrada" type="number"
+                   min="0" max="99999999.99" step="0.01"
+                   value="{{ form_values.precio_entrada }}" {% if not funcion %}required{% endif %}>
+        </div>
+
+        <div class="actions">
+            <button type="submit">{% if funcion %}Guardar cambios{% else %}Crear función{% endif %}</button>
+            {% if funcion %}
+                <a href="{% url 'funciones:funcion_detail' funcion.pk %}">Cancelar</a>
+            {% else %}
+                <a href="{% url 'funciones:funcion_list' %}">Cancelar</a>
+            {% endif %}
+        </div>
+    </form>
+</main>
+</body>
+</html>
