@@ -64,9 +64,11 @@ MovieUp/
     │       ├── .gitkeep
     │       ├── 2026-10-31-crud-peliculas/
     │       ├── 2026-11-01-crud-funciones/
-    │       └── 2026-11-01-crud-salas/
+    │       ├── 2026-11-01-crud-salas/
+    │       └── 2026-11-02-login-google/
     └── specs/
         ├── .gitkeep
+        ├── cuentas/
         ├── funciones/
         ├── movies/
         └── salas/
@@ -124,7 +126,7 @@ Definidas en `.env` (nunca versionar):
 - El administrador gestiona cuentas desde Django Admin; correo y nombre son de solo lectura. El indicador de administrador sincroniza `is_staff` e `is_superuser`.
 - `createsuperuser` queda como acceso local de recuperación para una cuenta administrativa de emergencia.
 - Las cuentas con entradas asociadas no se deben eliminar; los guards quedan comentados con `TODO(entrada)` hasta crear esa app.
-- **Verificación manual pendiente:** la selección de una cuenta Google y el login OAuth real los realiza el usuario antes de archivar el change.
+- **Verificación manual:** la selección de una cuenta Google y el login OAuth real los completó el usuario en la tarea 6.4 antes de archivar el change.
     
 ## OpenSpec
 - El proyecto usa **OpenSpec** para desarrollo dirigido por especificaciones (spec-driven development)

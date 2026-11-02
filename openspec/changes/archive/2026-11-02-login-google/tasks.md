@@ -23,11 +23,11 @@
 - [x] 4.2 Agregar el guard comentado con `TODO(entrada)` tanto en `CuentaAdmin.delete_model` como en `delete_queryset` para cubrir el borrado individual y la acción masiva; verificar con tests que cuentas sin entradas se eliminan por ambas vías y que ambos TODOs están presentes.
 - [x] 4.3 Cubrir con test que una cuenta con `is_staff` accede a `/admin/` tras iniciar sesión con Google y que una cuenta sin el indicador no accede; verificar con `test cuentas`.
 - [x] 5.1 Actualizar la sección de autenticación y roles de `AGENTS.md`: login solo con Google, alta automática, regla fija del primer administrador y recuperación con `createsuperuser`; verificar que el archivo refleja el comportamiento implementado.
-- [ ] 5.2 Actualizar `README.md`: documentar el modelo `Cuenta`, los ajustes de allauth y el guard pendiente de `entrada`; indicar que el callback automatizado está simulado y mantener Google OAuth como pendiente hasta que el usuario complete la tarea 6.4; verificar que no quedan marcadores obsoletos de decisiones ya cerradas.
+- [x] 5.2 Actualizar `README.md`: documentar el modelo `Cuenta`, los ajustes de allauth y el guard pendiente de `entrada`; indicar que el callback automatizado está simulado y mantener Google OAuth como pendiente hasta que el usuario complete la tarea 6.4; verificar que no quedan marcadores obsoletos de decisiones ya cerradas.
 - [x] 6.1 Correr la suite completa `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas` y verificar 0 fallos.
 - [x] 6.2 Verificar `manage.py check` sin errores (se aceptan solo los dos warnings W036 documentados de allauth/MySQL) y `makemigrations --check --dry-run` sin cambios pendientes.
 - [x] 6.3 Verificar con Playwright MCP en `http://localhost:8000/` que la pantalla de acceso social muestra únicamente Google, que `/accounts/signup/` responde 404 y que un visitante anónimo de `/admin/` es redirigido al login del admin; las cuentas comunes/admin se validan con tests sin seleccionar cuenta Google. Verificar que no haya errores JavaScript; aceptar el 404 esperado de `/accounts/signup/` y el favicon inexistente. No cruza la frontera de elegir cuenta.
-- [ ] 6.4 Completar la prueba manual con Google siguiendo el checklist de "Workflow follow-up" y registrar el resultado; sin este punto el change no se archiva.
+- [x] 6.4 Completar la prueba manual con Google siguiendo el checklist de "Workflow follow-up" y registrar el resultado; sin este punto el change no se archiva.
 
 ## Workflow follow-up
 

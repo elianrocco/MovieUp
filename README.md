@@ -92,9 +92,11 @@ MovieUp/
     │       ├── .gitkeep
     │       ├── 2026-10-31-crud-peliculas/
     │       ├── 2026-11-01-crud-funciones/
-    │       └── 2026-11-01-crud-salas/
+    │       ├── 2026-11-01-crud-salas/
+    │       └── 2026-11-02-login-google/
     └── specs/
         ├── .gitkeep
+        ├── cuentas/
         ├── funciones/
         ├── movies/
         └── salas/
@@ -152,30 +154,29 @@ Según [AGENTS.md](AGENTS.md):
 - Commits: conventional commits, sin atribución a IA
 
 ### Autenticación y roles
-- Roles: Cliente y Administrador/Empleado [AGENTS.md](AGENTS.md)
-- Login local de Django vigente a través de `django.contrib.auth.backends.ModelBackend`; Google OAuth está cableado en la configuración con `django-allauth` pero **todavía no es funcional** (faltan credenciales e imagen de Docker) — el detalle está en la subsección siguiente [AGENTS.md](AGENTS.md)
-- (A definir): cómo se otorga el rol admin — `is_staff` [AGENTS.md](AGENTS.md)
-- La app `cuentas` existe como esqueleto: `startapp`, registro en `INSTALLED_APPS`, `urls.py` con `urlpatterns` vacío, `services.py` vacío y `templates/cuentas/`; no tiene modelo, vistas ni rutas montadas en el enrutador raíz [settings.py](movie_up/core/settings.py), [urls.py](movie_up/core/urls.py)
-- [PENDIENTE: elección del modelo de usuario — user model propio sobre `AbstractUser` (implica reset de la base de datos de desarrollo) vs `auth.User` + perfil — todavía no decidida; no hay spec ni change de OpenSpec para `cuentas`]
+- Roles: Cliente y Administrador/Empleado [AGENTS.md](AGENTS.md).
+- El modelo de usuario es `cuentas.Cuenta` (`AUTH_USER_MODEL`), basado en `AbstractUser`, con `correo` único y `nombre`; no conserva `username`, `email`, `first_name` ni `last_name` [models.py](movie_up/cuentas/models.py), [settings.py](movie_up/core/settings.py).
+- Las cuentas sociales ingresan solo con Google. El alta requiere que Google marque el correo como verificado. El nombre se obtiene del perfil, con respaldo en los nombres parciales y luego en la parte local del correo; los logins siguientes no reescriben los datos del perfil [adapters.py](movie_up/cuentas/adapters.py), [spec.md](openspec/changes/archive/2026-11-02-login-google/specs/cuentas/spec.md).
+- La primera cuenta nueva se promueve a administradora completa; las posteriores quedan como cuentas comunes. La señal `user_signed_up` llama al servicio que serializa la promoción con `GET_LOCK`/`RELEASE_LOCK` de MySQL [signals.py](movie_up/cuentas/signals.py), [services.py](movie_up/cuentas/services.py).
+- En Django Admin, `correo` y `nombre` son de solo lectura, no se permiten altas manuales y el indicador de administración sincroniza `is_staff` con `is_superuser`. Los guards para impedir borrar cuentas con entradas asociadas siguen como `TODO(entrada)` en los borrados individuales y masivos [admin.py](movie_up/cuentas/admin.py).
+- `createsuperuser` queda como acceso local de recuperación para una cuenta administrativa de emergencia [AGENTS.md](AGENTS.md).
 
-#### django-allauth / Google OAuth (configuración incompleta)
+#### Integración con django-allauth y Google
+- `SOCIALACCOUNT_ONLY` restringe el acceso social a Google; la configuración usa los campos de correo del modelo `Cuenta`, el middleware de allauth y los backends de autenticación de Django y allauth [settings.py](movie_up/core/settings.py).
+- Google es el único proveedor habilitado, con scopes `profile` y `email`, `access_type: online` y PKCE. `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` se leen del entorno y no se incluyen aquí [settings.py](movie_up/core/settings.py).
+- Las rutas de allauth están montadas bajo `/accounts/` [urls.py](movie_up/core/urls.py).
 
-Se incorporó `django-allauth[socialaccount]==65.21.1` para el caso de uso "Vincular cuenta de Google" [requirements.txt](requirements.txt), [AGENTS.md](AGENTS.md).
+#### Migración de `AUTH_USER_MODEL` y preservación de datos
+Se aplicó el cambio de modelo de usuario sin resetear el volumen. Tras inspeccionar el historial de migraciones y el esquema existentes, se reparó el historial de migraciones de `admin` de forma controlada [design.md](openspec/changes/archive/2026-11-02-login-google/design.md), [tasks.md](openspec/changes/archive/2026-11-02-login-google/tasks.md). La migración `0002` convierte `django_admin_log.user_id` de `INT` a `BIGINT` y redirige su clave foránea de `auth_user(id)` a `cuenta(id)`; usa `atomic = False` para el DDL de MySQL [0002_retarget_admin_log_user_fk.py](movie_up/cuentas/migrations/0002_retarget_admin_log_user_fk.py), [design.md](openspec/changes/archive/2026-11-02-login-google/design.md). Se preservaron 4 películas, 3 salas y 2 funciones [design.md](openspec/changes/archive/2026-11-02-login-google/design.md).
 
-- **Backends de autenticación:** se declaran dos, en este orden: `django.contrib.auth.backends.ModelBackend` — conserva el login usuario/contraseña del admin de Django — y `allauth.account.auth_backends.AuthenticationBackend`, que aporta los métodos de allauth (login social). Agregar un backend no reemplaza al anterior: la lista mantiene ambos para no romper `/admin/login/` [settings.py](movie_up/core/settings.py).
-- **Middleware:** `allauth.account.middleware.AccountMiddleware` al final de `MIDDLEWARE`, requerido por allauth para el manejo de sesión/request [settings.py](movie_up/core/settings.py).
-- **Proveedor:** `SOCIALACCOUNT_PROVIDERS` habilita únicamente `google`, con scope `profile` + `email` y `access_type: online`. `OAUTH_PKCE_ENABLED: True` activa PKCE en el flujo OAuth [settings.py](movie_up/core/settings.py).
-- **Credenciales:** `APPS[0].client_id` y `APPS[0].secret` se resuelven con `os.environ.get('GOOGLE_CLIENT_ID', '')` y `os.environ.get('GOOGLE_CLIENT_SECRET', '')`. **Decisión:** default vacío en vez de `os.environ[...]` — a diferencia de `SECRET_KEY` y `DB_*`, que fallan al importar si faltan, la configuración de allauth importa aunque las variables no existan. Contrapartida: un despliegue sin credenciales arranca igual y el fallo se desplaza al intento de login con Google, no al arranque [settings.py](movie_up/core/settings.py).
-- **Rutas:** `path('accounts/', include('allauth.urls'))` montado en el enrutador raíz (ya existía antes de esta configuración) [urls.py](movie_up/core/urls.py).
-- **Prerrequisito de templates:** `django.template.context_processors.request` ya estaba presente en `TEMPLATES`; allauth lo necesita para construir las URLs de retorno [settings.py](movie_up/core/settings.py).
-- **Gotcha — user model:** `settings.py` no define `AUTH_USER_MODEL`, así que allauth opera sobre `auth.User` por defecto mientras la decisión del user model propio sigue abierta. Cambiar `AUTH_USER_MODEL` después de correr las migraciones de allauth obliga a resetear la base y a rehacer el `SocialApp`; conviene decidirlo antes de aplicar esas migraciones [settings.py](movie_up/core/settings.py).
+#### Verificación local y límite de la prueba
+Pasaron los 20 tests de `cuentas` y los 131 tests de la suite completa. `manage.py check` terminó sin errores y con dos warnings W036; `makemigrations --check --dry-run` no encontró cambios y el plan de migraciones quedó vacío [tasks.md](openspec/changes/archive/2026-11-02-login-google/tasks.md), [tests.py](movie_up/cuentas/tests.py).
 
-**Estado real — NO está operativo:**
-- `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` no existen en `.env` (solo `SECRET_KEY`, `DEBUG`, `DB_ROOT_PASSWORD`, `DB_NAME`, `DB_LOCAL_PORT`, `DB_DOCKER_PORT`), así que el flujo de Google no puede completarse.
-- La imagen de Docker todavía no incluye allauth: falta `docker compose up --build`, que es lo que instala `requirements.txt` dentro de la imagen [Dockerfile](Dockerfile).
-- Faltan las migraciones de allauth en la base (`docker compose exec web python movie_up/manage.py migrate`).
-- `manage.py check` **no se pudo correr**; la única verificación realizada fue `py_compile` sobre `settings.py` y `urls.py` (sintaxis OK, no importa la configuración ni valida los backends).
-- Sigue sin existir modelo `Cuenta` ni spec/change de OpenSpec para `cuentas`.
+Con Playwright se verificó que `/accounts/login/` ofrece solo Google, que `/accounts/signup/` responde 404 y que `/admin/` redirige al login de administración para visitantes anónimos. No se observaron errores JavaScript; el 404 del signup y el del favicon fueron esperados [tasks.md](openspec/changes/archive/2026-11-02-login-google/tasks.md).
+
+La prueba automatizada del callback simula el intercambio OAuth; **no verifica el login real con Google ni permite afirmar que OAuth funciona end-to-end** [tests.py](movie_up/cuentas/tests.py), [tasks.md](openspec/changes/archive/2026-11-02-login-google/tasks.md).
+
+La prueba manual con Google, ejecutada por el usuario según el checklist de `Workflow follow-up`, quedó registrada como tarea 6.4 completada antes de archivar el change; es la única evidencia de la integración end-to-end con Google real [tasks.md](openspec/changes/archive/2026-11-02-login-google/tasks.md).
 
 ### Desarrollo dirigido por especificaciones (OpenSpec)
 **Fuentes:** [AGENTS.md](AGENTS.md), [openspec/](openspec/), [openspec/config.yaml](openspec/config.yaml), [opsx-propose.md](.opencode/commands/opsx-propose.md)
@@ -186,7 +187,7 @@ Se incorporó `django-allauth[socialaccount]==65.21.1` para el caso de uso "Vinc
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: los tres changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`; `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`; y `crud-funciones` (CRUD de funciones con snapshot de la distribución de la sala y bloqueo de solapamientos serializado), en `openspec/changes/archive/2026-11-01-crud-funciones/`, los tres con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-funciones/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md), y `openspec/specs/funciones/spec.md` con 16 requisitos y 28 escenarios [spec.md](openspec/specs/funciones/spec.md). `openspec validate --specs --strict` pasa con las 3 specs (exit 0) y `openspec list` no reporta changes activos.
+- Estado actual: los cuatro changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`; `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`; `crud-funciones` (CRUD de funciones con snapshot de la distribución de la sala y bloqueo de solapamientos serializado), en `openspec/changes/archive/2026-11-01-crud-funciones/`; y `login-google` (identidad y login únicamente con Google vía django-allauth, modelo `Cuenta` y regla del primer administrador), en `openspec/changes/archive/2026-11-02-login-google/`, los cuatro con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-funciones/proposal.md), [proposal.md](openspec/changes/archive/2026-11-02-login-google/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md), `openspec/specs/funciones/spec.md` con 16 requisitos y 28 escenarios [spec.md](openspec/specs/funciones/spec.md), y `openspec/specs/cuentas/spec.md` con 10 requisitos y 22 escenarios [spec.md](openspec/specs/cuentas/spec.md). `openspec validate --specs --strict` pasa con las 4 specs (exit 0) y `openspec list` no reporta changes activos.
 
 
 #### Parseo y validación de specs (gotcha)
@@ -240,6 +241,7 @@ La directiva de IA está organizada de forma modular con las siguientes capas:
 
 ### 3.3 Metodología de iteración
 - **Desarrollo dirigido por especificaciones (Spec-Driven Development)**: Uso obligatorio de OpenSpec. Las specs (`openspec/specs/`) son fuente de verdad; los cambios pasan por artefactos estructurados (proposal, specs, design, tasks) antes de implementar [AGENTS.md](AGENTS.md).
+- **Iteración del change `login-google`:** OpenSpec organizó el trabajo en lotes secuenciales: modelo, configuración y migración; alta social, mapeo del perfil y bootstrap; luego administración, guard y cierre. La prueba manual con Google quedó como puerta final y no se reemplazó por el callback automatizado simulado [tasks.md](openspec/changes/archive/2026-11-02-login-google/tasks.md), [design.md](openspec/changes/archive/2026-11-02-login-google/design.md).
 - **Mantenimiento controlado de README**: El agente `readme-maintainer` se activa automáticamente tras cada creación o modificación de archivos, evalúa si el cambio aporta al registro de ingeniería, y si es relevante presenta todos los cambios propuestos de una sola vez (sección, texto, tipo: fusionar/reemplazar/agregar) esperando `ok` antes de editar [AGENTS.md](AGENTS.md), [readme-maintainer.md](.opencode/agent/readme-maintainer.md).
 - **Verificación de UI en navegador real (directiva AGENTS.md)**: Antes de dar por hecha una vista, verificarla en navegador real vía Playwright MCP (levantar con `docker compose up --build` y navegar `http://localhost:8000/`). La referencia de configuración de MCPs vive en README.md sección 4 [AGENTS.md](AGENTS.md).
 - **Arquitectura containerizada desde el inicio**: Setup Docker con multi-stage build, healthcheck, entrypoint con espera de DB y migraciones automáticas [Dockerfile](Dockerfile), [docker-entrypoint.sh](docker-entrypoint.sh), [AGENTS.md](AGENTS.md).
@@ -289,5 +291,3 @@ Según las especificaciones del agente `readme-maintainer` y la configuración r
 [PENDIENTE: No existen fuentes para determinar prompts específicos clave ejecutados durante la construcción del sistema, ni bucles de autocorrección automatizados explícitos con detalles de implementación. Estos elementos requerirían logs de ejecución/iteración con IA que no están presentes en AGENTS.md, .opencode, código o configuración MCP.]
 
 [PENDIENTE: Registro de la verificación en navegador del flujo CRUD de películas vía Playwright MCP. AGENTS.md la exige antes de dar por hecha una vista, pero los artefactos disponibles en [.playwright-mcp/](.playwright-mcp/) son del 18/10/2026 (anteriores al change, creado el 30/10 según `.openspec.yaml`) y no incluyen ninguna navegación a `/peliculas/`.]
-
-[PENDIENTE: verificación de la cadena de autenticación con django-allauth — rebuild de la imagen (`docker compose up --build`), migraciones de allauth, `manage.py check` y recorrido real del login con Google. Hasta entonces la configuración solo está validada por `py_compile` y no se puede afirmar que el flujo funcione. Además falta cargar `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` en `.env`.]
