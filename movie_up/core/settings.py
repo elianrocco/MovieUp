@@ -42,11 +42,44 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'cuentas',
     'funciones',
     'peliculas',
     'salas',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    # Keeps username/password login working for the Django admin.
+    'django.contrib.auth.backends.ModelBackend',
+    # allauth authentication methods (login by email, social login).
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# django-allauth: Google is the only enabled social provider.
+# Credentials live in .env (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APPS': [
+            {
+                'client_id': os.environ.get('GOOGLE_CLIENT_ID', ''),
+                'secret': os.environ.get('GOOGLE_CLIENT_SECRET', ''),
+                'key': '',
+            },
+        ],
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -56,6 +89,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Required by django-allauth for its session/request handling.
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'

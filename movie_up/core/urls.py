@@ -24,6 +24,7 @@ urlpatterns = [
     path('funciones/', include('funciones.urls')),
     path('peliculas/', include('peliculas.urls')),
     path('salas/', include('salas.urls')),
+    path('accounts/', include('allauth.urls')),
 ]
 
 if settings.DEBUG:

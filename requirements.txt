@@ -1,4 +1,5 @@
 Django==6.1.1
+django-allauth[socialaccount]==65.21.1
 langchain==1.4.0
 mysqlclient==2.2.8
 mercadopago==3.5.0

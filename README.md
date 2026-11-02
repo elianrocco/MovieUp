@@ -124,7 +124,7 @@ MovieUp/
 - **DEBUG/SECRET_KEY** desde variables de entorno [settings.py](movie_up/core/settings.py)
 - **ALLOWED_HOSTS** incluye `localhost`, `0.0.0.0`, `127.0.0.1` [settings.py](movie_up/core/settings.py)
 - **Base de datos MySQL** configurada con credenciales desde `.env` [settings.py](movie_up/core/settings.py)
-- **Apps instaladas:** `django.contrib.*`, `cuentas`, `funciones`, `peliculas`, `salas` — las apps del proyecto van después de las de Django, en orden alfabético [settings.py](movie_up/core/settings.py)
+- **Apps instaladas:** `django.contrib.*`, luego las apps de `django-allauth` (`allauth`, `allauth.account`, `allauth.socialaccount`, `allauth.socialaccount.providers.google`) y al final las apps del proyecto `cuentas`, `funciones`, `peliculas`, `salas` en orden alfabético — la regla vigente es que las apps del proyecto cierran la lista [settings.py](movie_up/core/settings.py)
 - **Zona horaria:** `America/Argentina/Buenos_Aires`; `USE_TZ` habilitado [settings.py](movie_up/core/settings.py)
 - **MEDIA_ROOT** configurado como `BASE_DIR / 'imgs'` para almacenamiento de imágenes subidas [settings.py](movie_up/core/settings.py)
 - **MEDIA_URL** configurado como `/imgs/` para acceso a archivos multimedia [settings.py](movie_up/core/settings.py)
@@ -153,10 +153,29 @@ Según [AGENTS.md](AGENTS.md):
 
 ### Autenticación y roles
 - Roles: Cliente y Administrador/Empleado [AGENTS.md](AGENTS.md)
-- Login local de Django; (planificado) Google OAuth [AGENTS.md](AGENTS.md)
+- Login local de Django vigente a través de `django.contrib.auth.backends.ModelBackend`; Google OAuth está cableado en la configuración con `django-allauth` pero **todavía no es funcional** (faltan credenciales e imagen de Docker) — el detalle está en la subsección siguiente [AGENTS.md](AGENTS.md)
 - (A definir): cómo se otorga el rol admin — `is_staff` [AGENTS.md](AGENTS.md)
 - La app `cuentas` existe como esqueleto: `startapp`, registro en `INSTALLED_APPS`, `urls.py` con `urlpatterns` vacío, `services.py` vacío y `templates/cuentas/`; no tiene modelo, vistas ni rutas montadas en el enrutador raíz [settings.py](movie_up/core/settings.py), [urls.py](movie_up/core/urls.py)
 - [PENDIENTE: elección del modelo de usuario — user model propio sobre `AbstractUser` (implica reset de la base de datos de desarrollo) vs `auth.User` + perfil — todavía no decidida; no hay spec ni change de OpenSpec para `cuentas`]
+
+#### django-allauth / Google OAuth (configuración incompleta)
+
+Se incorporó `django-allauth[socialaccount]==65.21.1` para el caso de uso "Vincular cuenta de Google" [requirements.txt](requirements.txt), [AGENTS.md](AGENTS.md).
+
+- **Backends de autenticación:** se declaran dos, en este orden: `django.contrib.auth.backends.ModelBackend` — conserva el login usuario/contraseña del admin de Django — y `allauth.account.auth_backends.AuthenticationBackend`, que aporta los métodos de allauth (login social). Agregar un backend no reemplaza al anterior: la lista mantiene ambos para no romper `/admin/login/` [settings.py](movie_up/core/settings.py).
+- **Middleware:** `allauth.account.middleware.AccountMiddleware` al final de `MIDDLEWARE`, requerido por allauth para el manejo de sesión/request [settings.py](movie_up/core/settings.py).
+- **Proveedor:** `SOCIALACCOUNT_PROVIDERS` habilita únicamente `google`, con scope `profile` + `email` y `access_type: online`. `OAUTH_PKCE_ENABLED: True` activa PKCE en el flujo OAuth [settings.py](movie_up/core/settings.py).
+- **Credenciales:** `APPS[0].client_id` y `APPS[0].secret` se resuelven con `os.environ.get('GOOGLE_CLIENT_ID', '')` y `os.environ.get('GOOGLE_CLIENT_SECRET', '')`. **Decisión:** default vacío en vez de `os.environ[...]` — a diferencia de `SECRET_KEY` y `DB_*`, que fallan al importar si faltan, la configuración de allauth importa aunque las variables no existan. Contrapartida: un despliegue sin credenciales arranca igual y el fallo se desplaza al intento de login con Google, no al arranque [settings.py](movie_up/core/settings.py).
+- **Rutas:** `path('accounts/', include('allauth.urls'))` montado en el enrutador raíz (ya existía antes de esta configuración) [urls.py](movie_up/core/urls.py).
+- **Prerrequisito de templates:** `django.template.context_processors.request` ya estaba presente en `TEMPLATES`; allauth lo necesita para construir las URLs de retorno [settings.py](movie_up/core/settings.py).
+- **Gotcha — user model:** `settings.py` no define `AUTH_USER_MODEL`, así que allauth opera sobre `auth.User` por defecto mientras la decisión del user model propio sigue abierta. Cambiar `AUTH_USER_MODEL` después de correr las migraciones de allauth obliga a resetear la base y a rehacer el `SocialApp`; conviene decidirlo antes de aplicar esas migraciones [settings.py](movie_up/core/settings.py).
+
+**Estado real — NO está operativo:**
+- `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` no existen en `.env` (solo `SECRET_KEY`, `DEBUG`, `DB_ROOT_PASSWORD`, `DB_NAME`, `DB_LOCAL_PORT`, `DB_DOCKER_PORT`), así que el flujo de Google no puede completarse.
+- La imagen de Docker todavía no incluye allauth: falta `docker compose up --build`, que es lo que instala `requirements.txt` dentro de la imagen [Dockerfile](Dockerfile).
+- Faltan las migraciones de allauth en la base (`docker compose exec web python movie_up/manage.py migrate`).
+- `manage.py check` **no se pudo correr**; la única verificación realizada fue `py_compile` sobre `settings.py` y `urls.py` (sintaxis OK, no importa la configuración ni valida los backends).
+- Sigue sin existir modelo `Cuenta` ni spec/change de OpenSpec para `cuentas`.
 
 ### Desarrollo dirigido por especificaciones (OpenSpec)
 **Fuentes:** [AGENTS.md](AGENTS.md), [openspec/](openspec/), [openspec/config.yaml](openspec/config.yaml), [opsx-propose.md](.opencode/commands/opsx-propose.md)
@@ -270,3 +289,5 @@ Según las especificaciones del agente `readme-maintainer` y la configuración r
 [PENDIENTE: No existen fuentes para determinar prompts específicos clave ejecutados durante la construcción del sistema, ni bucles de autocorrección automatizados explícitos con detalles de implementación. Estos elementos requerirían logs de ejecución/iteración con IA que no están presentes en AGENTS.md, .opencode, código o configuración MCP.]
 
 [PENDIENTE: Registro de la verificación en navegador del flujo CRUD de películas vía Playwright MCP. AGENTS.md la exige antes de dar por hecha una vista, pero los artefactos disponibles en [.playwright-mcp/](.playwright-mcp/) son del 18/10/2026 (anteriores al change, creado el 30/10 según `.openspec.yaml`) y no incluyen ninguna navegación a `/peliculas/`.]
+
+[PENDIENTE: verificación de la cadena de autenticación con django-allauth — rebuild de la imagen (`docker compose up --build`), migraciones de allauth, `manage.py check` y recorrido real del login con Google. Hasta entonces la configuración solo está validada por `py_compile` y no se puede afirmar que el flujo funcione. Además falta cargar `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` en `.env`.]
