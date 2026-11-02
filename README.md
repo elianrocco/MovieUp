@@ -32,6 +32,11 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 - **Lote 2 — interfaz y administración:** el CRUD web usa vistas y rutas con namespace, templates y registro en Django Admin. El editor JavaScript alterna `P` → `A` → `R` → `P` y permite redimensionar conservando la intersección; el detalle renderiza la misma distribución en modo de solo lectura [urls.py](movie_up/salas/urls.py), [views.py](movie_up/salas/views.py), [admin.py](movie_up/salas/admin.py), [grid.js](movie_up/salas/static/salas/js/grid.js), [salas.css](movie_up/salas/static/salas/css/salas.css), [design.md](openspec/changes/archive/2026-11-01-crud-salas/design.md).
 - **Lote 3 — integración:** la verificación cubrió los tests de `peliculas` y `salas`, además del recorrido CRUD de salas en navegador real con Playwright [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md).
 
+#### CRUD de funciones (`crud-funciones`)
+El Service Layer concentra esta lógica porque la función conserva un snapshot de la distribución de su sala y la validación de solapamientos debe ejecutarse de forma serializada [services.py](movie_up/funciones/services.py), [design.md](openspec/changes/crud-funciones/design.md).
+
+La suite completa pasó 111/111 tests. En navegador se verificaron Create, Detail con cuadrícula, Update y Delete; el rechazo de solapamientos fue visible y la consola quedó limpia [tasks.md](openspec/changes/crud-funciones/tasks.md), [.playwright-mcp/](.playwright-mcp/).
+
 - **Flujo de petición:** `urls.py` → `views.py` → `services.py` → `models.py` → `templates/`.
 
 ### Estructura del proyecto
@@ -99,24 +104,25 @@ MovieUp/
 - **Servicios**: `db` (MySQL 9.7.2) y `web` (Django app) [docker-compose.yml](docker-compose.yml)
 - **Variables de entorno**: inyectadas via `.env` y `env_file`; `DB_HOST=db`, `DB_PORT` se sobreescriben para el contenedor web [docker-compose.yml](docker-compose.yml)
 - **Punto de entrada**: `docker-entrypoint.sh` espera a que la base de datos responda vía TCP, luego ejecuta `python movie_up/manage.py migrate --noinput` automáticamente [docker-entrypoint.sh](docker-entrypoint.sh), [AGENTS.md](AGENTS.md)
-- **Healthcheck**: verifica respuesta HTTP en puerto 8000 cada 30s [Dockerfile](Dockerfile)
+- **Healthcheck:** ejecuta `curl -fsS http://localhost:8000/` cada 30 s. La raíz no tiene una ruta configurada y responde 404, por lo que este healthcheck falla [Dockerfile](Dockerfile), [urls.py](movie_up/core/urls.py).
 
 **Cómo ejecutar (según AGENTS.md):**
 - Levantar todo: `docker compose up --build` [AGENTS.md](AGENTS.md)
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh) [AGENTS.md](AGENTS.md)
 - Migraciones manuales: `docker compose exec web python movie_up/manage.py migrate` [AGENTS.md](AGENTS.md)
 - Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser` [AGENTS.md](AGENTS.md)
-- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones` [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md)
-- **Gotcha de discovery:** ejecutar `test` sin etiquetas termina con código 0, pero descubre cero tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python; indicar las apps evita ese falso positivo [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md).
+- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones` [AGENTS.md](AGENTS.md)
+- **Gotcha de discovery:** ejecutar `test` sin etiquetas termina con código 0, pero descubre cero tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python; indicar las apps evita ese falso positivo [AGENTS.md](AGENTS.md).
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`) [AGENTS.md](AGENTS.md)
-- **Estado verificado (smoke test vía Docker + Playwright):** `docker compose up --build` levanta correctamente; `http://localhost:8000/` sirve la página DEBUG por defecto de Django (aún no hay URLs raíz configuradas — `movie_up` no está en `INSTALLED_APPS`), mientras `/admin/login/` renderiza correctamente. Playwright genera artefactos de snapshot en `.playwright-mcp/` en la raíz del proyecto (sin versionar).
+- **Estado verificado (smoke test vía Docker + Playwright):** `http://localhost:8000/` responde 404 porque no hay una ruta raíz configurada; no se debe atribuir a que `movie_up` falte de `INSTALLED_APPS`. `/admin/login/` renderiza correctamente [urls.py](movie_up/core/urls.py), [settings.py](movie_up/core/settings.py).
 - **Gotcha crítica resuelta (2026-10-30):** La estructura del proyecto coloca `manage.py` en `movie_up/manage.py` (no en la raíz), lo cual es atípico en Django. Un bug inicial en [Dockerfile](Dockerfile) y [docker-entrypoint.sh](docker-entrypoint.sh) usaba rutas incorrectas (`manage.py` en vez de `movie_up/manage.py`), causando que el contenedor web no iniciara y las migraciones automáticas no se ejecutaran (bug silencioso). Todos los comandos `docker compose exec` y el entrypoint fueron actualizados consistentemente para usar la ruta correcta. **Lección:** En proyectos Django con estructura no estándar, verificar siempre la ruta relativa de `manage.py` en Dockerfile, entrypoint y documentación.
 
 ### Configuración Django
 - **DEBUG/SECRET_KEY** desde variables de entorno [settings.py](movie_up/core/settings.py)
 - **ALLOWED_HOSTS** incluye `localhost`, `0.0.0.0`, `127.0.0.1` [settings.py](movie_up/core/settings.py)
 - **Base de datos MySQL** configurada con credenciales desde `.env` [settings.py](movie_up/core/settings.py)
-- **Apps instaladas:** `django.contrib.*`, `peliculas`, `salas` [settings.py](movie_up/core/settings.py)
+- **Apps instaladas:** `django.contrib.*`, `funciones`, `peliculas`, `salas` [settings.py](movie_up/core/settings.py)
+- **Zona horaria:** `America/Argentina/Buenos_Aires`; `USE_TZ` habilitado [settings.py](movie_up/core/settings.py)
 - **MEDIA_ROOT** configurado como `BASE_DIR / 'imgs'` para almacenamiento de imágenes subidas [settings.py](movie_up/core/settings.py)
 - **MEDIA_URL** configurado como `/imgs/` para acceso a archivos multimedia [settings.py](movie_up/core/settings.py)
 - **EMAIL_BACKEND:** `console.EmailBackend` (configuración para desarrollo) [settings.py](movie_up/core/settings.py)
@@ -156,7 +162,7 @@ Según [AGENTS.md](AGENTS.md):
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: los dos changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`, y `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`, ambos con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), y `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md). Al 2026-11-01 existe un change activo en fase de planificación, `crud-funciones` (capability `funciones`, 16 requisitos ADDED y 26 escenarios, 0/17 tareas, sin implementación), por lo que `openspec list` muestra ese change en lugar de `changes: []` y `openspec validate crud-funciones --strict` pasa con exit 0; `openspec validate --specs --strict` sigue en verde para movies y salas. Su documentación de ingeniería (specs, design, tasks) se registrará en el README al archivarlo, como en los dos anteriores [proposal.md](openspec/changes/crud-funciones/proposal.md), [tasks.md](openspec/changes/crud-funciones/tasks.md).
+- Estado actual: los dos changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`, y `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`, ambos con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), y `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md). Al 2026-11-01, `crud-funciones` continúa activo y sin archivar, pero su implementación está completa: 16 requisitos ADDED, 28 escenarios y 17/17 tareas; `openspec validate crud-funciones --strict` es válido. Su documentación de ingeniería se registrará en el README al archivarlo, como en los cambios anteriores [spec.md](openspec/changes/crud-funciones/specs/funciones/spec.md), [tasks.md](openspec/changes/crud-funciones/tasks.md).
 
 
 #### Parseo y validación de specs (gotcha)
