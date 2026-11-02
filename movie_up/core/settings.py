@@ -52,12 +52,22 @@ INSTALLED_APPS = [
     'salas',
 ]
 
+AUTH_USER_MODEL = 'cuentas.Cuenta'
+
 AUTHENTICATION_BACKENDS = [
     # Keeps username/password login working for the Django admin.
     'django.contrib.auth.backends.ModelBackend',
     # allauth authentication methods (login by email, social login).
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+
+SOCIALACCOUNT_ONLY = True
+ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_SIGNUP_FIELDS = ['email*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_EMAIL_FIELD = 'correo'
+ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 
 # django-allauth: Google is the only enabled social provider.
 # Credentials live in .env (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET).

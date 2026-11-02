@@ -58,11 +58,11 @@ El sistema MUST NOT permitir que un usuario cambie o agregue direcciones de corr
 - **THEN** correo y nombre aparecen en solo lectura y no pueden guardarse modificados
 
 ### Requirement: Primera cuenta administradora
-Si al crear una cuenta no existe ninguna cuenta administradora, esa cuenta SHALL marcarse administradora. El resto de las altas SHALL crear cuentas comunes.
+Si al crear una cuenta no existe ninguna cuenta administradora, esa cuenta SHALL recibir el rol de administración completo. El resto de las altas SHALL crear cuentas comunes.
 
 #### Scenario: Primer usuario del sistema
 - **WHEN** inicia sesión con Google el primer usuario del sistema y no hay ninguna cuenta administradora
-- **THEN** la cuenta creada queda marcada como administradora
+- **THEN** la cuenta creada obtiene acceso al panel de administración y todos sus permisos
 
 #### Scenario: Usuario posterior
 - **WHEN** inicia sesión un usuario después de que ya existe una cuenta administradora
@@ -77,15 +77,15 @@ Si al crear una cuenta no existe ninguna cuenta administradora, esa cuenta SHALL
 - **THEN** se crea exactamente una cuenta administradora
 
 ### Requirement: Gestión de cuentas desde el panel de administración
-El sistema SHALL permitir al administrador listar cuentas, activarlas o desactivarlas y cambiar el indicador de administrador usando el panel de administración de Django, sin una interfaz de gestión propia.
+El sistema SHALL permitir al administrador listar cuentas, activarlas o desactivarlas y cambiar el indicador de administrador usando el panel de administración de Django, sin una interfaz de gestión propia. Activar el indicador SHALL conceder todos los permisos de administración; desactivarlo SHALL revocarlos.
 
 #### Scenario: Elevar a administrador
 - **WHEN** un administrador marca el indicador de administrador en una cuenta y guarda
-- **THEN** esa cuenta pasa a poder acceder al panel de administración
+- **THEN** esa cuenta obtiene acceso al panel y todos los permisos de administración
 
 #### Scenario: Descender a cuenta común
 - **WHEN** un administrador desmarca el indicador de administrador y guarda
-- **THEN** esa cuenta deja de poder acceder al panel de administración
+- **THEN** esa cuenta deja de acceder al panel y pierde todos los permisos de administración
 
 ### Requirement: Acceso al panel de administración
 El sistema SHALL permitir el acceso al panel de administración solo a cuentas con el indicador de administrador activo.

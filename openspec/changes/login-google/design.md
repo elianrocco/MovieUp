@@ -9,7 +9,7 @@ Estado actual relevante:
 - App `cuentas` creada como esqueleto (`startapp`, `INSTALLED_APPS`, `urls.py` y `services.py` vacíos, `templates/cuentas/`).
 - `django-allauth[socialaccount]==65.21.1` ya está en `requirements.txt` y configurado en `movie_up/core/settings.py`: apps, dos backends de autenticación, `AccountMiddleware` y `SOCIALACCOUNT_PROVIDERS['google']` con credenciales leídas desde `.env`. `core/urls.py` ya monta `path('accounts/', include('allauth.urls'))`.
 - `AUTH_USER_MODEL` sigue sin definir: el proyecto opera con `auth.User`.
-- `auth_user` está vacía y ninguna app tiene foráneas a `User`, por lo que cambiar el modelo de usuario todavía no rompe nada.
+- La observación previa encontró `auth_user` vacía y ninguna app del dominio con foráneas a `User`; esto no basta para declarar segura la sustitución porque ya hay migraciones de Django aplicadas y debe inspeccionarse el esquema persistido.
 - La decisión de arquitectura ya está cerrada: modelo propio `Cuenta(AbstractUser)` (ver `README.md`, sección Autenticación y roles).
 - Django 6.1.1, MySQL, `DEFAULT_AUTO_FIELD` en `BigAutoField`.
 
@@ -26,7 +26,7 @@ Estado actual relevante:
 **Non-Goals:**
 
 - Interfaz web propia de gestión de cuentas (CRUD de cuentas): se usan las interfaces de Django.
-- Registro local, login por usuario/contraseña o recuperación de contraseña.
+- Registro local y login usuario/contraseña para cuentas Google. La autenticación local del admin se reserva para una cuenta de emergencia creada explícitamente con `createsuperuser`.
 - Edición del perfil por parte del usuario (`nombre` y `correo` son inmutables).
 - Soporte de otros proveedores de login social.
 - Implementar la app `entrada` o su relación con las cuentas.
@@ -37,17 +37,17 @@ Estado actual relevante:
 
 `auth.User.email` es opcional y **no único**, y su `USERNAME_FIELD` debe ser único: el correo no puede ser la identidad sin una migración a mano sobre una tabla de `contrib`. Además, `auth.User` obliga a una columna `username` que el producto no quiere.
 
-`Cuenta(AbstractUser)` con `username = None`, `correo = EmailField(unique=True)` como `USERNAME_FIELD` y `REQUIRED_FIELDS = ['nombre']` entrega exactamente las columnas pedidas. La alternativa (perfil con `OneToOne`) descartada por duplicar identidad y dejar el correo sin unicidad real.
+`Cuenta(AbstractUser)` con `username = None`, `email = None`, `first_name = None`, `last_name = None`, `correo = EmailField(unique=True)` como `USERNAME_FIELD`, `EMAIL_FIELD = 'correo'`, `REQUIRED_FIELDS = ['nombre']` y `Meta.db_table = 'cuenta'` respeta la tabla propuesta y evita campos duplicados que el producto no usa. Como `AbstractUser.clean()` normaliza `self.email` y sus métodos de nombre usan `first_name`/`last_name`, el modelo sobrescribe `clean()`, `get_full_name()` y `get_short_name()` para operar con `correo` y `nombre`. La alternativa (perfil con `OneToOne`) queda descartada por duplicar identidad y dejar el correo sin unicidad real.
 
 ### D2. Manager propio
 
-`AbstractUser` trae `UserManager`, cuya firma es `create_user(username, email, password)`. Al eliminar `username`, esa firma deja de servir. Se define un manager propio que firma `create_user(correo, nombre=None, **extra)` y usa `set_unusable_password()` en el alta, porque el acceso es siempre por Google.
+`AbstractUser` trae `UserManager`, cuya firma incluye `username`. Al eliminar `username`, esa firma deja de servir. Se define un manager propio: `create_user(correo, nombre=None, password=None, **extra)` establece contraseña inutilizable si no recibe una y usa `set_password()` si la recibe; `create_superuser()` establece `is_staff=True` e `is_superuser=True` y acepta la contraseña de recuperación de `createsuperuser`. Las cuentas creadas por Google reciben contraseña inutilizable explícitamente en el adapter social. Así, cuentas sociales no tienen contraseña local, mientras que la cuenta de emergencia creada por `createsuperuser` sí puede usar el login local del admin.
 
 ### D3. `nombre` como campo propio, mapeado con un adapter de allauth
 
 allauth puebla `first_name`/`last_name`; el producto pide un solo `nombre`. Se declaran `first_name = None` y `last_name = None` para eliminar esas columnas y se agrega `nombre = CharField(max_length=150)`.
 
-El mapeo se resuelve en un `SOCIALACCOUNT_ADAPTER` propio que implementa `populate_user()`, leyendo el nombre del perfil de Google (`extra_data`) con esta cadena de respaldo:
+El mapeo se resuelve en un `SOCIALACCOUNT_ADAPTER` propio que implementa `populate_user()`, leyendo el nombre del perfil de Google (`extra_data`) con esta cadena de respaldo. Al crear una cuenta social, el adapter también llama `set_unusable_password()` para no dejar una contraseña vacía o utilizable:
 
 1. `extra_data['name']` (perfil completo de Google).
 2. combinación de los nombres que allauth extrajo del proveedor.
@@ -57,7 +57,7 @@ Se elige el adapter en lugar de una señal porque es el punto de extensión docu
 
 ### D4. Bootstrap del primer administrador
 
-La promoción se ejecuta en el alta de la cuenta, dentro de una función de `services.py` invocada desde la señal `user_signed_up`, que es la que allauth emite después de crear la cuenta. La función chequea si existe alguna cuenta administradora y, si no existe, marca la recién creada.
+La promoción se ejecuta en el alta de la cuenta, dentro de una función de `services.py` invocada desde la señal `user_signed_up`, que es la que allauth emite después de crear la cuenta. La función chequea si existe alguna cuenta administradora y, si no existe, marca la recién creada con `is_staff=True` e `is_superuser=True`. El flag visible de administración es una sola decisión de rol, pero se sincroniza con ambos campos de Django: `is_staff` permite entrar al admin y `is_superuser` concede todos los permisos de modelos.
 
 Para que dos altas simultáneas no generen dos administradores, el chequeo y la promoción se serializan con el lock de adquisición de MySQL (`GET_LOCK` / `RELEASE_LOCK`) sobre un nombre fijo de la aplicación. Alternativa evaluada: `transaction.atomic()` + rechequeo tras el `save()`; queda descartada porque no elimina la ventana de carrera y el escenario exige exactamente un administrador.
 
@@ -78,19 +78,41 @@ El nombre además no se re-escribe: allauth solo puebla el usuario en el alta, n
 SOCIALACCOUNT_ONLY = True
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*']
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_EMAIL_FIELD = 'correo'
 ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 ```
 
-`SOCIALACCOUNT_ONLY` desactiva las rutas de registro y login local; `ACCOUNT_USER_MODEL_USERNAME_FIELD = None` es obligatorio porque el modelo no tiene `username`.
+`SOCIALACCOUNT_ONLY` desactiva las rutas de registro y login local para cuentas regulares; allauth exige `ACCOUNT_EMAIL_VERIFICATION = 'none'` cuando esa opción está activa. El email usado para ingresar sigue validándose como dato del proveedor social; no se envían correos de verificación propios. `ACCOUNT_USER_MODEL_USERNAME_FIELD = None` es obligatorio porque el modelo no tiene `username`, y `ACCOUNT_USER_MODEL_EMAIL_FIELD = 'correo'` indica a allauth el nombre personalizado del campo de correo (el default sería `email`). El login local con `ModelBackend` queda como recuperación para superusuarios creados explícitamente con `createsuperuser`, no para cuentas Google.
 
 ### D7. Orden de migraciones y recreación de la base
 
-`AUTH_USER_MODEL` debe declararse antes de aplicar las migraciones de allauth. Se hace en este orden: declarar el setting, `makemigrations cuentas`, y recién entonces `migrate`.
+El custom user model debe aparecer en su primera migración (`cuentas/0001_initial.py`), y `AUTH_USER_MODEL` debe estar configurado antes de aplicar nuevas migraciones de allauth. El entrypoint de `web` ejecuta `migrate --noinput` automáticamente al iniciar, por lo que no se puede levantar `web` antes de preparar el modelo y su migración: el primer arranque podría aplicar las migraciones con `auth.User` como modelo activo.
 
-**La recreación de la base NO es obligatoria**, a diferencia de lo que se planteó al inicio: `auth_user` está vacía, ninguna app tiene foráneas a `User` y las migraciones de `contrib.auth` aplicadas no se re-ejecutan. `migrate` agrega `cuentas_cuenta` y las tablas de allauth, y la tabla `auth_user` queda como residuo vacío e inofensivo.
+Django documenta que cambiar `AUTH_USER_MODEL` después de crear tablas es posible, pero complejo: puede requerir corregir el esquema, mover datos y re-aplicar migraciones manualmente. Que `auth_user` esté vacía y que las apps del dominio no tengan FKs a User no demuestra que el cambio sea seguro; las migraciones ya aplicadas de Django (por ejemplo, admin/log entries) y el esquema real también deben revisarse.
 
-Plan B: si `migrate --plan` muestra algo inesperado, recrear con `docker compose down -v` y `docker compose up --build`, perdiendo los datos de prueba de `peliculas` y `salas`.
+Secuencia obligatoria:
+
+1. Definir `Cuenta` y `AUTH_USER_MODEL` antes de iniciar `web`.
+2. Construir la imagen sin arrancar servicios (`docker compose build web`).
+3. Generar `cuentas/0001_initial.py` usando un comando que omita el entrypoint automático, sin ejecutar `migrate`.
+4. Inspeccionar el estado real de `django_migrations`, tablas, datos y FKs y revisar `migrate --plan` antes de cualquier migración de escritura.
+5. Seguir la estrategia de preservación aprobada por el usuario; no borrar el volumen.
+6. Aplicar las migraciones y comprobar que el modelo propio está en la migración inicial y antes de las nuevas migraciones de allauth.
+
+Inspección read-only realizada el 2026-11-02:
+
+- La base tiene aplicadas `auth.0001`–`auth.0012`, `admin.0001`–`admin.0003`, `peliculas.0001`, `salas.0001` y `funciones.0001`; todavía no tiene migraciones de allauth ni de `cuentas`.
+- `auth_user`, `auth_user_groups`, `auth_user_user_permissions` y `django_admin_log` tienen 0 filas. Las tres tablas laterales/log existentes tienen FK a `auth_user`.
+- `django_admin_log.user_id` es `INT`, pero `Cuenta.id` será `BIGINT` por `BigAutoField`; la migración debe ensanchar esa columna antes de crear la nueva FK.
+- Hay datos de dominio que conviene preservar: 4 películas, 3 salas y 2 funciones.
+- Con el nuevo `AUTH_USER_MODEL`, Django rechaza `migrate --plan` y `makemigrations --check --dry-run`: `admin.0001_initial` ya figura aplicado antes de su nueva dependencia `cuentas.0001_initial`.
+- `manage.py check` ya no tiene errores críticos, pero emite dos warnings W036 porque MySQL no soporta dos constraints únicos condicionales del modelo allauth `EmailAddress`. No se silenciaron.
+
+**Estrategia de preservación aprobada por el usuario:** hacer backup; quitar de `django_migrations` solo las filas `admin.0001_initial`, `admin.0002_logentry_remove_auto_add` y `admin.0003_logentry_add_action_flag_choices`; aplicar `cuentas.0001_initial`; volver a registrar las migraciones admin como aplicadas sin repetir sus operaciones (la tabla `django_admin_log` ya existe); y ejecutar una migración `RunPython`/SQL idempotente que cambie `django_admin_log.user_id` de `INT` a `BIGINT` y su FK desde `auth_user(id)` a `cuenta(id)`. Esa migración usa `atomic = False`, requerido para que Django permita DDL en MySQL; la operación se agrupa en un único `ALTER TABLE`. Las tablas laterales antiguas permanecen vacías y sin uso. Luego se aplican las migraciones restantes de allauth.
+
+Esta ruta evita perder los datos de películas/salas/funciones, pero altera el historial de migraciones y el esquema de auditoría. El usuario aprobó esta estrategia; se realizará backup antes de la primera escritura. No se ejecutará reset del volumen.
 
 ### D8. Guard de borrado con TODO
 
@@ -98,7 +120,7 @@ La regla "no borrar una cuenta con entradas asociadas" no puede implementarse to
 
 ### D9. Panel de administración
 
-Registro estándar en `admin.py`: `list_display` con `correo`, `nombre` e indicador de administración, `search_fields` por `correo` y `nombre`, y `readonly_fields = ('correo', 'nombre')`. No se crean vistas propias.
+Registro en `admin.py`: `list_display` con `correo`, `nombre` e indicador de administración, `search_fields` por `correo` y `nombre`, y `readonly_fields = ('correo', 'nombre')`. El indicador visible controla `is_staff`; al guardar se sincroniza `is_superuser` para conceder o revocar todos los permisos en conjunto. `is_superuser` no se edita independientemente. No se crean vistas propias.
 
 ### D10. Estrategia de prueba sin credenciales de Google
 
@@ -118,19 +140,20 @@ Alternativa evaluada: el provider de prueba que allauth incluye desde la versió
 - **`GET_LOCK` es específico de MySQL** → aceptado: el proyecto usa `mysqlclient` contra MySQL, no hay portabilidad que preservar.
 - **allauth no llena `nombre` por defecto** → resuelto con el adapter de D3; si el adapter no se registra, todas las cuentas quedan sin nombre, por eso el alta lo cubre con un test.
 - **El borrado desde el admin todavía no está bloqueado por entradas** → cubierto con el TODO de D8; se cierra cuando exista `entrada`.
-- **Queda una tabla `auth_user` vacía si no se recrea la base** → inofensiva; se puede eliminar a mano después si molesta.
+- **Las migraciones existentes pueden conservar referencias a `auth.User`** → inspeccionar `django_migrations` y las FKs reales antes de escribir; documentar el plan de conversión y no aplicar migraciones hasta resolver incompatibilidades.
+- **Reset del volumen de MySQL pierde películas, salas y funciones de prueba** → nunca ejecutar `docker compose down -v` sin autorización explícita; preferir backup y una migración de preservación si es viable.
 
 ## Migration Plan
 
-1. Declarar `AUTH_USER_MODEL = 'cuentas.Cuenta'` y los ajustes de allauth (D6).
-2. `docker compose up --build` para instalar allauth en la imagen.
-3. `python movie_up/manage.py makemigrations cuentas` → `cuentas/0001_initial.py`.
-4. `python movie_up/manage.py migrate --plan` y revisar el orden antes de aplicar.
-5. `python movie_up/manage.py migrate` (crea `cuentas_cuenta` y las tablas de allauth).
-6. `python movie_up/manage.py check` y suite completa: `test peliculas salas funciones cuentas`.
+1. Definir `Cuenta`, `AUTH_USER_MODEL` y los ajustes de allauth (D6) antes de iniciar `web`.
+2. Construir la imagen sin arrancar servicios (`docker compose build web`).
+3. Generar `cuentas/0001_initial.py` con `docker compose run --rm --no-deps --entrypoint python web movie_up/manage.py makemigrations cuentas`, que omite el entrypoint que migra automáticamente.
+4. Iniciar solo el servicio MySQL; consultar `django_migrations`, tablas, datos y claves foráneas. Ejecutar `migrate --plan` sin aplicar cambios y registrar la incompatibilidad admin/custom-user.
+5. Presentar la estrategia de preservación (backup, reparación controlada del historial admin y migración de FK `django_admin_log`) y esperar aprobación explícita; reset solo con autorización separada.
+6. Aplicar la estrategia aprobada, luego migraciones de allauth; solo entonces iniciar `web` y verificar `manage.py check` y suite `test peliculas salas funciones cuentas`.
 7. Verificación en navegador: login con Google, alta de cuenta, segundo login como cuenta común y acceso a `/admin/`.
 
-Rollback: una vez aplicadas las migraciones, la única vuelta atrás es recrear la base (`docker compose down -v`), porque `AUTH_USER_MODEL` no se puede cambiar después sin cirugía (documentación de Django: *"You cannot change the AUTH_USER_MODEL setting during the lifetime of a project ... without serious effort"*).
+Rollback: no se asume que revertir `AUTH_USER_MODEL` sea seguro después de aplicar migraciones. La estrategia de rollback debe quedar definida a partir del esquema inspeccionado y contar con backup previo. `docker compose down -v` es destructivo y requiere autorización explícita.
 
 ## Open Questions
 
