@@ -75,6 +75,7 @@ MovieUp/
 ├── .playwright-mcp/              # logs de Playwright
 ├── movie_up/
 │   ├── manage.py
+│   ├── cuentas/
 │   ├── funciones/
 │   ├── peliculas/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
 │   ├── salas/
@@ -113,7 +114,7 @@ MovieUp/
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh) [AGENTS.md](AGENTS.md)
 - Migraciones manuales: `docker compose exec web python movie_up/manage.py migrate` [AGENTS.md](AGENTS.md)
 - Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser` [AGENTS.md](AGENTS.md)
-- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones` [AGENTS.md](AGENTS.md)
+- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas` — cada app nueva se suma a la lista, porque el discovery sin etiquetas no descubre nada [AGENTS.md](AGENTS.md)
 - **Gotcha de discovery:** ejecutar `test` sin etiquetas termina con código 0, pero descubre cero tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python; indicar las apps evita ese falso positivo [AGENTS.md](AGENTS.md).
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`) [AGENTS.md](AGENTS.md)
 - **Estado verificado (smoke test vía Docker + Playwright):** `http://localhost:8000/` responde 404 porque no hay una ruta raíz configurada; no se debe atribuir a que `movie_up` falte de `INSTALLED_APPS`. `/admin/login/` renderiza correctamente [urls.py](movie_up/core/urls.py), [settings.py](movie_up/core/settings.py).
@@ -123,7 +124,7 @@ MovieUp/
 - **DEBUG/SECRET_KEY** desde variables de entorno [settings.py](movie_up/core/settings.py)
 - **ALLOWED_HOSTS** incluye `localhost`, `0.0.0.0`, `127.0.0.1` [settings.py](movie_up/core/settings.py)
 - **Base de datos MySQL** configurada con credenciales desde `.env` [settings.py](movie_up/core/settings.py)
-- **Apps instaladas:** `django.contrib.*`, `funciones`, `peliculas`, `salas` [settings.py](movie_up/core/settings.py)
+- **Apps instaladas:** `django.contrib.*`, `cuentas`, `funciones`, `peliculas`, `salas` — las apps del proyecto van después de las de Django, en orden alfabético [settings.py](movie_up/core/settings.py)
 - **Zona horaria:** `America/Argentina/Buenos_Aires`; `USE_TZ` habilitado [settings.py](movie_up/core/settings.py)
 - **MEDIA_ROOT** configurado como `BASE_DIR / 'imgs'` para almacenamiento de imágenes subidas [settings.py](movie_up/core/settings.py)
 - **MEDIA_URL** configurado como `/imgs/` para acceso a archivos multimedia [settings.py](movie_up/core/settings.py)
@@ -154,6 +155,8 @@ Según [AGENTS.md](AGENTS.md):
 - Roles: Cliente y Administrador/Empleado [AGENTS.md](AGENTS.md)
 - Login local de Django; (planificado) Google OAuth [AGENTS.md](AGENTS.md)
 - (A definir): cómo se otorga el rol admin — `is_staff` [AGENTS.md](AGENTS.md)
+- La app `cuentas` existe como esqueleto: `startapp`, registro en `INSTALLED_APPS`, `urls.py` con `urlpatterns` vacío, `services.py` vacío y `templates/cuentas/`; no tiene modelo, vistas ni rutas montadas en el enrutador raíz [settings.py](movie_up/core/settings.py), [urls.py](movie_up/core/urls.py)
+- [PENDIENTE: elección del modelo de usuario — user model propio sobre `AbstractUser` (implica reset de la base de datos de desarrollo) vs `auth.User` + perfil — todavía no decidida; no hay spec ni change de OpenSpec para `cuentas`]
 
 ### Desarrollo dirigido por especificaciones (OpenSpec)
 **Fuentes:** [AGENTS.md](AGENTS.md), [openspec/](openspec/), [openspec/config.yaml](openspec/config.yaml), [opsx-propose.md](.opencode/commands/opsx-propose.md)
