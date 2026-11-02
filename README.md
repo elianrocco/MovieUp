@@ -76,6 +76,7 @@ MovieUp/
 ├── movie_up/
 │   ├── manage.py
 │   ├── cuentas/
+│   ├── entradas/
 │   ├── funciones/
 │   ├── peliculas/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
 │   ├── salas/
@@ -116,7 +117,7 @@ MovieUp/
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh) [AGENTS.md](AGENTS.md)
 - Migraciones manuales: `docker compose exec web python movie_up/manage.py migrate` [AGENTS.md](AGENTS.md)
 - Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser` [AGENTS.md](AGENTS.md)
-- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas` — cada app nueva se suma a la lista, porque el discovery sin etiquetas no descubre nada [AGENTS.md](AGENTS.md)
+- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas` — cada app nueva se suma a la lista, porque el discovery sin etiquetas no descubre nada [AGENTS.md](AGENTS.md)
 - **Gotcha de discovery:** ejecutar `test` sin etiquetas termina con código 0, pero descubre cero tests porque el contenedor inicia en `/app` y `movie_up/` no es un paquete Python; indicar las apps evita ese falso positivo [AGENTS.md](AGENTS.md).
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`) [AGENTS.md](AGENTS.md)
 - **Estado verificado (smoke test vía Docker + Playwright):** `http://localhost:8000/` responde 404 porque no hay una ruta raíz configurada; no se debe atribuir a que `movie_up` falte de `INSTALLED_APPS`. `/admin/login/` renderiza correctamente [urls.py](movie_up/core/urls.py), [settings.py](movie_up/core/settings.py).
