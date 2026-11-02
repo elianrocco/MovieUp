@@ -21,8 +21,8 @@ El sistema SHALL identificar cada cuenta por un correo electrónico único y gua
 - **WHEN** Google devuelve un correo sin marcarlo como verificado
 - **THEN** el inicio de sesión se rechaza y no se crea una cuenta
 
-### Requirement: Acceso únicamente con Google
-El sistema SHALL ofrecer solo el inicio de sesión con Google y MUST NOT ofrecer registro local ni inicio de sesión con usuario y contraseña.
+### Requirement: Acceso de cuentas sociales únicamente con Google
+El sistema SHALL ofrecer inicio de sesión con Google para cuentas sociales y MUST NOT ofrecer registro local ni acceso con contraseña local para esas cuentas. La única excepción es el acceso de recuperación al Django Admin con una cuenta de emergencia creada explícitamente mediante `createsuperuser`.
 
 #### Scenario: Pantalla de acceso
 - **WHEN** un visitante abre la pantalla de acceso
@@ -31,6 +31,10 @@ El sistema SHALL ofrecer solo el inicio de sesión con Google y MUST NOT ofrecer
 #### Scenario: Registro local no disponible
 - **WHEN** se solicita la ruta de registro local
 - **THEN** la ruta responde sin ofrecer alta de cuenta
+
+#### Scenario: Recuperación administrativa local
+- **WHEN** un superusuario de emergencia creado mediante `createsuperuser` usa las credenciales locales en el formulario del Django Admin
+- **THEN** puede acceder al panel para recuperar la administración del sistema
 
 ### Requirement: Nombre tomado del perfil de Google
 El sistema SHALL poblar el nombre desde el perfil de Google en el alta y MUST NOT re-escribirlo en inicios de sesión posteriores.

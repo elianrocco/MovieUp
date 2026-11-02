@@ -1,10 +1,12 @@
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 from threading import Barrier
 from urllib.parse import parse_qs, urlparse
 from unittest.mock import patch
 
 from allauth.socialaccount.models import SocialAccount, SocialApp
 from allauth.socialaccount.providers.google.provider import GoogleProvider
+from django.contrib.admin.sites import AdminSite
 from django.contrib.sessions.backends.db import SessionStore
 from django.core.exceptions import FieldDoesNotExist
 from django.db import IntegrityError, close_old_connections, connection, transaction
@@ -12,6 +14,7 @@ from django.test import Client, RequestFactory, TestCase, TransactionTestCase, o
 from django.urls import reverse
 
 from .adapters import CuentaSocialAccountAdapter
+from .admin import CuentaAdmin
 from .models import Cuenta
 from .services import promote_first_admin
 
@@ -247,7 +250,7 @@ class GoogleOAuthCallbackTests(TestCase):
             'picture': 'https://example.com/avatar.png',
         }
 
-        _, response = self.google_login(profile)
+        client, response = self.google_login(profile)
 
         self.assertIn(response.status_code, (200, 302))
         user = Cuenta.objects.get(correo='first@example.com')
@@ -255,6 +258,7 @@ class GoogleOAuthCallbackTests(TestCase):
         self.assertTrue(user.is_staff)
         self.assertTrue(user.is_superuser)
         self.assertFalse(user.has_usable_password())
+        self.assertEqual(client.get('/admin/').status_code, 200)
 
     def test_repeated_google_callback_reuses_account_and_keeps_profile_immutable(self):
         profile = {
@@ -310,12 +314,65 @@ class GoogleOAuthCallbackTests(TestCase):
             'picture': 'https://example.com/avatar.png',
         }
 
-        _, response = self.google_login(profile)
+        client, response = self.google_login(profile)
 
         self.assertIn(response.status_code, (200, 302))
         user = Cuenta.objects.get(correo='regular@example.com')
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
+        self.assertNotEqual(client.get('/admin/').status_code, 200)
+
+
+class CuentaAdminTests(TestCase):
+    def setUp(self):
+        self.admin_user = Cuenta.objects.create_superuser(
+            'admin@example.com',
+            'Administrator',
+            password='Strong-test-password-123',
+        )
+        self.request = RequestFactory().post('/admin/cuentas/cuenta/')
+        self.request.user = self.admin_user
+        self.model_admin = CuentaAdmin(Cuenta, AdminSite())
+
+    def test_profile_fields_are_read_only_and_accounts_cannot_be_added_manually(self):
+        user = Cuenta.objects.create_user('customer@example.com', 'Customer')
+
+        self.assertEqual(self.model_admin.readonly_fields, ('correo', 'nombre'))
+        self.assertNotIn('is_superuser', self.model_admin.get_fields(self.request, user))
+        self.assertFalse(self.model_admin.has_add_permission(self.request))
+
+    def test_admin_flag_controls_both_django_privilege_flags(self):
+        user = Cuenta.objects.create_user('customer@example.com', 'Customer')
+        user.is_staff = True
+        self.model_admin.save_model(self.request, user, form=None, change=True)
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
+
+        user.is_staff = False
+        self.model_admin.save_model(self.request, user, form=None, change=True)
+
+        user.refresh_from_db()
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+    def test_accounts_without_entries_can_be_deleted_individually_and_in_bulk(self):
+        individual = Cuenta.objects.create_user('individual@example.com', 'Individual')
+        bulk = Cuenta.objects.create_user('bulk@example.com', 'Bulk')
+
+        self.model_admin.delete_model(self.request, individual)
+        self.model_admin.delete_queryset(
+            self.request,
+            Cuenta.objects.filter(pk=bulk.pk),
+        )
+
+        self.assertFalse(Cuenta.objects.filter(pk__in=[individual.pk, bulk.pk]).exists())
+
+    def test_entry_deletion_guards_are_documented_for_both_admin_delete_paths(self):
+        source = Path(__file__).with_name('admin.py').read_text(encoding='utf-8')
+
+        self.assertEqual(source.count('TODO(entrada)'), 2)
 
 
 class FirstAdminPromotionTests(TestCase):

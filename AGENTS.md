@@ -118,8 +118,13 @@ Definidas en `.env` (nunca versionar):
 
 ## Autenticación y Roles
 - Roles: Cliente y Administrador/Empleado
-- Login local de Django; (planificado) Google OAuth
-- (A definir: cómo se otorga el rol admin — `is_staff`)
+- Modelo de usuario: `cuentas.Cuenta` (`AUTH_USER_MODEL`), con correo único y nombre obtenidos de Google; no se ofrece registro local ni contraseña para cuentas sociales.
+- Login de cuentas mediante Google con `django-allauth`; `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` se guardan en `.env` y no se comparten ni versionan.
+- El primer alta por Google se promueve automáticamente a administrador completo (`is_staff` + `is_superuser`); las siguientes cuentas son comunes. Esta regla es fija.
+- El administrador gestiona cuentas desde Django Admin; correo y nombre son de solo lectura. El indicador de administrador sincroniza `is_staff` e `is_superuser`.
+- `createsuperuser` queda como acceso local de recuperación para una cuenta administrativa de emergencia.
+- Las cuentas con entradas asociadas no se deben eliminar; los guards quedan comentados con `TODO(entrada)` hasta crear esa app.
+- **Verificación manual pendiente:** la selección de una cuenta Google y el login OAuth real los realiza el usuario antes de archivar el change.
     
 ## OpenSpec
 - El proyecto usa **OpenSpec** para desarrollo dirigido por especificaciones (spec-driven development)

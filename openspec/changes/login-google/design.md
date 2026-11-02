@@ -118,7 +118,7 @@ Esta ruta evita perder los datos de películas/salas/funciones, pero altera el h
 
 ### D8. Guard de borrado con TODO
 
-La regla "no borrar una cuenta con entradas asociadas" no puede implementarse todavía: la app `entrada` no existe y no hay relación que consultar. Siguiendo la convención de MovieUp, el guard queda **comentado con un `TODO`** que nombra el requisito y apunta a la app futura, igual que los guards de `salas` y `peliculas` hacia `funciones`.
+La regla "no borrar una cuenta con entradas asociadas" no puede implementarse todavía: la app `entrada` no existe y no hay relación que consultar. Siguiendo la convención de MovieUp, el guard queda **comentado con un `TODO`** tanto en `delete_model()` como en `delete_queryset()`: el primero cubre borrados individuales y el segundo la acción masiva del admin, que no delega al primero. Ambos comentarios nombran el requisito y la app futura, como los guards de `salas` y `peliculas` hacia `funciones`.
 
 ### D9. Panel de administración
 
