@@ -47,11 +47,13 @@ Estado actual relevante:
 
 allauth puebla `first_name`/`last_name`; el producto pide un solo `nombre`. Se declaran `first_name = None` y `last_name = None` para eliminar esas columnas y se agrega `nombre = CharField(max_length=150)`.
 
-El mapeo se resuelve en un `SOCIALACCOUNT_ADAPTER` propio que implementa `populate_user()`, leyendo el nombre del perfil de Google (`extra_data`) con esta cadena de respaldo. Al crear una cuenta social, el adapter también llama `set_unusable_password()` para no dejar una contraseña vacía o utilizable:
+El mapeo se resuelve en un `SOCIALACCOUNT_ADAPTER` propio que implementa `populate_user()`, usando tanto el diccionario normalizado `data` como los datos originales `sociallogin.account.extra_data`, con esta cadena de respaldo:
 
 1. `extra_data['name']` (perfil completo de Google).
 2. combinación de los nombres que allauth extrajo del proveedor.
 3. parte local del correo.
+
+El mismo adapter acepta el alta solo si `sociallogin.email_addresses` contiene el correo recibido como verificado por Google. `ACCOUNT_EMAIL_VERIFICATION='none'` evita correos de verificación propios, pero no sustituye esta comprobación. allauth 65.21.1 ya llama `set_unusable_password()` en `DefaultSocialAccountAdapter.save_user()` para las cuentas sociales; se conserva ese comportamiento estándar.
 
 Se elige el adapter en lugar de una señal porque es el punto de extensión documentado de allauth para poblar el usuario en el alta, y porque centraliza el mapeo en un solo lugar testeable.
 

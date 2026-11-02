@@ -1,8 +1,42 @@
-from django.core.exceptions import FieldDoesNotExist
-from django.db import IntegrityError, transaction
-from django.test import TestCase
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+from urllib.parse import parse_qs, urlparse
+from unittest.mock import patch
 
+from allauth.socialaccount.models import SocialAccount, SocialApp
+from allauth.socialaccount.providers.google.provider import GoogleProvider
+from django.contrib.sessions.backends.db import SessionStore
+from django.core.exceptions import FieldDoesNotExist
+from django.db import IntegrityError, close_old_connections, connection, transaction
+from django.test import Client, RequestFactory, TestCase, TransactionTestCase, override_settings
+from django.urls import reverse
+
+from .adapters import CuentaSocialAccountAdapter
 from .models import Cuenta
+from .services import promote_first_admin
+
+
+TEST_SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APPS': [
+            {
+                'client_id': 'test-client-id',
+                'secret': 'test-client-secret',
+                'key': '',
+            },
+        ],
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'OAUTH_PKCE_ENABLED': True,
+    },
+}
+
+FAKE_ACCESS_TOKEN = {
+    'access_token': 'fake-access-token',
+    'token_type': 'Bearer',
+    'expires_in': 3600,
+    'id_token': 'fake-id-token',
+}
 
 
 class CuentaModelTests(TestCase):
@@ -41,3 +75,298 @@ class CuentaModelTests(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.check_password('Strong-test-password-123'))
         self.assertTrue(user.has_usable_password())
+
+
+class CuentaSocialAccountAdapterTests(TestCase):
+    def setUp(self):
+        self.request = RequestFactory().get('/accounts/google/login/callback/')
+        self.request.session = SessionStore()
+        self.adapter = CuentaSocialAccountAdapter()
+        self.provider = GoogleProvider(
+            self.request,
+            app=SocialApp(
+                provider='google',
+                name='Test Google OAuth',
+                client_id='test-client-id',
+                secret='test-client-secret',
+            ),
+        )
+
+    def create_sociallogin(self, profile):
+        return self.provider.sociallogin_from_response(self.request, profile)
+
+    def test_populates_correo_and_nombre_from_verified_google_profile(self):
+        sociallogin = self.create_sociallogin(
+            {
+                'sub': 'google-user-1',
+                'email': 'CineFilo@example.com',
+                'email_verified': True,
+                'name': 'Cine Filo Completo',
+                'given_name': 'Cine',
+                'family_name': 'Filo',
+            }
+        )
+
+        self.assertEqual(sociallogin.user.correo, 'cinefilo@example.com')
+        self.assertEqual(sociallogin.user.nombre, 'Cine Filo Completo')
+        self.assertFalse(sociallogin.user.has_usable_password())
+        self.assertTrue(
+            self.adapter.is_open_for_signup(self.request, sociallogin)
+        )
+
+        sociallogin.save(self.request)
+        created = Cuenta.objects.get(correo='cinefilo@example.com')
+        self.assertEqual(created.nombre, 'Cine Filo Completo')
+        self.assertFalse(created.has_usable_password())
+
+    def test_unverified_google_email_cannot_create_an_account(self):
+        sociallogin = self.create_sociallogin(
+            {
+                'sub': 'google-user-unverified',
+                'email': 'cinefilo@example.com',
+                'email_verified': False,
+                'name': 'Cine Filo',
+            }
+        )
+
+        self.assertFalse(
+            self.adapter.is_open_for_signup(self.request, sociallogin)
+        )
+
+    def test_existing_google_identity_reuses_the_existing_account(self):
+        existing = Cuenta.objects.create_user('cinefilo@example.com', 'Existing Name')
+        SocialAccount.objects.create(
+            user=existing,
+            provider='google',
+            uid='google-user-existing',
+            extra_data={},
+        )
+        sociallogin = self.create_sociallogin(
+            {
+                'sub': 'google-user-existing',
+                'email': 'changed@example.com',
+                'email_verified': True,
+                'name': 'Changed Google Name',
+            }
+        )
+
+        sociallogin.lookup()
+
+        self.assertTrue(sociallogin.is_existing)
+        self.assertEqual(sociallogin.user.pk, existing.pk)
+        self.assertEqual(Cuenta.objects.count(), 1)
+        self.assertEqual(sociallogin.user.correo, 'cinefilo@example.com')
+        self.assertEqual(sociallogin.user.nombre, 'Existing Name')
+
+
+class CuentaSocialAccountNameFallbackTests(TestCase):
+    def test_name_falls_back_to_email_local_part(self):
+        request = RequestFactory().get('/accounts/google/login/callback/')
+        request.session = SessionStore()
+        provider = GoogleProvider(
+            request,
+            app=SocialApp(
+                provider='google',
+                name='Test Google OAuth',
+                client_id='test-client-id',
+                secret='test-client-secret',
+            ),
+        )
+        sociallogin = provider.sociallogin_from_response(
+            request,
+            {
+                'sub': 'google-user-no-name',
+                'email': 'cinefilo@example.com',
+                'email_verified': True,
+            },
+        )
+
+        self.assertEqual(sociallogin.user.nombre, 'cinefilo')
+
+    def test_name_uses_google_given_and_family_names_before_email_fallback(self):
+        request = RequestFactory().get('/accounts/google/login/callback/')
+        provider = GoogleProvider(
+            request,
+            app=SocialApp(
+                provider='google',
+                name='Test Google OAuth',
+                client_id='test-client-id',
+                secret='test-client-secret',
+            ),
+        )
+        sociallogin = provider.sociallogin_from_response(
+            request,
+            {
+                'sub': 'google-user-partial-name',
+                'email': 'cinefilo@example.com',
+                'email_verified': True,
+                'given_name': 'Cine',
+                'family_name': 'Filo',
+            },
+        )
+
+        self.assertEqual(sociallogin.user.nombre, 'Cine Filo')
+
+
+@override_settings(
+    ALLOWED_HOSTS=['testserver', 'localhost', '127.0.0.1'],
+    SOCIALACCOUNT_PROVIDERS=TEST_SOCIALACCOUNT_PROVIDERS,
+)
+class GoogleOAuthCallbackTests(TestCase):
+    def google_login(self, profile, client=None):
+        client = client or Client()
+        start_response = client.post(
+            reverse('google_login'),
+            {'process': 'login'},
+        )
+        state = parse_qs(urlparse(start_response['Location']).query)['state'][0]
+
+        with (
+            patch(
+                'allauth.socialaccount.providers.google.views.GoogleOAuth2Adapter.get_access_token_data',
+                return_value=FAKE_ACCESS_TOKEN,
+            ),
+            patch(
+                'allauth.socialaccount.providers.google.views.GoogleOAuth2Adapter._decode_id_token',
+                return_value=profile,
+            ),
+        ):
+            response = client.get(
+                reverse('google_callback'),
+                {'code': 'fake-authorization-code', 'state': state},
+            )
+
+        return client, response
+
+    def test_first_verified_google_login_creates_full_admin_account(self):
+        profile = {
+            'sub': 'google-admin-1',
+            'email': 'first@example.com',
+            'email_verified': True,
+            'name': 'First Administrator',
+            'picture': 'https://example.com/avatar.png',
+        }
+
+        _, response = self.google_login(profile)
+
+        self.assertIn(response.status_code, (200, 302))
+        user = Cuenta.objects.get(correo='first@example.com')
+        self.assertEqual(user.nombre, 'First Administrator')
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
+        self.assertFalse(user.has_usable_password())
+
+    def test_repeated_google_callback_reuses_account_and_keeps_profile_immutable(self):
+        profile = {
+            'sub': 'google-repeat-1',
+            'email': 'repeat@example.com',
+            'email_verified': True,
+            'name': 'Original Name',
+            'picture': 'https://example.com/avatar.png',
+        }
+        client, _ = self.google_login(profile)
+        client.logout()
+
+        changed_profile = {
+            **profile,
+            'email': 'changed@example.com',
+            'name': 'Changed Name',
+        }
+        _, response = self.google_login(changed_profile, client)
+
+        self.assertIn(response.status_code, (200, 302))
+        self.assertEqual(Cuenta.objects.count(), 1)
+        user = Cuenta.objects.get()
+        self.assertEqual(user.correo, 'repeat@example.com')
+        self.assertEqual(user.nombre, 'Original Name')
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
+
+    def test_unverified_google_email_does_not_create_an_account(self):
+        profile = {
+            'sub': 'google-unverified-1',
+            'email': 'unverified@example.com',
+            'email_verified': False,
+            'name': 'Unverified User',
+            'picture': 'https://example.com/avatar.png',
+        }
+
+        _, response = self.google_login(profile)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Cuenta.objects.filter(correo='unverified@example.com').exists())
+
+    def test_later_google_signup_remains_a_regular_account(self):
+        Cuenta.objects.create_superuser(
+            'existing-admin@example.com',
+            'Existing Admin',
+            password='Strong-test-password-123',
+        )
+        profile = {
+            'sub': 'google-regular-1',
+            'email': 'regular@example.com',
+            'email_verified': True,
+            'name': 'Regular User',
+            'picture': 'https://example.com/avatar.png',
+        }
+
+        _, response = self.google_login(profile)
+
+        self.assertIn(response.status_code, (200, 302))
+        user = Cuenta.objects.get(correo='regular@example.com')
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+
+class FirstAdminPromotionTests(TestCase):
+    def test_promotes_new_account_when_no_admin_exists(self):
+        user = Cuenta.objects.create_user('first@example.com', 'First User')
+
+        promote_first_admin(user)
+
+        user.refresh_from_db()
+        self.assertTrue(user.is_staff)
+        self.assertTrue(user.is_superuser)
+
+    def test_does_not_promote_new_account_when_admin_exists(self):
+        Cuenta.objects.create_superuser(
+            'existing-admin@example.com',
+            'Existing Admin',
+            password='Strong-test-password-123',
+        )
+        user = Cuenta.objects.create_user('regular@example.com', 'Regular User')
+
+        promote_first_admin(user)
+
+        user.refresh_from_db()
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+
+
+class FirstAdminPromotionConcurrencyTests(TransactionTestCase):
+    def test_concurrent_first_signups_promote_exactly_one_admin(self):
+        if connection.vendor != 'mysql':
+            self.skipTest('MySQL GET_LOCK is required for this concurrency test.')
+
+        users = [
+            Cuenta.objects.create_user('first@example.com', 'First User'),
+            Cuenta.objects.create_user('second@example.com', 'Second User'),
+        ]
+        barrier = Barrier(2)
+
+        def promote(user_id):
+            close_old_connections()
+            try:
+                user = Cuenta.objects.get(pk=user_id)
+                barrier.wait(timeout=10)
+                promote_first_admin(user)
+            finally:
+                close_old_connections()
+
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            futures = [executor.submit(promote, user.pk) for user in users]
+            for future in futures:
+                future.result(timeout=20)
+
+        self.assertEqual(Cuenta.objects.filter(is_staff=True).count(), 1)
+        self.assertEqual(Cuenta.objects.filter(is_superuser=True).count(), 1)

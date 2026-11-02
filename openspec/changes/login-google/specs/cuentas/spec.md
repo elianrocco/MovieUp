@@ -17,6 +17,10 @@ El sistema SHALL identificar cada cuenta por un correo electrónico único y gua
 - **WHEN** un usuario que ya tiene cuenta vuelve a iniciar sesión con Google
 - **THEN** se reutiliza la cuenta existente y no se crea una segunda
 
+#### Scenario: Google no verificó el correo
+- **WHEN** Google devuelve un correo sin marcarlo como verificado
+- **THEN** el inicio de sesión se rechaza y no se crea una cuenta
+
 ### Requirement: Acceso únicamente con Google
 El sistema SHALL ofrecer solo el inicio de sesión con Google y MUST NOT ofrecer registro local ni inicio de sesión con usuario y contraseña.
 

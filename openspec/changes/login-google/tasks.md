@@ -10,12 +10,12 @@
 
 ## Lote 2 — Cadena de login: alta, nombre y bootstrap
 
-- [ ] 2.1 Crear `movie_up/cuentas/adapters.py` con un `SOCIALACCOUNT_ADAPTER` que implemente `populate_user()` y llene `nombre` con la cadena de respaldo (perfil de Google → nombres extraídos → parte local del correo), y registrarlo en `SOCIALACCOUNT_ADAPTER` de `settings.py`; verificar con un test que una cuenta creada con `name` en el perfil de Google queda con ese `nombre`.
-- [ ] 2.2 Agregar el test de respaldo: cuando el perfil de Google no trae `name`, el `nombre` de la cuenta es la parte local del correo; verificar con `test cuentas`.
-- [ ] 2.3 Agregar el test de idempotencia: un segundo inicio de sesión con el mismo correo reutiliza la cuenta existente en lugar de crear otra; verificar con `test cuentas`.
-- [ ] 3.1 Implementar en `movie_up/cuentas/services.py` la función de promoción del primer administrador, serializada con `GET_LOCK`/`RELEASE_LOCK` de MySQL, que marca `is_staff` e `is_superuser` solo si no existe ninguna cuenta administradora; verificar con el test que la cuenta creada obtiene acceso y permisos completos.
-- [ ] 3.2 Cubrir con test que, si ya existe una cuenta administradora, el alta nueva queda como cuenta común; verificar con `test cuentas`.
-- [ ] 3.3 Conectar la señal `user_signed_up` al servicio de promoción; verificar con un test de integración que un alta por Google dispara la promoción.
+- [x] 2.1 Crear `movie_up/cuentas/adapters.py` con un `SOCIALACCOUNT_ADAPTER` que implemente `populate_user()` y llene `nombre` con la cadena de respaldo (perfil completo → nombres extraídos → parte local del correo); aceptar altas solo con correo marcado verificado por Google; registrarlo en settings. Verificar con tests simulados que nombre/email se mapean, la contraseña social es inutilizable y un correo no verificado no crea cuenta.
+- [x] 2.2 Agregar el test de respaldo: cuando el perfil de Google no trae `name` ni nombres parciales, el `nombre` de la cuenta es la parte local del correo; verificar con `test cuentas`.
+- [x] 2.3 Agregar el test de idempotencia: un segundo inicio de sesión con el mismo correo reutiliza la cuenta existente en lugar de crear otra; verificar con `test cuentas`.
+- [x] 3.1 Implementar en `movie_up/cuentas/services.py` la función de promoción del primer administrador, serializada con `GET_LOCK`/`RELEASE_LOCK` de MySQL, que marca `is_staff` e `is_superuser` solo si no existe ninguna cuenta administradora; verificar con tests de promoción normal y dos altas concurrentes que exactamente una cuenta obtiene acceso y permisos completos.
+- [x] 3.2 Cubrir con test que, si ya existe una cuenta administradora, el alta nueva queda como cuenta común; verificar con `test cuentas`.
+- [x] 3.3 Conectar la señal `user_signed_up` al servicio de promoción; verificar con el callback OAuth simulado que el alta por Google dispara la promoción.
 
 ## Lote 3 — Panel de administración, guard y cierre
 
