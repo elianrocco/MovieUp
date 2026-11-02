@@ -127,7 +127,7 @@ MovieUp/
 - **DEBUG/SECRET_KEY** desde variables de entorno [settings.py](movie_up/core/settings.py)
 - **ALLOWED_HOSTS** incluye `localhost`, `0.0.0.0`, `127.0.0.1` [settings.py](movie_up/core/settings.py)
 - **Base de datos MySQL** configurada con credenciales desde `.env` [settings.py](movie_up/core/settings.py)
-- **Apps instaladas:** `django.contrib.*`, luego las apps de `django-allauth` (`allauth`, `allauth.account`, `allauth.socialaccount`, `allauth.socialaccount.providers.google`) y al final las apps del proyecto `cuentas`, `funciones`, `peliculas`, `salas` en orden alfabético — la regla vigente es que las apps del proyecto cierran la lista [settings.py](movie_up/core/settings.py)
+- **Apps instaladas:** `django.contrib.*`, luego las apps de `django-allauth` (`allauth`, `allauth.account`, `allauth.socialaccount`, `allauth.socialaccount.providers.google`) y al final las apps del proyecto `cuentas`, `entradas`, `funciones`, `peliculas`, `salas` en orden alfabético — la regla vigente es que las apps del proyecto cierran la lista [settings.py](movie_up/core/settings.py)
 - **Zona horaria:** `America/Argentina/Buenos_Aires`; `USE_TZ` habilitado [settings.py](movie_up/core/settings.py)
 - **MEDIA_ROOT** configurado como `BASE_DIR / 'imgs'` para almacenamiento de imágenes subidas [settings.py](movie_up/core/settings.py)
 - **MEDIA_URL** configurado como `/imgs/` para acceso a archivos multimedia [settings.py](movie_up/core/settings.py)
