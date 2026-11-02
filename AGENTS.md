@@ -62,9 +62,11 @@ MovieUp/
     │   └── archive/
     │       ├── .gitkeep
     │       ├── 2026-10-31-crud-peliculas/
+    │       ├── 2026-11-01-crud-funciones/
     │       └── 2026-11-01-crud-salas/
     └── specs/
         ├── .gitkeep
+        ├── funciones/
         ├── movies/
         └── salas/
 ```

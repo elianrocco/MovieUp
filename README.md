@@ -33,9 +33,9 @@ El proyecto sigue el patrón **Modelo-Vista-Template (MVT)** de Django como arqu
 - **Lote 3 — integración:** la verificación cubrió los tests de `peliculas` y `salas`, además del recorrido CRUD de salas en navegador real con Playwright [tasks.md](openspec/changes/archive/2026-11-01-crud-salas/tasks.md).
 
 #### CRUD de funciones (`crud-funciones`)
-El Service Layer concentra esta lógica porque la función conserva un snapshot de la distribución de su sala y la validación de solapamientos debe ejecutarse de forma serializada [services.py](movie_up/funciones/services.py), [design.md](openspec/changes/crud-funciones/design.md).
+El Service Layer concentra esta lógica porque la función conserva un snapshot de la distribución de su sala y la validación de solapamientos debe ejecutarse de forma serializada [services.py](movie_up/funciones/services.py), [design.md](openspec/changes/archive/2026-11-01-crud-funciones/design.md).
 
-La suite completa pasó 111/111 tests. En navegador se verificaron Create, Detail con cuadrícula, Update y Delete; el rechazo de solapamientos fue visible y la consola quedó limpia [tasks.md](openspec/changes/crud-funciones/tasks.md), [.playwright-mcp/](.playwright-mcp/).
+La suite completa pasó 111/111 tests. En navegador se verificaron Create, Detail con cuadrícula, Update y Delete; el rechazo de solapamientos fue visible y la consola quedó limpia [tasks.md](openspec/changes/archive/2026-11-01-crud-funciones/tasks.md), [.playwright-mcp/](.playwright-mcp/).
 
 - **Flujo de petición:** `urls.py` → `views.py` → `services.py` → `models.py` → `templates/`.
 
@@ -90,9 +90,11 @@ MovieUp/
     │   └── archive/
     │       ├── .gitkeep
     │       ├── 2026-10-31-crud-peliculas/
+    │       ├── 2026-11-01-crud-funciones/
     │       └── 2026-11-01-crud-salas/
     └── specs/
         ├── .gitkeep
+        ├── funciones/
         ├── movies/
         └── salas/
 ```
@@ -162,7 +164,7 @@ Según [AGENTS.md](AGENTS.md):
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: los dos changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`, y `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`, ambos con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), y `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md). Al 2026-11-01, `crud-funciones` continúa activo y sin archivar, pero su implementación está completa: 16 requisitos ADDED, 28 escenarios y 17/17 tareas; `openspec validate crud-funciones --strict` es válido. Su documentación de ingeniería se registrará en el README al archivarlo, como en los cambios anteriores [spec.md](openspec/changes/crud-funciones/specs/funciones/spec.md), [tasks.md](openspec/changes/crud-funciones/tasks.md).
+- Estado actual: los tres changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`; `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`; y `crud-funciones` (CRUD de funciones con snapshot de la distribución de la sala y bloqueo de solapamientos serializado), en `openspec/changes/archive/2026-11-01-crud-funciones/`, los tres con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-funciones/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md), y `openspec/specs/funciones/spec.md` con 16 requisitos y 28 escenarios [spec.md](openspec/specs/funciones/spec.md). `openspec validate --specs --strict` pasa con las 3 specs (exit 0) y `openspec list` no reporta changes activos.
 
 
 #### Parseo y validación de specs (gotcha)
