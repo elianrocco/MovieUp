@@ -46,8 +46,8 @@
 
 - [x] 7.1 Correr la suite completa con `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas` y verificar que termina en OK.
 - [x] 7.2 Verificar `docker compose exec web python movie_up/manage.py makemigrations --check --dry-run` limpio y `manage.py check` en 0 con solo los 2 warnings `W036` conocidos.
-- [ ] 7.3 Verificar en navegador real con Playwright MCP el listado, el detalle y la vista de validación en `http://localhost:8000/`, y registrar el resultado en el README.
-- [ ] 7.4 Documentar el caso de uso de entradas en `AGENTS.md` y `README.md` y verificar que todos los enlaces relativos del README apuntan a archivos existentes.
+- [x] 7.3 Verificar en navegador real con Playwright MCP el listado, el detalle y la vista de validación en `http://localhost:8000/`, y registrar el resultado en el README.
+- [x] 7.4 Documentar el caso de uso de entradas en `AGENTS.md` y `README.md` y verificar que todos los enlaces relativos del README apuntan a archivos existentes.
 - [x] 7.5 Correr `openspec validate crud-entradas --strict` y verificar exit 0.
 
 ## Workflow follow-up

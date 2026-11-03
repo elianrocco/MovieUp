@@ -94,10 +94,12 @@ MovieUp/
     │       ├── 2026-10-31-crud-peliculas/
     │       ├── 2026-11-01-crud-funciones/
     │       ├── 2026-11-01-crud-salas/
+    │       ├── 2026-11-02-crud-entradas/
     │       └── 2026-11-02-login-google/
     └── specs/
         ├── .gitkeep
         ├── cuentas/
+        ├── entradas/
         ├── funciones/
         ├── movies/
         └── salas/
@@ -159,7 +161,7 @@ Según [AGENTS.md](AGENTS.md):
 - El modelo de usuario es `cuentas.Cuenta` (`AUTH_USER_MODEL`), basado en `AbstractUser`, con `correo` único y `nombre`; no conserva `username`, `email`, `first_name` ni `last_name` [models.py](movie_up/cuentas/models.py), [settings.py](movie_up/core/settings.py).
 - Las cuentas sociales ingresan solo con Google. El alta requiere que Google marque el correo como verificado. El nombre se obtiene del perfil, con respaldo en los nombres parciales y luego en la parte local del correo; los logins siguientes no reescriben los datos del perfil [adapters.py](movie_up/cuentas/adapters.py), [spec.md](openspec/changes/archive/2026-11-02-login-google/specs/cuentas/spec.md).
 - La primera cuenta nueva se promueve a administradora completa; las posteriores quedan como cuentas comunes. La señal `user_signed_up` llama al servicio que serializa la promoción con `GET_LOCK`/`RELEASE_LOCK` de MySQL [signals.py](movie_up/cuentas/signals.py), [services.py](movie_up/cuentas/services.py).
-- En Django Admin, `correo` y `nombre` son de solo lectura, no se permiten altas manuales y el indicador de administración sincroniza `is_staff` con `is_superuser`. Los guards para impedir borrar cuentas con entradas asociadas siguen como `TODO(entrada)` en los borrados individuales y masivos [admin.py](movie_up/cuentas/admin.py).
+- En Django Admin, `correo` y `nombre` son de solo lectura, no se permiten altas manuales y el indicador de administración sincroniza `is_staff` con `is_superuser`. Los guards de borrado individual y masivo están activos: bloquean la eliminación de cuentas con entradas asociadas. [admin.py](movie_up/cuentas/admin.py), [tasks.md](openspec/changes/archive/2026-11-02-crud-entradas/tasks.md)
 - `createsuperuser` queda como acceso local de recuperación para una cuenta administrativa de emergencia [AGENTS.md](AGENTS.md).
 
 #### Integración con django-allauth y Google
@@ -179,6 +181,10 @@ La prueba automatizada del callback simula el intercambio OAuth; **no verifica e
 
 La prueba manual con Google, ejecutada por el usuario según el checklist de `Workflow follow-up`, quedó registrada como tarea 6.4 completada antes de archivar el change; es la única evidencia de la integración end-to-end con Google real [tasks.md](openspec/changes/archive/2026-11-02-login-google/tasks.md).
 
+**Verificación local:** la suite completa reportó 169 tests y terminó en `OK`; `manage.py check` terminó con los 2 warnings `W036` conocidos; `makemigrations --check --dry-run` no encontró cambios. [tasks.md](openspec/changes/archive/2026-11-02-crud-entradas/tasks.md), [tests.py](movie_up/entradas/tests.py)
+
+**Playwright:** se comprobaron el listado, el detalle y la vista de validación con un fixture temporal, luego eliminado. Hubo un 404 de `favicon.ico` solicitado por el admin; no se describe la consola como limpia. [tasks.md](openspec/changes/archive/2026-11-02-crud-entradas/tasks.md), [views.py](movie_up/entradas/views.py)
+
 ### Desarrollo dirigido por especificaciones (OpenSpec)
 **Fuentes:** [AGENTS.md](AGENTS.md), [openspec/](openspec/), [openspec/config.yaml](openspec/config.yaml), [opsx-propose.md](.opencode/commands/opsx-propose.md)
 
@@ -188,7 +194,9 @@ La prueba manual con Google, ejecutada por el usuario según el checklist de `Wo
 - Flujo de trabajo: `/opsx:explore` → `/opsx:propose` → `/opsx:apply` → `/opsx:archive` [AGENTS.md](AGENTS.md)
 - Comandos adicionales: `/opsx:sync` (sincronizar specs), `/opsx:update` (revisar el plan) [AGENTS.md](AGENTS.md)
 - Definir specs antes de implementar cualquier nueva funcionalidad [AGENTS.md](AGENTS.md)
-- Estado actual: los cuatro changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`; `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`; `crud-funciones` (CRUD de funciones con snapshot de la distribución de la sala y bloqueo de solapamientos serializado), en `openspec/changes/archive/2026-11-01-crud-funciones/`; y `login-google` (identidad y login únicamente con Google vía django-allauth, modelo `Cuenta` y regla del primer administrador), en `openspec/changes/archive/2026-11-02-login-google/`, los cuatro con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-funciones/proposal.md), [proposal.md](openspec/changes/archive/2026-11-02-login-google/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md), `openspec/specs/funciones/spec.md` con 16 requisitos y 28 escenarios [spec.md](openspec/specs/funciones/spec.md), y `openspec/specs/cuentas/spec.md` con 10 requisitos y 22 escenarios [spec.md](openspec/specs/cuentas/spec.md). `openspec validate --specs --strict` pasa con las 4 specs (exit 0); `openspec list` reporta un único change activo, `crud-entradas` (0/29 tareas), en fase de planificación —sus 4 artefactos pasan `openspec validate crud-entradas --strict`— y todavía sin implementar ni archivar [proposal.md](openspec/changes/crud-entradas/proposal.md), [tasks.md](openspec/changes/crud-entradas/tasks.md).
+- Estado actual: los cinco changes implementados y archivados son `crud-peliculas` (CRUD completo de películas con Service Layer), en `openspec/changes/archive/2026-10-31-crud-peliculas/`; `crud-salas` (CRUD de salas con editor de distribución en grilla), en `openspec/changes/archive/2026-11-01-crud-salas/`; `crud-funciones` (CRUD de funciones con snapshot de la distribución de la sala y bloqueo de solapamientos serializado), en `openspec/changes/archive/2026-11-01-crud-funciones/`; `crud-entradas` (entradas de cine: creación interna por compra, listado y detalle propios, validación por código y reembolso con límite de 24 horas), en `openspec/changes/archive/2026-11-02-crud-entradas/`; y `login-google` (identidad y login únicamente con Google vía django-allauth, modelo `Cuenta` y regla del primer administrador), en `openspec/changes/archive/2026-11-02-login-google/`, los cinco con todos sus artefactos (proposal, specs, design, tasks) [proposal.md](openspec/changes/archive/2026-10-31-crud-peliculas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-salas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-01-crud-funciones/proposal.md), [proposal.md](openspec/changes/archive/2026-11-02-crud-entradas/proposal.md), [proposal.md](openspec/changes/archive/2026-11-02-login-google/proposal.md). Los archives escribieron las specs de verdad del proyecto: `openspec/specs/movies/spec.md` con 5 requisitos (listar, detalle, crear, actualizar, eliminar) y 12 escenarios [spec.md](openspec/specs/movies/spec.md), `openspec/specs/salas/spec.md` con 12 requisitos y 35 escenarios [spec.md](openspec/specs/salas/spec.md), `openspec/specs/funciones/spec.md` con 16 requisitos y 28 escenarios [spec.md](openspec/specs/funciones/spec.md), `openspec/specs/entradas/spec.md` con 17 requisitos y 41 escenarios [spec.md](openspec/specs/entradas/spec.md), y `openspec/specs/cuentas/spec.md` con 10 requisitos y 23 escenarios [spec.md](openspec/specs/cuentas/spec.md). `openspec validate --specs --strict` pasa con las 5 specs (exit 0) y `openspec list` no reporta cambios activos.
+
+`crud-entradas` fue archivado el 2026-11-02 en `openspec/changes/archive/2026-11-02-crud-entradas/` con su `.openspec.yaml` preservado y 29/29 tareas completadas; la sincronización de specs escribió `openspec/specs/entradas/spec.md` y actualizó en `openspec/specs/cuentas/spec.md` el requisito "Borrado bloqueado por entradas asociadas", que dejó de condicionar el guard a un `TODO` [tasks.md](openspec/changes/archive/2026-11-02-crud-entradas/tasks.md), [proposal.md](openspec/changes/archive/2026-11-02-crud-entradas/proposal.md), [spec.md](openspec/specs/entradas/spec.md), [spec.md](openspec/specs/cuentas/spec.md).
 
 
 #### Parseo y validación de specs (gotcha)

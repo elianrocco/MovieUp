@@ -66,10 +66,12 @@ MovieUp/
     │       ├── 2026-10-31-crud-peliculas/
     │       ├── 2026-11-01-crud-funciones/
     │       ├── 2026-11-01-crud-salas/
+    │       ├── 2026-11-02-crud-entradas/
     │       └── 2026-11-02-login-google/
     └── specs/
         ├── .gitkeep
         ├── cuentas/
+        ├── entradas/
         ├── funciones/
         ├── movies/
         └── salas/
