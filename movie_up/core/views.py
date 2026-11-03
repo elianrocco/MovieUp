@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from funciones import services as funciones_services
@@ -49,3 +50,12 @@ def gestion(request):
             'salas': salas_services.list_salas(),
         },
     )
+
+
+def favicon(_request):
+    """Placeholder favicon so browsers don't 404 on templates without an icon link.
+
+    Matches the empty ``data:,`` icon used in base.html; replace with a real
+    asset when the author provides the logo/favicon.
+    """
+    return HttpResponse(b'', content_type='image/x-icon')

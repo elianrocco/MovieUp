@@ -56,6 +56,11 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = 'cuentas.Cuenta'
 
+# Landing page after login/logout. Django's default /accounts/profile/ does not
+# exist in this project; allauth honors LOGIN_REDIRECT_URL unless ?next= is set.
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
 AUTHENTICATION_BACKENDS = [
     # Keeps username/password login working for the Django admin.
     'django.contrib.auth.backends.ModelBackend',

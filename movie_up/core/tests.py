@@ -257,6 +257,24 @@ class HomeViewTests(TestCase):
         self.assertContains(response, 'href="#"')
 
 
+class AuthRedirectSettingsTests(SimpleTestCase):
+    """Guard against losing the post-login/logout landing page."""
+
+    def test_login_redirect_targets_home(self):
+        self.assertEqual(settings.LOGIN_REDIRECT_URL, '/')
+
+    def test_logout_redirect_targets_home(self):
+        self.assertEqual(settings.LOGOUT_REDIRECT_URL, '/')
+
+
+class FaviconTests(SimpleTestCase):
+    def test_favicon_returns_placeholder_icon(self):
+        response = self.client.get('/favicon.ico')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'image/x-icon')
+
+
 class GestionViewTests(TestCase):
     def setUp(self):
         from datetime import timedelta

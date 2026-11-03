@@ -38,10 +38,10 @@
 
 ## 6. Verificación de integración
 
-- [ ] 6.1 Ejecutar `manage.py check` y `manage.py makemigrations --check --dry-run` con exit 0 (solo la migración de `foto_url` ya aplicada, nada pendiente).
-- [ ] 6.2 Ejecutar la suite completa `manage.py test peliculas salas funciones cuentas entradas core` en verde.
-- [ ] 6.3 Verificar E2E con Playwright por rol: visitante (`/` con hero y grid, clic `Comprar entradas` → login), cuenta común (ticket → `/entradas/`), administrador (en `/` redirige a `/gestion/`, tabs sin cambio de URL, `Cuentas` con el shell) sin errores de consola.
-- [ ] 6.4 Ejecutar `openspec validate ui-shell --strict` con exit 0.
+- [x] 6.1 Ejecutar `manage.py check` y `manage.py makemigrations --check --dry-run` con exit 0 (solo la migración de `foto_url` ya aplicada, nada pendiente).
+- [x] 6.2 Ejecutar la suite completa `manage.py test peliculas salas funciones cuentas entradas core` en verde.
+- [x] 6.3 Verificar E2E con Playwright por rol: visitante (`/` con hero y grid, clic `Comprar entradas` → login), cuenta común (ticket → `/entradas/`), administrador (en `/` redirige a `/gestion/`, tabs sin cambio de URL, `Cuentas` con el shell) sin errores de consola.
+- [x] 6.4 Ejecutar `openspec validate ui-shell --strict` con exit 0.
 
 ## Workflow follow-up
 
