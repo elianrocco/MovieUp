@@ -64,7 +64,7 @@ El sistema SHALL identificar cada fila de la distribución por una etiqueta alfa
 
 ### Requirement: Asiento disponible al crear
 
-El sistema MUST NOT crear una entrada cuya celda no sea un asiento disponible en la distribución de la función. Un número de asiento fuera del ancho de la fila, una fila inexistente, una celda `R` ya reservada o una celda `P` de pasillo se rechazan sin modificar ningún dato.
+El sistema SHALL interpretar `n_asiento` como el ordinal 1-based entre las celdas `A` y `R` de la fila, sin contar las celdas `P`; una celda `R` conserva su ordinal aunque ya esté reservada. MUST NOT crear una entrada si ese ordinal no existe o no corresponde a una celda `A`; se rechazan asientos fuera de rango, filas inexistentes y posiciones no disponibles sin modificar ningún dato.
 
 #### Scenario: Celda reservada
 
@@ -76,9 +76,19 @@ El sistema MUST NOT crear una entrada cuya celda no sea un asiento disponible en
 - **WHEN** se intenta crear una entrada para una celda cuya letra es `P`
 - **THEN** el sistema informa que la posición no es un asiento y no persiste la entrada
 
+#### Scenario: Pasillo no incrementa el número de asiento
+
+- **WHEN** se crea una entrada para el segundo asiento en una fila `A P A`
+- **THEN** `n_asiento=2` identifica la tercera celda y el pasillo no cuenta como asiento
+
+#### Scenario: Asiento reservado conserva su ordinal
+
+- **WHEN** se crea una entrada para el segundo asiento de una fila `R A`
+- **THEN** `n_asiento=2` identifica la segunda celda porque la celda `R` sigue contando como asiento
+
 #### Scenario: Número de asiento fuera de rango
 
-- **WHEN** el número de asiento supera la cantidad de columnas de la fila
+- **WHEN** el número de asiento supera la cantidad de celdas `A` y `R` de la fila
 - **THEN** el sistema rechaza la creación con un mensaje apto para el usuario
 
 ### Requirement: Asiento único por función

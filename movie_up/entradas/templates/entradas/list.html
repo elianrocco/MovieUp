@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mis entradas</title>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+<main>
+    <h1>Mis entradas</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>Película</th>
+            <th>Sala</th>
+            <th>Inicio</th>
+            <th>Fila</th>
+            <th>Asiento</th>
+            <th>Estado</th>
+            <th>Detalle</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entrada in entradas %}
+        <tr>
+            <td>{{ entrada.funcion.pelicula.titulo }}</td>
+            <td>{{ entrada.funcion.sala.nombre }}</td>
+            <td>{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</td>
+            <td>{{ entrada.l_fila }}</td>
+            <td>{{ entrada.n_asiento }}</td>
+            <td>{% if entrada.activa %}Pendiente de validación{% else %}Validada{% endif %}</td>
+            <td><a href="{% url 'entradas:entrada_detail' entrada.pk %}">Ver entrada</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No tenés entradas.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

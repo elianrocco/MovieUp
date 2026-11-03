@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Validar entrada</title>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+<main>
+    <h1>Validar entrada</h1>
+    <form method="post">
+        {% csrf_token %}
+        <label for="codigo">Código de entrada</label>
+        <input type="text" name="codigo" id="codigo" maxlength="12" required>
+        <button type="submit">Validar</button>
+    </form>
+
+    {% if mensaje %}
+    <p role="status">{{ mensaje }}</p>
+    {% endif %}
+
+    {% if entrada %}
+    <dl>
+        <dt>Película</dt>
+        <dd>{{ entrada.funcion.pelicula.titulo }}</dd>
+        <dt>Función</dt>
+        <dd>{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</dd>
+        <dt>Sala</dt>
+        <dd>{{ entrada.funcion.sala.nombre }}</dd>
+        <dt>Fila</dt>
+        <dd>{{ entrada.l_fila }}</dd>
+        <dt>Asiento</dt>
+        <dd>{{ entrada.n_asiento }}</dd>
+    </dl>
+    {% endif %}
+</main>
+</body>
+</html>

@@ -30,14 +30,14 @@ La motivación y el alcance están en `proposal.md`. Lo que condiciona esta prop
 **1. La celda en la distribución y el índice único son dos capas, no una redundancia.**
 La celda `R` da lectura inmediata a la UI y a la compra; el índice único `(funcion, l_fila, n_asiento)` aguanta la carrera que la celda no cubre (dos escrituras que leen la misma versión del JSON). Alternativa descartada: confiar solo en la celda — requiere serializar todas las escrituras de la función y aun así no cubre reintentos; solo el índice garantía cardinalidad a nivel de base.
 
-**2. Etiqueta de fila por posición en base-26, sin tocar la distribución.**
-`fila 1 → A … Z → AA …`. Alternativas consideradas: (a) meter etiquetas en el JSON de `distribucion` obliga a cambiar `salas` y `funciones` con sus propias specs y a migrar datos; (b) guardar el ordinal en `l_fila` contradice el campo `VARCHAR(4)` del DDL y lo que el usuario definió como "letras de fila". Se elige la convención derivada porque es determinista, no requiere datos persistidos nuevos y vive en un servicio reutilizable por la compra.
+**2. Coordenadas de asiento estables sin tocar la distribución.**
+`l_fila` usa etiqueta alfabética por posición en base-26 (`fila 1 → A … Z → AA …`). `n_asiento` es el ordinal 1-based entre las celdas `A` y `R` de esa fila; las celdas `P` no suman, pero `R` sí porque es un asiento reservado cuya identidad debe persistir tras la venta. Alternativas consideradas: (a) meter etiquetas o numeración en el JSON obliga a cambiar `salas` y `funciones` y a migrar datos; (b) contar columnas físicas incluye los pasillos y contradice la convención fijada por el usuario. Se elige derivar ambas coordenadas para compartir el contrato con la compra sin guardar datos nuevos.
 
 **3. Una sola transacción con `select_for_update()` sobre la `Funcion`.**
 Es el patrón que ya usa `update_funcion`. La escritura del JSON es un leer-modificar-escribir: con `F()` atómico se evita el lock pero dos transacciones pueden partirse la celda. Se bloquea la función, se validan contra su estado bloqueado y se guardan los tres derivados juntos. Alternativa descartada: `F('entradas_compradas') + 1` aislado — arregla un campo y deja los otros dos expuestos.
 
 **4. `codigo`: 12 caracteres de un alfabeto de 32 sin ambiguos, con `secrets` e índice único.**
-Alfabeto `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (sin `0/O/1/I`), ≈60 bits, normalizado a mayúsculas antes de comparar. Descartados: UUID v4 (36 caracteres, imposible de tipear en puerta), entero (indistinguible de un ID y con mucha menos entropía), `secrets.token_urlsafe` (incluye `-` y `_`, fáciles de mal transcribir). El índice único es la garantía real; sobre él se reintenta en `IntegrityError` — la probabilidad de colisión es despreciable, pero la base manda.
+Alfabeto `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` (sin `0/O/1/I`), ≈60 bits, normalizado a mayúsculas antes de comparar. Descartados: UUID v4 (36 caracteres, imposible de tipear en puerta), entero (indistinguible de un ID y con mucha menos entropía), `secrets.token_urlsafe` (incluye `-` y `_`, fáciles de mal transcribir). El índice único es la garantía real; si la base detecta una colisión, el servicio rechaza esa creación con `ValueError` y no persiste entrada, conforme al escenario de la spec.
 
 **5. `db_table = 'entrada'` con `PROTECT` en ambas FK.**
 Se respeta el nombre del DDL entregado, con `cuenta` como precedente en el proyecto. `PROTECT` sigue el patrón de `Funcion.pelicula` y `Funcion.sala` y además es la red de seguridad detrás del guard de `cuentas`. Alternativa descartada: `CASCADE` — borrar una cuenta o una función arrastraría entradas silenciosamente, exactamente lo prohibido por spec.
@@ -65,7 +65,7 @@ Se compara `Funcion.inicio` con `timezone.now()` (ambos *aware*, patrón ya usad
 - [Dos compras simultáneas del mismo asiento] → lock de la función + índice único compuesto; test de concurrencia que ejecuta ambas creaciones a la vez.
 - [Dos validaciones simultáneas del mismo código] → `UPDATE` condicional y `rowcount`; solo una puede informar "encontrada".
 - [`disponibilidad` se desincroniza del conteo de `A`] → los tres derivados se escriben en la misma transacción; test de invariante que cuenta `A` y lo compara con `disponibilidad` después de crear y reembolsar.
-- [Colisión de `codigo`] → índice único + reintento en `IntegrityError`; el reintento no se propaga al llamador.
+- [Colisión de `codigo`] → índice único; un `IntegrityError` se convierte en `ValueError` y revierte la entrada y todos los cambios a la función.
 - [El DDL entregado tiene tipos `INT` y referencia una tabla `funcion` inexistente] → la migración de Django es la fuente de verdad; **no crear la tabla a mano en Workbench**, o `migrate` fallará con "table already exists". Corregir el diagrama al archivar.
 - [La especificación de reembolso se aplica al motivo equivocado] → el límite vive condicionado a `motivo == 'reembolso'`; test específico que verifica que la eliminación por finalización sigue ejecutándose con la función ya vencida.
 - [El guard de `cuentas` pasa de `TODO` a real y puede romper un flujo de admin existente] → tests de borrado individual y masivo en ambas direcciones (con entradas y sin ellas).
