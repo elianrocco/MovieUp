@@ -57,6 +57,9 @@ Un `403` confirma que el ID existe, lo que permite enumerar entradas ajenas. `Ht
 **10. Sin precio ni auditoría en la entrada: depende de un invariante ajeno.**
 El precio se lee de `Funcion.precio_entrada` y la spec de `funciones` impide editarla mientras tenga entradas compradas; al reembolsar, la entrada se borra en la misma transacción en que se descuenta, así que nunca conviven una entrada y un precio cambiado. Coste aceptado: no queda registro de cuándo se compró ni de qué precio se pagó en la fila.
 
+**11. El límite de 24 horas es una regla del reembolso, no del borrado.**
+Se compara `Funcion.inicio` con `timezone.now()` (ambos *aware*, patrón ya usado en `funciones.services`) contra una constante `LIMITE_REEMBOLSO = timedelta(hours=24)`, y solo cuando el motivo es `reembolso`. La lectura es estricta: **faltan menos de 24 horas ⇒ rechaza; 24 horas exactas o más ⇒ acepta**; una función ya iniciada o finalizada queda rechazada por la misma regla. Alternativa descartada: aplicar el límite dentro del servicio de eliminación genérico — la eliminación por finalización ocurre necesariamente cuando `fin` ya transcurrió, con lo que esa rama quedaría **jamás ejecutable**. El orden de validaciones es `activa` primero y anticipación después, para que el mensaje de rechazo sea determinista cuando fallan ambas.
+
 ## Risks / Trade-offs
 
 - [Dos compras simultáneas del mismo asiento] → lock de la función + índice único compuesto; test de concurrencia que ejecuta ambas creaciones a la vez.
@@ -64,6 +67,7 @@ El precio se lee de `Funcion.precio_entrada` y la spec de `funciones` impide edi
 - [`disponibilidad` se desincroniza del conteo de `A`] → los tres derivados se escriben en la misma transacción; test de invariante que cuenta `A` y lo compara con `disponibilidad` después de crear y reembolsar.
 - [Colisión de `codigo`] → índice único + reintento en `IntegrityError`; el reintento no se propaga al llamador.
 - [El DDL entregado tiene tipos `INT` y referencia una tabla `funcion` inexistente] → la migración de Django es la fuente de verdad; **no crear la tabla a mano en Workbench**, o `migrate` fallará con "table already exists". Corregir el diagrama al archivar.
+- [La especificación de reembolso se aplica al motivo equivocado] → el límite vive condicionado a `motivo == 'reembolso'`; test específico que verifica que la eliminación por finalización sigue ejecutándose con la función ya vencida.
 - [El guard de `cuentas` pasa de `TODO` a real y puede romper un flujo de admin existente] → tests de borrado individual y masivo en ambas direcciones (con entradas y sin ellas).
 - [La spec cubre comportamiento cuyo disparador aún no existe] → el servicio se prueba directamente; el disparador se implementa en la spec futura correspondiente.
 

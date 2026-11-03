@@ -20,6 +20,8 @@
 - [ ] 3.3 Verificar con tests que la eliminación por finalización borra la entrada sin modificar entradas compradas, disponibilidad ni distribución.
 - [ ] 3.4 Verificar con tests que el reembolso se rechaza cuando la entrada ya fue validada (`activa = False`), informa el motivo y la entrada permanece.
 - [ ] 3.5 Verificar con un test de invariante que, tras crear y reembolsar, `disponibilidad` vuelve a coincidir con el conteo de celdas `A` y `entradas_compradas` queda en 0.
+- [ ] 3.6 Implementar en `eliminar_entrada` el límite de anticipación de 24 horas sobre `Funcion.inicio`, aplicado únicamente cuando el motivo es `reembolso`, y verificar con tests que con más de 24 horas se acepta, con menos se rechaza con mensaje en español y que la entrada permanece.
+- [ ] 3.7 Verificar con tests el borde exacto de 24 horas (acepta), que una función ya iniciada rechaza el reembolso, y que la eliminación por finalización se ejecuta igual cuando la función ya finalizó.
 
 ## 4. Listado y detalle
 

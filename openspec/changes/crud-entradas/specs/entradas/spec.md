@@ -231,6 +231,35 @@ El sistema MUST NO reembolsar una entrada que ya fue validada en puerta. SHALL i
 - **WHEN** se intenta reembolsar una entrada con `activa` en `False`
 - **THEN** el sistema rechaza el reembolso, informa el motivo y la entrada permanece
 
+### Requirement: Reembolso con anticipación mínima de 24 horas
+
+El sistema MUST NO reembolsar una entrada cuando la función asociada comienza en menos de 24 horas o ya comenzó, informando el motivo y conservando la entrada. Esta restricción SHALL aplicar únicamente al motivo de reembolso.
+
+#### Scenario: Reembolso con más de 24 horas de anticipación
+
+- **WHEN** se pide un reembolso cuando faltan más de 24 horas para el inicio de la función
+- **THEN** el sistema acepta el reembolso
+
+#### Scenario: Reembolso a menos de 24 horas del inicio
+
+- **WHEN** se pide un reembolso cuando faltan menos de 24 horas para el inicio de la función
+- **THEN** el sistema rechaza el reembolso, informa el motivo y la entrada permanece
+
+#### Scenario: Función ya iniciada
+
+- **WHEN** se pide un reembolso una vez transcurrido el inicio de la función
+- **THEN** el sistema rechaza el reembolso, informa el motivo y la entrada permanece
+
+#### Scenario: Límite exacto de 24 horas
+
+- **WHEN** el inicio de la función ocurre exactamente 24 horas después del momento en que se pide el reembolso
+- **THEN** el sistema acepta el reembolso
+
+#### Scenario: La eliminación por finalización no queda restringida
+
+- **WHEN** se elimina una entrada porque la función ya finalizó
+- **THEN** el sistema la elimina sin aplicar el límite de anticipación
+
 ### Requirement: Finalización no altera la función
 
 Cuando una entrada se elimina por haber llegado la hora de finalización de la función, el sistema SHALL borrarla sin modificar las entradas compradas, la disponibilidad ni la distribución de la función.
