@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>{% if pelicula %}Editar Película{% else %}Crear Película{% endif %}</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}{% if pelicula %}Editar Película{% else %}Crear Película{% endif %}{% endblock %}
+
+{% block content %}
     <h1>{% if pelicula %}Editar Película{% else %}Crear Nueva Película{% endif %}</h1>
     
     <form method="post" enctype="multipart/form-data" action="{% if pelicula %}{% url 'peliculas:pelicula_update' pelicula.pk %}{% else %}{% url 'peliculas:pelicula_create' %}{% endif %}">
@@ -85,5 +83,4 @@
     </form>
     
     <a href="{% url 'peliculas:pelicula_list' %}">Volver al Listado</a>
-</body>
-</html>
+{% endblock %}

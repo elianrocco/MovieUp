@@ -9,10 +9,10 @@
 
 ## 2. Shell global: nav, footer y foto
 
-- [ ] 2.1 Implementar el nav en `base.html` según el requisito "Nav global con estados de sesión" (nombre "MovieUp" centrado con el logo a su izquierda, `Login`/`Logout`, foto y nombre debajo del icono, ticket dorado solo para comunes hacia `/entradas/`); verificar con tests en `core/tests.py` que cubren los tres estados y el clic del ticket, ejecutados con `manage.py test core`.
-- [ ] 2.2 Implementar el footer en `base.html` con el nombre "Elian" y el aviso de proyecto educativo sin fines de lucro; verificar con test en `core/tests.py` que aparece en una vista existente.
-- [ ] 2.3 Refactorizar los 15 templates existentes (list/detail/form/confirm_delete de películas, salas y funciones, más los de entradas) para que extiendan `base.html` con sus bloques, moviendo los CSS propios a `{% block head %}`; verificar con la suite completa en verde y con Playwright en vistas representativas de las 4 apps (nav y footer visibles, sin errores de consola).
-- [ ] 2.4 Agregar el campo `foto_url` a `Cuenta` con su migración, poblarlo desde el proveedor de Google al iniciar sesión y usarlo en el nav con marcador de posición cuando esté vacío; verificar con `manage.py makemigrations --check --dry-run` (sin cambios pendientes tras aplicar la migración) y con tests en `cuentas/tests.py` (poblado y fallback) ejecutados con `manage.py test cuentas`.
+- [x] 2.1 Implementar el nav en `base.html` según el requisito "Nav global con estados de sesión" (nombre "MovieUp" centrado con el logo a su izquierda, `Login`/`Logout`, foto y nombre debajo del icono, ticket dorado solo para comunes hacia `/entradas/`); verificar con tests en `core/tests.py` que cubren los tres estados y el clic del ticket, ejecutados con `manage.py test core`.
+- [x] 2.2 Implementar el footer en `base.html` con el nombre "Elian" y el aviso de proyecto educativo sin fines de lucro; verificar con test en `core/tests.py` que aparece en una vista existente.
+- [x] 2.3 Refactorizar los 15 templates existentes (list/detail/form/confirm_delete de películas, salas y funciones, más los de entradas) para que extiendan `base.html` con sus bloques, moviendo los CSS propios a `{% block head %}`; verificar con la suite completa en verde y con Playwright en vistas representativas de las 4 apps (nav y footer visibles, sin errores de consola).
+- [x] 2.4 Agregar el campo `foto_url` a `Cuenta` con su migración, poblarlo desde el proveedor de Google al iniciar sesión y usarlo en el nav con marcador de posición cuando esté vacío; verificar con `manage.py makemigrations --check --dry-run` (sin cambios pendientes tras aplicar la migración) y con tests en `cuentas/tests.py` (poblado y fallback) ejecutados con `manage.py test cuentas`.
 - [x] 2.5 Actualizar el comando de tests de `AGENTS.md` para incluir `core`; verificar que el comando documentado ejecuta la suite completa con exit 0.
 
 ## 3. Página principal

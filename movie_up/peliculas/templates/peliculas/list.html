@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Películas</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Películas{% endblock %}
+
+{% block content %}
     <h1>Listado de Películas</h1>
     <a href="{% url 'peliculas:pelicula_create' %}">Crear Nueva Película</a>
     
@@ -40,5 +38,4 @@
             {% endfor %}
         </tbody>
     </table>
-</body>
-</html>
+{% endblock %}

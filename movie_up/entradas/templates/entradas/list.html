@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mis entradas</title>
-    <link rel="icon" href="data:,">
-</head>
-<body>
-<main>
+{% extends 'base.html' %}
+
+{% block title %}Mis entradas{% endblock %}
+
+{% block content %}
     <h1>Mis entradas</h1>
     <table>
         <thead>
@@ -37,6 +32,4 @@
         {% endfor %}
         </tbody>
     </table>
-</main>
-</body>
-</html>
+{% endblock %}

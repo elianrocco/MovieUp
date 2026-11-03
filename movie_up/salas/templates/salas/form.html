@@ -1,16 +1,17 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% if sala %}Editar sala{% else %}Crear sala{% endif %}</title>
-    <link rel="icon" href="data:,">
+
+{% block title %}{% if sala %}Editar sala{% else %}Crear sala{% endif %}{% endblock %}
+
+{% block head %}
     <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+{% endblock %}
+
+{% block scripts %}
     <script src="{% static 'salas/js/grid.js' %}" defer></script>
-</head>
-<body>
-<main>
+{% endblock %}
+
+{% block content %}
     <h1>{% if sala %}Editar sala{% else %}Crear sala{% endif %}</h1>
 
     {% if error %}
@@ -63,6 +64,4 @@
             {% endif %}
         </div>
     </form>
-</main>
-</body>
-</html>
+{% endblock %}

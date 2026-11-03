@@ -1,15 +1,13 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% if funcion %}Editar función{% else %}Crear función{% endif %}</title>
-    <link rel="icon" href="data:,">
+
+{% block title %}{% if funcion %}Editar función{% else %}Crear función{% endif %}{% endblock %}
+
+{% block head %}
     <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
-</head>
-<body>
-<main>
+{% endblock %}
+
+{% block content %}
     <h1>{% if funcion %}Editar función{% else %}Crear función{% endif %}</h1>
 
     {% if error %}
@@ -105,6 +103,4 @@
             {% endif %}
         </div>
     </form>
-</main>
-</body>
-</html>
+{% endblock %}

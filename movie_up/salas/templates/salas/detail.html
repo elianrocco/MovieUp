@@ -1,16 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
 {% load salas_tags %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ sala.nombre }}</title>
-    <link rel="icon" href="data:,">
+
+{% block title %}{{ sala.nombre }}{% endblock %}
+
+{% block head %}
     <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
-</head>
-<body>
-<main>
+{% endblock %}
+
+{% block content %}
     <h1>{{ sala.nombre }}</h1>
     <dl>
         <dt>Tipo de sala</dt>
@@ -37,6 +35,4 @@
         <a href="{% url 'salas:sala_delete' sala.pk %}">Eliminar</a>
         <a href="{% url 'salas:sala_list' %}">Volver al listado</a>
     </nav>
-</main>
-</body>
-</html>
+{% endblock %}

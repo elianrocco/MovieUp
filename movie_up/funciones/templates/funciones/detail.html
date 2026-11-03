@@ -1,17 +1,18 @@
+{% extends 'base.html' %}
 {% load static %}
 {% load salas_tags %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Detalle de función</title>
-    <link rel="icon" href="data:,">
+
+{% block title %}Detalle de función{% endblock %}
+
+{% block head %}
     <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
+{% endblock %}
+
+{% block scripts %}
     <script src="{% static 'salas/js/grid.js' %}" defer></script>
-</head>
-<body>
-<main>
+{% endblock %}
+
+{% block content %}
     <h1>Detalle de función</h1>
     <dl>
         <dt>Película</dt>
@@ -59,6 +60,4 @@
         <a href="{% url 'funciones:funcion_delete' funcion.pk %}">Eliminar</a>
         <a href="{% url 'funciones:funcion_list' %}">Volver al listado</a>
     </nav>
-</main>
-</body>
-</html>
+{% endblock %}

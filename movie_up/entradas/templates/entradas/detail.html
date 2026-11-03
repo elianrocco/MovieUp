@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Detalle de entrada</title>
-    <link rel="icon" href="data:,">
-</head>
-<body>
-<main>
+{% extends 'base.html' %}
+
+{% block title %}Detalle de entrada{% endblock %}
+
+{% block content %}
     <h1>{{ entrada.funcion.pelicula.titulo }}</h1>
     <dl>
         <dt>Código</dt>
@@ -32,6 +27,4 @@
     <nav>
         <a href="{% url 'entradas:entrada_list' %}">Volver a mis entradas</a>
     </nav>
-</main>
-</body>
-</html>
+{% endblock %}

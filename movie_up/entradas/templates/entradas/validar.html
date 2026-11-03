@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Validar entrada</title>
-    <link rel="icon" href="data:,">
-</head>
-<body>
-<main>
+{% extends 'base.html' %}
+
+{% block title %}Validar entrada{% endblock %}
+
+{% block content %}
     <h1>Validar entrada</h1>
     <form method="post">
         {% csrf_token %}
@@ -34,6 +29,4 @@
         <dd>{{ entrada.n_asiento }}</dd>
     </dl>
     {% endif %}
-</main>
-</body>
-</html>
+{% endblock %}

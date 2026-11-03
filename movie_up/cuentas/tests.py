@@ -130,6 +130,24 @@ class CuentaSocialAccountAdapterTests(TestCase):
         self.assertEqual(created.nombre, 'Cine Filo Completo')
         self.assertFalse(created.has_usable_password())
 
+    def test_populates_foto_url_from_google_profile(self):
+        picture_url = 'https://lh3.googleusercontent.com/a/photo123'
+        sociallogin = self.create_sociallogin(
+            {
+                'sub': 'google-user-photo',
+                'email': 'con.foto@example.com',
+                'email_verified': True,
+                'name': 'Con Foto',
+                'picture': picture_url,
+            }
+        )
+
+        self.assertEqual(sociallogin.user.foto_url, picture_url)
+
+        sociallogin.save(self.request)
+        created = Cuenta.objects.get(correo='con.foto@example.com')
+        self.assertEqual(created.foto_url, picture_url)
+
     def test_unverified_google_email_cannot_create_an_account(self):
         sociallogin = self.create_sociallogin(
             {

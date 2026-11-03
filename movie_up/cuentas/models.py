@@ -47,6 +47,7 @@ class Cuenta(AbstractUser):
 
     correo = models.EmailField(max_length=254, unique=True)
     nombre = models.CharField(max_length=150)
+    foto_url = models.URLField(max_length=500, blank=True, default='')
 
     objects = CuentaManager()
 

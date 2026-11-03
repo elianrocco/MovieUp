@@ -31,6 +31,12 @@ class CuentaSocialAccountAdapter(DefaultSocialAccountAdapter):
             (cleaned for candidate in name_candidates if (cleaned := _clean_text(candidate))),
             '',
         )
+        
+        # Extraer foto de perfil de Google
+        picture = extra_data.get('picture')
+        if picture and isinstance(picture, str):
+            user.foto_url = picture
+        
         return user
 
     def is_open_for_signup(self, request, sociallogin):
