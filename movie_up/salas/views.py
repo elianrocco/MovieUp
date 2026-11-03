@@ -2,6 +2,8 @@ import json
 
 from django.shortcuts import redirect, render
 
+from core.decorators import staff_required
+
 from . import services
 
 
@@ -30,15 +32,18 @@ def _distribution_from_post(post):
     return distribution if isinstance(distribution, dict) else None
 
 
+@staff_required
 def sala_list(request):
     return render(request, 'salas/list.html', {'salas': services.list_salas()})
 
 
+@staff_required
 def sala_detail(request, pk):
     sala = services.get_sala(pk)
     return render(request, 'salas/detail.html', {'sala': sala})
 
 
+@staff_required
 def sala_create(request):
     if request.method == 'POST':
         data = request.POST.dict()
@@ -63,6 +68,7 @@ def sala_create(request):
     )
 
 
+@staff_required
 def sala_update(request, pk):
     sala = services.get_sala(pk)
 
@@ -95,6 +101,7 @@ def sala_update(request, pk):
     )
 
 
+@staff_required
 def sala_delete(request, pk):
     if request.method == 'POST':
         services.delete_sala(pk)

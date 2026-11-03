@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}MovieUp{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    {% comment %} Global site nav renders here. {% endcomment %}
+  </header>
+
+  <main id="site-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer" id="site-footer">
+    {% comment %} Global site footer renders here. {% endcomment %}
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,6 +1,8 @@
 from django.shortcuts import redirect, render
 from django.utils import timezone
 
+from core.decorators import staff_required
+
 from peliculas import services as peliculas_services
 from salas import services as salas_services
 
@@ -64,6 +66,7 @@ def _form_context(funcion=None, post=None, error=None):
     return context
 
 
+@staff_required
 def funcion_list(request):
     return render(
         request,
@@ -72,11 +75,13 @@ def funcion_list(request):
     )
 
 
+@staff_required
 def funcion_detail(request, pk):
     funcion = services.get_funcion(pk)
     return render(request, 'funciones/detail.html', {'funcion': funcion})
 
 
+@staff_required
 def funcion_create(request):
     if request.method == 'POST':
         try:
@@ -92,6 +97,7 @@ def funcion_create(request):
     return render(request, 'funciones/form.html', _form_context())
 
 
+@staff_required
 def funcion_update(request, pk):
     funcion = services.get_funcion(pk)
 
@@ -114,6 +120,7 @@ def funcion_update(request, pk):
     )
 
 
+@staff_required
 def funcion_delete(request, pk):
     if request.method == 'POST':
         try:

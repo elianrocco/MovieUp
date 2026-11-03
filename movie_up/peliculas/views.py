@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect
 from django.http import Http404
+
+from core.decorators import staff_required
+
 from . import services
 
 
+@staff_required
 def pelicula_list(request):
     """Vista de listado de películas."""
     peliculas = services.list_peliculas()
     return render(request, 'peliculas/list.html', {'peliculas': peliculas})
 
 
+@staff_required
 def pelicula_detail(request, pk):
     """Vista de detalle de una película."""
     try:
@@ -18,6 +23,7 @@ def pelicula_detail(request, pk):
         raise
 
 
+@staff_required
 def pelicula_create(request):
     """Vista para crear una nueva película."""
     if request.method == 'POST':
@@ -32,6 +38,7 @@ def pelicula_create(request):
     return render(request, 'peliculas/form.html')
 
 
+@staff_required
 def pelicula_update(request, pk):
     """Vista para actualizar una película existente."""
     pelicula = services.get_pelicula(pk)
@@ -52,6 +59,7 @@ def pelicula_update(request, pk):
     return render(request, 'peliculas/form.html', {'pelicula': pelicula})
 
 
+@staff_required
 def pelicula_delete(request, pk):
     """Vista para eliminar una película."""
     if request.method == 'POST':

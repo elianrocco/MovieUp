@@ -2,17 +2,18 @@
 
 ## 1. Infraestructura visual
 
-- [ ] 1.1 Crear `movie_up/static/` con `css/`, `js/` e `img/` y registrar `STATICFILES_DIRS = [BASE_DIR / 'static']` en `core/settings.py`; verificar con `manage.py findstatic css/tokens.css` que resuelve dentro de la nueva carpeta.
-- [ ] 1.2 Crear `movie_up/static/css/tokens.css` con los 12 tokens oklch y sus pares de texto de `.opencode/skills/ui-design/references/palette.md`; verificar que cada variable coincide 1:1 con la tabla del reference.
-- [ ] 1.3 Registrar `TEMPLATES['DIRS'] = [BASE_DIR / 'templates']` y crear `movie_up/templates/base.html` con `{% load static %}`, las fuentes Playfair Display e Inter, los bloques `title`/`head`/`content`/`scripts` y los contenedores de nav y footer; verificar con `manage.py check` y con la suite completa en verde (nadie extiende el template todavía).
-- [ ] 1.4 Agregar `'core'` a `INSTALLED_APPS` para que el discovery de tests alcance `movie_up/core/tests.py`; verificar con `manage.py test core` que termina con exit 0 sin error de discovery.
+- [x] 1.1 Crear `movie_up/static/` con `css/`, `js/` e `img/` y registrar `STATICFILES_DIRS = [BASE_DIR / 'static']` en `core/settings.py`; verificar con `manage.py findstatic css/tokens.css` que resuelve dentro de la nueva carpeta.
+- [x] 1.2 Crear `movie_up/static/css/tokens.css` con los 12 tokens oklch y sus pares de texto de `.opencode/skills/ui-design/references/palette.md`; verificar que cada variable coincide 1:1 con la tabla del reference.
+- [x] 1.3 Registrar `TEMPLATES['DIRS'] = [BASE_DIR / 'templates']` y crear `movie_up/templates/base.html` con `{% load static %}`, las fuentes Playfair Display e Inter, los bloques `title`/`head`/`content`/`scripts` y los contenedores de nav y footer; verificar con `manage.py check` y con la suite completa en verde (nadie extiende el template todavía).
+- [x] 1.4 Agregar `'core'` a `INSTALLED_APPS` para que el discovery de tests alcance `movie_up/core/tests.py`; verificar con `manage.py test core` que termina con exit 0 sin error de discovery.
 
 ## 2. Shell global: nav, footer y foto
 
 - [ ] 2.1 Implementar el nav en `base.html` según el requisito "Nav global con estados de sesión" (nombre "MovieUp" centrado con el logo a su izquierda, `Login`/`Logout`, foto y nombre debajo del icono, ticket dorado solo para comunes hacia `/entradas/`); verificar con tests en `core/tests.py` que cubren los tres estados y el clic del ticket, ejecutados con `manage.py test core`.
 - [ ] 2.2 Implementar el footer en `base.html` con el nombre "Elian" y el aviso de proyecto educativo sin fines de lucro; verificar con test en `core/tests.py` que aparece en una vista existente.
-- [ ] 2.3 Agregar el campo `foto_url` a `Cuenta` con su migración, poblarlo desde el proveedor de Google al iniciar sesión y usarlo en el nav con marcador de posición cuando esté vacío; verificar con `manage.py makemigrations --check --dry-run` (sin cambios pendientes tras aplicar la migración) y con tests en `cuentas/tests.py` (poblado y fallback) ejecutados con `manage.py test cuentas`.
-- [ ] 2.4 Actualizar el comando de tests de `AGENTS.md` para incluir `core`; verificar que el comando documentado ejecuta la suite completa con exit 0.
+- [ ] 2.3 Refactorizar los 15 templates existentes (list/detail/form/confirm_delete de películas, salas y funciones, más los de entradas) para que extiendan `base.html` con sus bloques, moviendo los CSS propios a `{% block head %}`; verificar con la suite completa en verde y con Playwright en vistas representativas de las 4 apps (nav y footer visibles, sin errores de consola).
+- [ ] 2.4 Agregar el campo `foto_url` a `Cuenta` con su migración, poblarlo desde el proveedor de Google al iniciar sesión y usarlo en el nav con marcador de posición cuando esté vacío; verificar con `manage.py makemigrations --check --dry-run` (sin cambios pendientes tras aplicar la migración) y con tests en `cuentas/tests.py` (poblado y fallback) ejecutados con `manage.py test cuentas`.
+- [x] 2.5 Actualizar el comando de tests de `AGENTS.md` para incluir `core`; verificar que el comando documentado ejecuta la suite completa con exit 0.
 
 ## 3. Página principal
 
@@ -23,10 +24,10 @@
 
 ## 4. Control de acceso a los CRUD
 
-- [ ] 4.1 Crear `movie_up/core/decorators.py` con `staff_required` (anónimo → pantalla de inicio de sesión conservando `?next=`; autenticado no-staff → `/`); verificar con tests en `core/tests.py` que cubren los tres caminos (anónimo, común, personal).
-- [ ] 4.2 Aplicar `staff_required` a las 5 funciones de `movie_up/peliculas/views.py`; verificar con tests en `peliculas/tests.py` (rechazo de visitante y común en las cuatro rutas sin modificar el registro, acceso normal del personal) ejecutados con `manage.py test peliculas`.
-- [ ] 4.3 Aplicar `staff_required` a las 5 funciones de `movie_up/salas/views.py`; verificar con tests en `salas/tests.py` con el mismo patrón que 4.2, ejecutados con `manage.py test salas`.
-- [ ] 4.4 Aplicar `staff_required` a las 5 funciones de `movie_up/funciones/views.py`; verificar con tests en `funciones/tests.py` con el mismo patrón que 4.2, ejecutados con `manage.py test funciones`.
+- [x] 4.1 Crear `movie_up/core/decorators.py` con `staff_required` (anónimo → pantalla de inicio de sesión conservando `?next=`; autenticado no-staff → `/`); verificar con tests en `core/tests.py` que cubren los tres caminos (anónimo, común, personal).
+- [x] 4.2 Aplicar `staff_required` a las 5 funciones de `movie_up/peliculas/views.py`; verificar con tests en `peliculas/tests.py` (rechazo de visitante y común en las cuatro rutas sin modificar el registro, acceso normal del personal) ejecutados con `manage.py test peliculas`.
+- [x] 4.3 Aplicar `staff_required` a las 5 funciones de `movie_up/salas/views.py`; verificar con tests en `salas/tests.py` con el mismo patrón que 4.2, ejecutados con `manage.py test salas`.
+- [x] 4.4 Aplicar `staff_required` a las 5 funciones de `movie_up/funciones/views.py`; verificar con tests en `funciones/tests.py` con el mismo patrón que 4.2, ejecutados con `manage.py test funciones`.
 
 ## 5. Vista de gestión
 

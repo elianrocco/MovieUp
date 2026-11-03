@@ -1,0 +1,30 @@
+/* MovieUp design tokens.
+   Source of truth: .opencode/skills/ui-design/references/palette.md
+   Every background/text pair below is defined by that palette (AA contrast). */
+
+:root {
+  /* Surfaces */
+  --bg: oklch(0.95 0.045 90);          /* page background (warm cream) */
+  --surface: oklch(0.985 0.018 90);    /* cards and popovers (light cream) */
+  --bg-muted: oklch(0.955 0.012 70);   /* muted background */
+  --ink: oklch(0.23 0.012 20);         /* dark blocks: nav, hero, posters */
+
+  /* Text */
+  --text: oklch(0.24 0.015 20);        /* warm black - never pure black */
+  --text-muted: oklch(0.5 0.02 30);    /* metadata and descriptions */
+  --on-ink: oklch(0.97 0.01 80);       /* text on ink */
+
+  /* Brand and actions */
+  --primary: oklch(0.6 0.14 22);         /* cinema red */
+  --on-primary: oklch(0.99 0.005 80);    /* text on primary */
+  --secondary: oklch(0.94 0.03 18);      /* soft pink */
+  --on-secondary: oklch(0.4 0.1 22);     /* text on secondary */
+  --gold: oklch(0.84 0.1 85);            /* pastel gold */
+  --on-gold: oklch(0.3 0.05 70);         /* text on gold */
+  --gold-light: oklch(0.9 0.07 88);      /* light gold accent */
+  --on-gold-light: oklch(0.38 0.07 70);  /* text on light gold */
+
+  /* Borders and focus */
+  --border: oklch(0.9 0.02 50);  /* borders and inputs */
+  --focus: var(--primary);       /* focus ring (same as primary) */
+}

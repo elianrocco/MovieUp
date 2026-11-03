@@ -1,6 +1,8 @@
 from datetime import timedelta
 from decimal import Decimal
+from urllib.parse import urlencode
 
+from django.conf import settings
 from django.http import Http404
 from django.test import TestCase
 from django.urls import reverse
@@ -8,6 +10,8 @@ from django.utils import timezone
 
 from peliculas.models import Pelicula
 from salas.models import Sala
+
+from cuentas.models import Cuenta
 
 from .models import Funcion
 from .services import (
@@ -449,6 +453,13 @@ class FuncionDeleteServiceTests(FuncionTestDataMixin, TestCase):
 
 
 class FuncionViewTests(FuncionTestDataMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.staff = Cuenta.objects.create_user(
+            'staff-funciones@example.com', 'Staff Funciones', is_staff=True
+        )
+        self.client.force_login(self.staff)
+
     def form_data(self, **overrides):
         data = self.valid_data()
         data['inicio'] = self.future_start().strftime('%Y-%m-%dT%H:%M')
@@ -637,3 +648,63 @@ class FuncionViewTests(FuncionTestDataMixin, TestCase):
         )
 
         self.assertEqual(response.status_code, 404)
+
+
+class AccesoRestringidoTests(FuncionTestDataMixin, TestCase):
+    def setUp(self):
+        super().setUp()
+        self.funcion = create_funcion(self.valid_data())
+        self.comun = Cuenta.objects.create_user(
+            'comun-funciones@example.com', 'Comun Funciones'
+        )
+        self.staff = Cuenta.objects.create_user(
+            'guardia-funciones@example.com', 'Guardia Funciones', is_staff=True
+        )
+        self.rutas = [
+            reverse('funciones:funcion_list'),
+            reverse('funciones:funcion_create'),
+            reverse('funciones:funcion_detail', args=[self.funcion.pk]),
+            reverse('funciones:funcion_update', args=[self.funcion.pk]),
+            reverse('funciones:funcion_delete', args=[self.funcion.pk]),
+        ]
+
+    def test_visitante_es_redirigido_al_login_en_las_cinco_rutas(self):
+        for ruta in self.rutas:
+            expected = f'{settings.LOGIN_URL}?{urlencode({"next": ruta}, safe="/")}'
+            response = self.client.get(ruta)
+            self.assertRedirects(
+                response, expected, fetch_redirect_response=False, msg_prefix=ruta
+            )
+
+    def test_comun_es_redirigido_a_la_portada_en_las_cinco_rutas(self):
+        self.client.force_login(self.comun)
+        for ruta in self.rutas:
+            response = self.client.get(ruta)
+            self.assertRedirects(
+                response, '/', fetch_redirect_response=False, msg_prefix=ruta
+            )
+
+    def test_comun_no_modifica_el_registro(self):
+        self.client.force_login(self.comun)
+
+        response = self.client.post(
+            reverse('funciones:funcion_update', args=[self.funcion.pk]),
+            {'idioma': 'Klingon'},
+        )
+
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
+        self.funcion.refresh_from_db()
+        self.assertEqual(self.funcion.idioma, 'Español')
+
+        response = self.client.post(
+            reverse('funciones:funcion_delete', args=[self.funcion.pk])
+        )
+
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
+        self.assertTrue(Funcion.objects.filter(pk=self.funcion.pk).exists())
+
+    def test_staff_accede_a_las_cinco_rutas(self):
+        self.client.force_login(self.staff)
+        for ruta in self.rutas:
+            response = self.client.get(ruta)
+            self.assertEqual(response.status_code, 200, ruta)

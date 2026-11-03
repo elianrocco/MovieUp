@@ -2,10 +2,15 @@ import json
 import re
 from pathlib import Path
 
+from urllib.parse import urlencode
+
+from django.conf import settings
 from django.contrib import admin
 from django.http import Http404
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
+
+from cuentas.models import Cuenta
 
 from .models import Sala
 from .templatetags.salas_tags import CELL_CLASS_MAP, celda_clase
@@ -275,6 +280,10 @@ class SalaViewTests(TestCase):
             'tipo_sonido': 'Dolby',
             'distribucion': {'version': 1, 'filas': ['PAR', 'AAR']},
         })
+        self.staff = Cuenta.objects.create_user(
+            'staff-salas@example.com', 'Staff Salas', is_staff=True
+        )
+        self.client.force_login(self.staff)
 
     def test_all_sala_urls_reverse(self):
         self.assertEqual(reverse('salas:sala_list'), '/salas/')
@@ -448,3 +457,67 @@ class SalaViewTests(TestCase):
 
     def test_sala_is_registered_in_admin(self):
         self.assertIn(Sala, admin.site._registry)
+
+
+class AccesoRestringidoTests(TestCase):
+    def setUp(self):
+        self.sala = create_sala({
+            'nombre': 'Sala Vigilada',
+            'tipo_sala': '2D',
+            'tipo_sonido': 'Dolby',
+            'distribucion': {'version': 1, 'filas': ['PAR', 'AAR']},
+        })
+        self.comun = Cuenta.objects.create_user(
+            'comun-salas@example.com', 'Comun Salas'
+        )
+        self.staff = Cuenta.objects.create_user(
+            'guardia-salas@example.com', 'Guardia Salas', is_staff=True
+        )
+        self.rutas = [
+            reverse('salas:sala_list'),
+            reverse('salas:sala_create'),
+            reverse('salas:sala_detail', args=[self.sala.pk]),
+            reverse('salas:sala_update', args=[self.sala.pk]),
+            reverse('salas:sala_delete', args=[self.sala.pk]),
+        ]
+
+    def test_visitante_es_redirigido_al_login_en_las_cinco_rutas(self):
+        for ruta in self.rutas:
+            expected = f'{settings.LOGIN_URL}?{urlencode({"next": ruta}, safe="/")}'
+            response = self.client.get(ruta)
+            self.assertRedirects(
+                response, expected, fetch_redirect_response=False, msg_prefix=ruta
+            )
+
+    def test_comun_es_redirigido_a_la_portada_en_las_cinco_rutas(self):
+        self.client.force_login(self.comun)
+        for ruta in self.rutas:
+            response = self.client.get(ruta)
+            self.assertRedirects(
+                response, '/', fetch_redirect_response=False, msg_prefix=ruta
+            )
+
+    def test_comun_no_modifica_el_registro(self):
+        self.client.force_login(self.comun)
+
+        response = self.client.post(
+            reverse('salas:sala_update', args=[self.sala.pk]),
+            {'nombre': 'Titulo Intruso'},
+        )
+
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
+        self.sala.refresh_from_db()
+        self.assertEqual(self.sala.nombre, 'Sala Vigilada')
+
+        response = self.client.post(
+            reverse('salas:sala_delete', args=[self.sala.pk])
+        )
+
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
+        self.assertTrue(Sala.objects.filter(pk=self.sala.pk).exists())
+
+    def test_staff_accede_a_las_cinco_rutas(self):
+        self.client.force_login(self.staff)
+        for ruta in self.rutas:
+            response = self.client.get(ruta)
+            self.assertEqual(response.status_code, 200, ruta)
