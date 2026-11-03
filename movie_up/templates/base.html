@@ -11,35 +11,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site-shell.css' %}">
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   {% block head %}{% endblock %}
 </head>
 <body>
   <header class="site-header" id="site-header">
-    <nav class="site-nav">
-      <a href="/" class="site-nav__brand">
-        <img src="{% static 'img/logo.png' %}" alt="" class="site-nav__logo" onerror="this.style.display='none'">
-        <span class="site-nav__name">MovieUp</span>
-      </a>
-      <div class="site-nav__user">
-        {% if user.is_authenticated %}
-          <div class="site-nav__avatar">
-            {% if user.foto_url %}
-              <img src="{{ user.foto_url }}" alt="{{ user.nombre }}">
-            {% else %}
-              <span class="site-nav__avatar-placeholder">{{ user.nombre|first|upper }}</span>
-            {% endif %}
-          </div>
-          <span class="site-nav__username">{{ user.nombre }}</span>
-          {% if not user.is_staff %}
-            <a href="{% url 'entradas:entrada_list' %}" class="site-nav__ticket">Mis entradas</a>
-          {% endif %}
-          <a href="{% url 'account_logout' %}" class="site-nav__logout">Logout</a>
-        {% else %}
-          <a href="{% url 'account_login' %}" class="site-nav__login">Login</a>
-        {% endif %}
-      </div>
-    </nav>
+    {% include 'includes/site_nav.html' %}
   </header>
 
   <main id="site-main">
@@ -47,10 +25,7 @@
   </main>
 
   <footer class="site-footer" id="site-footer">
-    <div class="site-footer__content">
-      <p class="site-footer__author">Elian</p>
-      <p class="site-footer__notice">Proyecto educativo sin fines de lucro. El módulo de pago se incluye con propósito de aprendizaje, no con la intención de iniciar un negocio.</p>
-    </div>
+    {% include 'includes/site_footer.html' %}
   </footer>
 
   {% block scripts %}{% endblock %}

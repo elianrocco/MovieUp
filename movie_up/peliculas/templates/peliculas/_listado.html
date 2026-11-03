@@ -1,0 +1,33 @@
+<h1>Listado de Películas</h1>
+<p><a class="button-link" href="{% url 'peliculas:pelicula_create' %}">Crear Nueva Película</a></p>
+
+<table class="data-table">
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Género</th>
+      <th>Duración (min)</th>
+      <th>Fecha Estreno</th>
+      <th>En Cartelera</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for pelicula in peliculas %}
+    <tr>
+      <td>{{ pelicula.titulo }}</td>
+      <td>{{ pelicula.genero }}</td>
+      <td>{{ pelicula.duracion_minutos }}</td>
+      <td>{{ pelicula.fecha_estreno }}</td>
+      <td>{% if pelicula.en_cartelera %}Sí{% else %}No{% endif %}</td>
+      <td>
+        <a href="{% url 'peliculas:pelicula_detail' pelicula.pk %}">Ver</a>
+        <a href="{% url 'peliculas:pelicula_update' pelicula.pk %}">Editar</a>
+        <a href="{% url 'peliculas:pelicula_delete' pelicula.pk %}">Eliminar</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="6">No hay películas registradas.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>

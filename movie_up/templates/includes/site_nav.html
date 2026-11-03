@@ -1,0 +1,28 @@
+{% load static %}
+<nav class="site-nav">
+  <a href="/" class="site-nav__brand">
+    <span class="site-nav__logo" aria-hidden="true"></span>
+    <span class="site-nav__name">MovieUp</span>
+  </a>
+  <div class="site-nav__actions">
+    {% if user.is_authenticated %}
+      {% if not user.is_staff %}
+        <a href="{% url 'entradas:entrada_list' %}" class="site-nav__ticket">Mis entradas</a>
+      {% endif %}
+      <a href="{% url 'account_logout' %}" class="site-nav__logout">Logout</a>
+      <div class="site-nav__profile">
+        <div class="site-nav__avatar">
+          {% if user.foto_url %}
+            <img src="{{ user.foto_url }}" alt="{{ user.nombre }}">
+          {% else %}
+            <span class="site-nav__avatar-placeholder">{{ user.nombre|first|upper }}</span>
+          {% endif %}
+        </div>
+        <span class="site-nav__username">{{ user.nombre }}</span>
+      </div>
+    {% else %}
+      <a href="{% url 'account_login' %}" class="site-nav__login">Login</a>
+      <span class="site-nav__avatar site-nav__avatar--empty" aria-hidden="true"></span>
+    {% endif %}
+  </div>
+</nav>

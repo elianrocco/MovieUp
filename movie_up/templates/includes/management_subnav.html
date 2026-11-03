@@ -1,0 +1,22 @@
+<nav class="management-subnav" aria-label="Gestión">
+  <button type="button" class="management-subnav__item{% if active_tab == 'movies' %} is-active{% endif %}"
+          data-management-tab="movies" aria-pressed="{% if active_tab == 'movies' %}true{% else %}false{% endif %}">
+    Películas
+  </button>
+  <button type="button" class="management-subnav__item{% if active_tab == 'functions' %} is-active{% endif %}"
+          data-management-tab="functions" aria-pressed="{% if active_tab == 'functions' %}true{% else %}false{% endif %}">
+    Funciones
+  </button>
+  <button type="button" class="management-subnav__item{% if active_tab == 'rooms' %} is-active{% endif %}"
+          data-management-tab="rooms" aria-pressed="{% if active_tab == 'rooms' %}true{% else %}false{% endif %}">
+    Salas
+  </button>
+  <a class="management-subnav__item{% if active_tab == 'accounts' %} is-active{% endif %}"
+     href="{% url 'admin:index' %}"{% if active_tab == 'accounts' %} aria-current="page"{% endif %}>
+    Cuentas
+  </a>
+  <button type="button" class="management-subnav__item management-subnav__item--disabled"
+          aria-disabled="true" disabled>
+    Estadísticas
+  </button>
+</nav>

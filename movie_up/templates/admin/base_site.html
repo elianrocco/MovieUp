@@ -1,0 +1,30 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block responsive %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
+  <link rel="stylesheet" href="{% static 'css/site-shell.css' %}">
+  <link rel="stylesheet" href="{% static 'css/admin-shell.css' %}">
+{% endblock %}
+
+{% block header %}
+  <header class="site-header site-header--admin" id="site-header">
+    {% include 'includes/site_nav.html' %}
+  </header>
+  {% include 'includes/management_subnav.html' with active_tab='accounts' %}
+{% endblock %}
+
+{% block footer %}
+  <div class="site-footer" id="site-footer">
+    {% include 'includes/site_footer.html' %}
+  </div>
+{% endblock %}

@@ -255,3 +255,131 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse('home'))
         # Should have href="#" for authenticated users
         self.assertContains(response, 'href="#"')
+
+
+class GestionViewTests(TestCase):
+    def setUp(self):
+        from datetime import timedelta
+
+        from cuentas.models import Cuenta
+        from funciones.models import Funcion
+        from peliculas.models import Pelicula
+        from salas.models import Sala
+        from django.utils import timezone
+
+        self.admin = Cuenta.objects.create_superuser(
+            'gestion-admin@example.com', 'Gestión Admin', 'test-password'
+        )
+        self.common = Cuenta.objects.create_user(
+            'gestion-common@example.com', 'Cuenta común'
+        )
+        self.pelicula = Pelicula.objects.create(
+            titulo='Película del dashboard',
+            imagen_portada='imgs/dashboard.jpg',
+            genero='Drama',
+            duracion_minutos=100,
+            descripcion='Descripción',
+            clasificacion='ATP',
+            fecha_estreno='2026-01-01',
+            url_trailer='https://example.com/trailer',
+            en_cartelera=True,
+        )
+        self.sala = Sala.objects.create(
+            nombre='Sala del dashboard',
+            distribucion={'version': 1, 'filas': ['AAA']},
+            tipo_sala='2D',
+            tipo_sonido='Dolby',
+            capacidad=3,
+        )
+        inicio = timezone.now() + timedelta(days=1)
+        self.funcion = Funcion.objects.create(
+            funcion_activa=True,
+            inicio=inicio,
+            fin=inicio + timedelta(minutes=100),
+            idioma='Español',
+            subtitulada=False,
+            distribucion={'version': 1, 'filas': ['AAA']},
+            disponibilidad=3,
+            precio_entrada='1500.00',
+            pelicula=self.pelicula,
+            sala=self.sala,
+            entradas_compradas=0,
+        )
+
+    def test_anonymous_is_redirected_to_login(self):
+        response = self.client.get(reverse('gestion'))
+        expected = f'{settings.LOGIN_URL}?{urlencode({"next": "/gestion/"}, safe="/")}'
+        self.assertRedirects(response, expected, fetch_redirect_response=False)
+
+    def test_common_account_is_redirected_home(self):
+        self.client.force_login(self.common)
+
+        response = self.client.get(reverse('gestion'))
+
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
+
+    def test_staff_sees_dashboard_with_movies_selected_by_default(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('gestion'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'gestion.html')
+        self.assertContains(response, 'data-management-tab="movies"')
+        self.assertContains(response, 'aria-pressed="true"')
+        self.assertContains(response, 'data-management-panel="movies"')
+        self.assertContains(response, 'Película del dashboard')
+
+    def test_dashboard_prerenders_all_three_listings_and_five_controls(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('gestion'))
+
+        for value in (
+            'Película del dashboard',
+            'Sala del dashboard',
+            'data-management-panel="functions"',
+            'data-management-panel="rooms"',
+            'Películas',
+            'Funciones',
+            'Salas',
+            'Cuentas',
+            'Estadísticas',
+        ):
+            self.assertContains(response, value)
+        self.assertEqual(response.content.count(b'data-management-tab='), 3)
+        self.assertContains(response, 'Estadísticas')
+        self.assertContains(response, reverse('admin:index'))
+
+    def test_admin_index_uses_movieup_shell_and_accounts_subnav(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('admin:index'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="site-header site-header--admin"')
+        self.assertContains(response, '<div class="site-footer" id="site-footer">', html=False)
+        self.assertNotContains(response, '<footer class="site-footer"', html=False)
+        self.assertContains(response, 'aria-current="page"')
+        self.assertContains(response, 'Estadísticas')
+
+    def test_account_changelist_and_edit_remain_available_in_admin(self):
+        from cuentas.models import Cuenta
+
+        account = Cuenta.objects.create_user('change-me@example.com', 'Change Me')
+        self.client.force_login(self.admin)
+        changelist_url = reverse('admin:cuentas_cuenta_changelist')
+
+        response = self.client.get(changelist_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, account.correo)
+
+        response = self.client.post(
+            reverse('admin:cuentas_cuenta_change', args=[account.pk]),
+            {'is_active': 'on', 'is_staff': 'on', '_save': 'Save'},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        account.refresh_from_db()
+        self.assertTrue(account.is_staff)
+        self.assertTrue(account.is_superuser)

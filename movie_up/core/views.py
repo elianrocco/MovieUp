@@ -1,7 +1,11 @@
-from django.shortcuts import render, redirect
-from django.utils import timezone
+from django.shortcuts import redirect, render
 
+from funciones import services as funciones_services
 from peliculas.models import Pelicula
+from peliculas import services as peliculas_services
+from salas import services as salas_services
+
+from .decorators import staff_required
 
 
 def home(request):
@@ -31,3 +35,17 @@ def home(request):
     }
     
     return render(request, 'home.html', context)
+
+
+@staff_required
+def gestion(request):
+    """Central staff dashboard with pre-rendered domain listings."""
+    return render(
+        request,
+        'gestion.html',
+        {
+            'peliculas': peliculas_services.list_peliculas(),
+            'funciones': funciones_services.list_funciones(),
+            'salas': salas_services.list_salas(),
+        },
+    )

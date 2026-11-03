@@ -1,0 +1,129 @@
+/* MovieUp shell skin for Django admin pages; admin controls remain native. */
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  line-height: 1.5;
+}
+
+#container,
+#content-start,
+#content {
+  background: transparent;
+}
+
+#header {
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  color: var(--on-ink);
+}
+
+.site-header--admin {
+  position: relative;
+  background: var(--ink);
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header--admin .site-nav {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.site-header--admin .site-nav__brand,
+.site-header--admin .site-nav__username {
+  color: var(--on-ink);
+}
+
+.site-header--admin .site-nav__login,
+.site-header--admin .site-nav__logout {
+  color: var(--on-primary);
+}
+
+.site-header--admin + .management-subnav {
+  position: relative;
+  z-index: 5;
+}
+
+#nav-sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+#nav-sidebar a,
+.breadcrumbs a,
+#content a {
+  color: var(--primary);
+}
+
+#nav-sidebar .current-model,
+#nav-sidebar .current-app .section {
+  background: var(--secondary);
+  color: var(--on-secondary);
+}
+
+.breadcrumbs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.module,
+.inline-group,
+.selector,
+.paginator {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.module h2,
+.module caption,
+.inline-group h2 {
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+input[type="submit"],
+button,
+.button,
+a.button {
+  min-height: 40px;
+  border-color: var(--primary);
+  border-radius: 0.4rem;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+input[type="submit"]:hover,
+button:hover,
+.button:hover,
+a.button:hover {
+  opacity: 0.8;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+#footer {
+  margin: 0;
+  padding: 0;
+}
+
+#footer .site-footer {
+  margin-top: 2rem;
+}
+
+@media (max-width: 767px) {
+  .site-header--admin .site-nav {
+    padding: 0.75rem 1rem;
+  }
+}

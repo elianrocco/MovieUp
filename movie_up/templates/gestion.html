@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Gestión central · MovieUp{% endblock %}
+
+{% block content %}
+  <div class="management-page">
+    {% include 'includes/management_subnav.html' with active_tab='movies' %}
+
+    <div class="management-panels">
+      <section class="management-panel" id="management-panel-movies"
+               data-management-panel="movies" aria-label="Listado de películas">
+        {% include 'peliculas/_listado.html' %}
+      </section>
+      <section class="management-panel" id="management-panel-functions"
+               data-management-panel="functions" aria-label="Listado de funciones" hidden>
+        {% include 'funciones/_listado.html' %}
+      </section>
+      <section class="management-panel" id="management-panel-rooms"
+               data-management-panel="rooms" aria-label="Listado de salas" hidden>
+        {% include 'salas/_listado.html' %}
+      </section>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/management-tabs.js' %}" defer></script>
+{% endblock %}

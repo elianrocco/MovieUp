@@ -31,10 +31,10 @@
 
 ## 5. Vista de gestión
 
-- [ ] 5.1 Crear la vista `gestion` en `movie_up/core/views.py`, la ruta `path('gestion/')` y `movie_up/templates/gestion.html` (extiende `base.html`) protegidos con `staff_required`, con el subNAV de 5 botones repartidos parejos (`Películas` por defecto, `Cuentas` apuntando a `/admin/`); verificar con tests en `core/tests.py` (anónimo → login, común → `/`, administrador → 200 con subNAV y listado de películas por defecto) ejecutados con `manage.py test core`.
-- [ ] 5.2 Extraer el contenido de los listados existentes a un parcial por app (`_listado.html`), incluir los tres en `gestion.html` y agregar el JS que alterna la pestaña activa sin cambiar la URL ni recargar la página; verificar con tests de servidor (los tres parciales renderizan dentro de la gestión) y con Playwright: los clics en `Funciones` y `Salas` cambian el cuerpo y la URL permanece en `/gestion/`.
-- [ ] 5.3 Crear el override `movie_up/templates/admin/base_site.html` que envuelve el admin con el nav global, el subNAV (`Cuentas` activo), el footer y la paleta de la web; verificar con smoke test de `/admin/` autenticado (renderiza con el shell y el CRUD de cuentas sigue funcionando) y con Playwright.
-- [ ] 5.4 Dejar el botón `Estadísticas` presente en el subNAV sin vista asociada; verificar con test en `core/tests.py` que los cinco botones aparecen en la gestión.
+- [x] 5.1 Crear la vista `gestion` en `movie_up/core/views.py`, la ruta `path('gestion/')` y `movie_up/templates/gestion.html` (extiende `base.html`) protegidos con `staff_required`, con el subNAV de 5 botones repartidos parejos (`Películas` por defecto, `Cuentas` apuntando a `/admin/`); verificar con tests en `core/tests.py` (anónimo → login, común → `/`, administrador → 200 con subNAV y listado de películas por defecto) ejecutados con `manage.py test core`.
+- [x] 5.2 Extraer el contenido de los listados existentes a un parcial por app (`_listado.html`), incluir los tres en `gestion.html` y agregar el JS que alterna la pestaña activa sin cambiar la URL ni recargar la página; verificar con tests de servidor (los tres parciales renderizan dentro de la gestión) y con Playwright: los clics en `Funciones` y `Salas` cambian el cuerpo y la URL permanece en `/gestion/`.
+- [x] 5.3 Crear el override `movie_up/templates/admin/base_site.html` que envuelve el admin con el nav global, el subNAV (`Cuentas` activo), el footer y la paleta de la web; verificar con smoke test de `/admin/` autenticado (renderiza con el shell y el CRUD de cuentas sigue funcionando) y con Playwright.
+- [x] 5.4 Dejar el botón `Estadísticas` presente en el subNAV sin vista asociada; verificar con test en `core/tests.py` que los cinco botones aparecen en la gestión.
 
 ## 6. Verificación de integración
 
