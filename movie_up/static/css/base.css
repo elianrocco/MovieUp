@@ -1,0 +1,141 @@
+/* Base styles - Reset, typography, nav, footer */
+
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* Nav styles */
+.site-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.site-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.site-nav__logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.site-nav__name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.site-nav__user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.site-nav__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--gold-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-nav__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.site-nav__avatar-placeholder {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  color: var(--on-gold-light);
+  font-weight: 600;
+}
+
+.site-nav__username {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.site-nav__ticket {
+  padding: 0.5rem 1rem;
+  background: var(--gold);
+  color: var(--on-gold);
+  border-radius: 20px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.site-nav__ticket:hover {
+  background: color-mix(in oklch, var(--gold) 85%, black);
+  transform: translateY(-2px);
+}
+
+.site-nav__login,
+.site-nav__logout {
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: var(--surface);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.site-nav__login:hover,
+.site-nav__logout:hover {
+  background: color-mix(in oklch, var(--primary) 80%, black);
+  transform: translateY(-2px);
+}
+
+/* Footer styles */
+.site-footer {
+  background: var(--ink);
+  color: var(--on-ink);
+  padding: 2rem;
+  margin-top: 4rem;
+  text-align: center;
+}
+
+.site-footer__author {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.site-footer__notice {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}

@@ -1,0 +1,234 @@
+/* Component styles - Hero, Grid, Cards, Buttons */
+
+/* Hero Section */
+.hero {
+  width: 75%;
+  height: 55vh;
+  margin: 2rem auto;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.hero__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.hero__content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
+  color: var(--surface);
+}
+
+.hero__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 700;
+}
+
+.hero__description {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+.hero__meta {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.hero__meta-item {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.hero__buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Grid Section - Máximo 3 columnas */
+.grid {
+  width: 75%;
+  margin: 3rem auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Container */
+.card-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.card__image {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  display: block;
+}
+
+.card__content {
+  padding: 1rem;
+}
+
+.card__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.card__meta {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.card__meta-item {
+  background: var(--secondary);
+  color: var(--primary);
+  padding: 0.25rem 0.6rem;
+  border-radius: 15px;
+  font-weight: 500;
+}
+
+/* Botones FUERA de la tarjeta */
+.card__buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.card__buttons .btn {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.8rem 1.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: inline-block;
+  border: none;
+  cursor: pointer;
+}
+
+.btn--primary {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+.btn--primary:hover {
+  background: color-mix(in oklch, var(--primary) 80%, black);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(200, 87, 90, 0.4);
+}
+
+.btn--secondary {
+  background: transparent;
+  color: var(--surface);
+  border: 2px solid var(--surface);
+}
+
+.btn--secondary:hover {
+  background: var(--surface);
+  color: var(--primary);
+}
+
+.btn--trailer {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.btn--trailer:hover {
+  background: color-mix(in oklch, var(--gold) 85%, black);
+}
+
+.btn--buy {
+  background: var(--primary);
+  color: var(--surface);
+}
+
+.btn--buy:hover {
+  background: color-mix(in oklch, var(--primary) 80%, black);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-muted);
+}
+
+.empty-state__title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state__text {
+  font-size: 1.1rem;
+}
+
+/* Responsive Hero */
+@media (max-width: 768px) {
+  .hero {
+    width: 95%;
+    height: 60vh;
+  }
+
+  .hero__title {
+    font-size: 1.8rem;
+  }
+}

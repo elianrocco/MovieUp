@@ -17,10 +17,10 @@
 
 ## 3. Página principal
 
-- [ ] 3.1 Crear la vista `home` en `movie_up/core/views.py`, la ruta `path('')` en `core/urls.py` y `movie_up/templates/home.html` (extiende `base.html`) con el hero: rectángulo centrado de poco más de la mitad del alto y tres cuartos del ancho, portada de la película en cartelera de mayor `fecha_estreno` y contenido (título, descripción, género, clasificación, `Trailer`, `Comprar entradas`) en el sector inferior izquierdo; verificar con tests en `core/tests.py` (selección, filtro `en_cartelera`, estado vacío, visitante y común con 200, administrador redirigido a `/gestion/`) ejecutados con `manage.py test core`.
-- [ ] 3.2 Implementar el grid bajo el hero (solo `en_cartelera`, filas de hasta 3, tarjetas de la mitad del alto y un cuarto del ancho del hero, portada con título/género/clasificación dentro y `Trailer`/`Comprar entradas` fuera, justo debajo); verificar con tests en `core/tests.py` (exclusión de no-cartelera, reparto en filas de hasta 3, botones fuera del rectángulo).
-- [ ] 3.3 Cablear `Trailer` (a `url_trailer` desde el hero y las tarjetas) y `Comprar entradas` (sin sesión → login conservando `?next=`; con sesión → sin destino, decisión D8); verificar con tests en `core/tests.py` para ambos estados.
-- [ ] 3.4 Verificar la página principal en navegador real con Playwright como visitante y como cuenta común (hero, grid y gating de compra), comprobando que no hay errores de consola.
+- [x] 3.1 Crear la vista `home` en `movie_up/core/views.py`, la ruta `path('')` en `core/urls.py` y `movie_up/templates/home.html` (extiende `base.html`) con el hero: rectángulo centrado de poco más de la mitad del alto y tres cuartos del ancho, portada de la película en cartelera de mayor `fecha_estreno` y contenido (título, descripción, género, clasificación, `Trailer`, `Comprar entradas`) en el sector inferior izquierdo; verificar con tests en `core/tests.py` (selección, filtro `en_cartelera`, estado vacío, visitante y común con 200, administrador redirigido a `/gestion/`) ejecutados con `manage.py test core`.
+- [x] 3.2 Implementar el grid bajo el hero (solo `en_cartelera`, filas de hasta 3, tarjetas de la mitad del alto y un cuarto del ancho del hero, portada con título/género/clasificación dentro y `Trailer`/`Comprar entradas` fuera, justo debajo); verificar con tests en `core/tests.py` (exclusión de no-cartelera, reparto en filas de hasta 3, botones fuera del rectángulo).
+- [x] 3.3 Cablear `Trailer` (a `url_trailer` desde el hero y las tarjetas) y `Comprar entradas` (sin sesión → login conservando `?next=`; con sesión → sin destino, decisión D8); verificar con tests en `core/tests.py` para ambos estados.
+- [x] 3.4 Verificar la página principal en navegador real con Playwright como visitante y como cuenta común (hero, grid y gating de compra), comprobando que no hay errores de consola.
 
 ## 4. Control de acceso a los CRUD
 
