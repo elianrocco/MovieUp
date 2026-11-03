@@ -71,14 +71,16 @@ MovieUp/
     │       ├── 2026-11-01-crud-funciones/
     │       ├── 2026-11-01-crud-salas/
     │       ├── 2026-11-02-crud-entradas/
-    │       └── 2026-11-02-login-google/
+    │       ├── 2026-11-02-login-google/
+    │       └── 2026-11-03-ui-shell/
     └── specs/
         ├── .gitkeep
         ├── cuentas/
         ├── entradas/
         ├── funciones/
         ├── movies/
-        └── salas/
+        ├── salas/
+        └── ui/
 ```
 
 ## Cómo Ejecutar
