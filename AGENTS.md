@@ -42,8 +42,12 @@ MovieUp/
 │       │   └── SKILL.md
 │       ├── django-app-creator/
 │       │   └── SKILL.md
-│       └── openspec-*/           # 6 skills (explore, propose, apply, archive, sync, update)
-│           └── SKILL.md
+│       ├── openspec-*/           # 6 skills (explore, propose, apply, archive, sync, update)
+│       │   └── SKILL.md
+│       └── ui-design/
+│           ├── SKILL.md
+│           └── references/
+│               └── palette.md
 ├── .playwright-mcp/              # logs de Playwright
 ├── movie_up/
 │   ├── manage.py
@@ -169,6 +173,11 @@ Definidas en `.env` (nunca versionar):
   - Registra la app en `INSTALLED_APPS` de `movie_up/core/settings.py`
   - Crea estructura de templates con namespacing: `templates/<nombre>/.gitkeep`
   - Crea `urls.py` con imports base (`from django.urls import path`, `from . import views`)
+
+### ui-design
+- **Trigger:** "cambiar colores, CSS, estilos, interfaz, paleta, botón, centrar, tipografía, hover, tema" (toda tarea visual de la página)
+- **Ubicación:** `.opencode/skills/ui-design/SKILL.md`
+- **Qué hace:** pilar de diseño visual. Fija la paleta pastel cinematográfica cerrada (12 tokens con sus pares de texto y contraste AA), dónde usar cada color, la proporción 60/25/10/5, el fondo decorativo y la tipografía (Playfair Display + Inter), más las reglas de tamaño de botón (40–56px de alto, CTA máx. 320px en desktop) y de centrado (solo hero, encabezados, estados vacíos y confirmaciones; el resto a la izquierda). Incluye protocolo de desviación: si el usuario propone un color fuera de la paleta, pregunta sí/no antes de aplicar. Spec completo en `references/palette.md`.
 
 ## Agentes
 
