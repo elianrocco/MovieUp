@@ -38,17 +38,17 @@
 
 ## 6. Admin y guard de cuentas
 
-- [ ] 6.1 Registrar `EntradaAdmin` de solo lectura, sin permiso de eliminación y sin acciones masivas, verificando con un test que el panel no ofrece borrado de entradas.
-- [ ] 6.2 Activar los guards `TODO(entrada)` de `movie_up/cuentas/admin.py` en `delete_model` y `delete_queryset`, verificando con tests que una cuenta con entradas no se borra por ninguna de las dos vías y que una cuenta sin entradas se borra por ambas.
-- [ ] 6.3 Actualizar el test `cuentas/tests.py:375`, que hoy exige `source.count('TODO(entrada)') == 2`, y verificar que la suite de `cuentas` pasa con el guard activo.
+- [x] 6.1 Registrar `EntradaAdmin` de solo lectura, sin permiso de eliminación y sin acciones masivas, verificando con un test que el panel no ofrece borrado de entradas.
+- [x] 6.2 Activar los guards `TODO(entrada)` de `movie_up/cuentas/admin.py` en `delete_model` y `delete_queryset`, verificando con tests que una cuenta con entradas no se borra por ninguna de las dos vías y que una cuenta sin entradas se borra por ambas.
+- [x] 6.3 Actualizar el test `cuentas/tests.py:375`, que hoy exige `source.count('TODO(entrada)') == 2`, y verificar que la suite de `cuentas` pasa con el guard activo.
 
 ## 7. Verificación e integración
 
-- [ ] 7.1 Correr la suite completa con `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas` y verificar que termina en OK.
-- [ ] 7.2 Verificar `docker compose exec web python movie_up/manage.py makemigrations --check --dry-run` limpio y `manage.py check` en 0 con solo los 2 warnings `W036` conocidos.
+- [x] 7.1 Correr la suite completa con `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas` y verificar que termina en OK.
+- [x] 7.2 Verificar `docker compose exec web python movie_up/manage.py makemigrations --check --dry-run` limpio y `manage.py check` en 0 con solo los 2 warnings `W036` conocidos.
 - [ ] 7.3 Verificar en navegador real con Playwright MCP el listado, el detalle y la vista de validación en `http://localhost:8000/`, y registrar el resultado en el README.
 - [ ] 7.4 Documentar el caso de uso de entradas en `AGENTS.md` y `README.md` y verificar que todos los enlaces relativos del README apuntan a archivos existentes.
-- [ ] 7.5 Correr `openspec validate crud-entradas --strict` y verificar exit 0.
+- [x] 7.5 Correr `openspec validate crud-entradas --strict` y verificar exit 0.
 
 ## Workflow follow-up
 

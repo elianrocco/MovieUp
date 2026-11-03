@@ -3,9 +3,10 @@ from datetime import timedelta
 from threading import Barrier
 from unittest.mock import patch
 
+from django.contrib.admin.sites import AdminSite
 from django.db import IntegrityError, close_old_connections, connection, transaction
 from django.http import Http404
-from django.test import SimpleTestCase, TestCase, TransactionTestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase, TransactionTestCase
 from django.urls import reverse
 from django.utils import timezone
 
@@ -14,6 +15,7 @@ from funciones.models import Funcion
 from peliculas.models import Pelicula
 from salas.models import Sala
 
+from .admin import EntradaAdmin
 from .models import Entrada
 from .services import (
     CODE_ALPHABET,
@@ -576,3 +578,31 @@ class ValidarEntradaConcurrencyTests(EntradaDataMixin, TransactionTestCase):
             )]
 
         self.assertCountEqual(results, [True, False])
+
+
+class EntradaAdminTests(TestCase):
+    def setUp(self):
+        self.admin_user = Cuenta.objects.create_superuser(
+            'admin@example.com',
+            'Administrator',
+            password='Strong-test-password-123',
+        )
+        self.request = RequestFactory().get('/admin/entradas/entrada/')
+        self.request.user = self.admin_user
+        self.model_admin = EntradaAdmin(Entrada, AdminSite())
+
+    def test_admin_is_read_only_and_has_no_delete_action(self):
+        self.assertTrue(self.model_admin.has_view_permission(self.request))
+        self.assertFalse(self.model_admin.has_add_permission(self.request))
+        self.assertFalse(self.model_admin.has_change_permission(self.request))
+        self.assertFalse(self.model_admin.has_delete_permission(self.request))
+        self.assertNotIn('delete_selected', self.model_admin.get_actions(self.request))
+
+    def test_staff_can_open_changelist_without_manual_creation_or_deletion(self):
+        self.client.force_login(self.admin_user)
+
+        response = self.client.get(reverse('admin:entradas_entrada_changelist'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Add entrada')
+        self.assertNotContains(response, 'Delete selected')

@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from datetime import timedelta
 from pathlib import Path
 from threading import Barrier
 from urllib.parse import parse_qs, urlparse
@@ -10,8 +11,15 @@ from django.contrib.admin.sites import AdminSite
 from django.contrib.sessions.backends.db import SessionStore
 from django.core.exceptions import FieldDoesNotExist
 from django.db import IntegrityError, close_old_connections, connection, transaction
+from django.db.models.deletion import ProtectedError
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
+
+from entradas.models import Entrada
+from funciones.models import Funcion
+from peliculas.models import Pelicula
+from salas.models import Sala
 
 from .adapters import CuentaSocialAccountAdapter
 from .admin import CuentaAdmin
@@ -334,6 +342,50 @@ class CuentaAdminTests(TestCase):
         self.request.user = self.admin_user
         self.model_admin = CuentaAdmin(Cuenta, AdminSite())
 
+    def create_account_with_entry(self, correo, nombre):
+        cuenta = Cuenta.objects.create_user(correo, nombre)
+        pelicula = Pelicula.objects.create(
+            titulo=f'Película {nombre}',
+            imagen_portada='imgs/test.jpg',
+            genero='Drama',
+            duracion_minutos=90,
+            descripcion='Descripción de prueba',
+            clasificacion='ATP',
+            fecha_estreno='2026-01-01',
+            url_trailer='https://example.com/trailer',
+            en_cartelera=True,
+        )
+        distribucion = {'version': 1, 'filas': ['R']}
+        sala = Sala.objects.create(
+            nombre=f'Sala {nombre}',
+            distribucion=distribucion,
+            tipo_sala='2D',
+            tipo_sonido='Dolby',
+            capacidad=1,
+        )
+        inicio = timezone.now() + timedelta(days=2)
+        funcion = Funcion.objects.create(
+            funcion_activa=True,
+            inicio=inicio,
+            fin=inicio + timedelta(minutes=90),
+            idioma='Español',
+            subtitulada=False,
+            distribucion=distribucion,
+            disponibilidad=0,
+            precio_entrada='1500.00',
+            pelicula=pelicula,
+            sala=sala,
+            entradas_compradas=1,
+        )
+        entrada = Entrada.objects.create(
+            funcion=funcion,
+            cuenta=cuenta,
+            codigo=f'ENTRY{cuenta.pk:07d}',
+            l_fila='A',
+            n_asiento=1,
+        )
+        return cuenta, entrada
+
     def test_profile_fields_are_read_only_and_accounts_cannot_be_added_manually(self):
         user = Cuenta.objects.create_user('customer@example.com', 'Customer')
 
@@ -369,10 +421,34 @@ class CuentaAdminTests(TestCase):
 
         self.assertFalse(Cuenta.objects.filter(pk__in=[individual.pk, bulk.pk]).exists())
 
-    def test_entry_deletion_guards_are_documented_for_both_admin_delete_paths(self):
+    def test_accounts_with_entries_cannot_be_deleted_individually(self):
+        cuenta, entrada = self.create_account_with_entry('protected@example.com', 'Protected')
+
+        with self.assertRaisesRegex(ProtectedError, 'No se puede eliminar'):
+            self.model_admin.delete_model(self.request, cuenta)
+
+        self.assertTrue(Cuenta.objects.filter(pk=cuenta.pk).exists())
+        self.assertTrue(Entrada.objects.filter(pk=entrada.pk).exists())
+
+    def test_bulk_delete_is_rejected_if_any_account_has_entries(self):
+        protected, entrada = self.create_account_with_entry(
+            'bulk-protected@example.com', 'Bulk Protected'
+        )
+        unprotected = Cuenta.objects.create_user('bulk-free@example.com', 'Bulk Free')
+
+        with self.assertRaisesRegex(ProtectedError, 'No se pueden eliminar'):
+            self.model_admin.delete_queryset(
+                self.request,
+                Cuenta.objects.filter(pk__in=[protected.pk, unprotected.pk]),
+            )
+
+        self.assertTrue(Cuenta.objects.filter(pk__in=[protected.pk, unprotected.pk]).count() == 2)
+        self.assertTrue(Entrada.objects.filter(pk=entrada.pk).exists())
+
+    def test_entry_deletion_guards_are_active_for_both_admin_delete_paths(self):
         source = Path(__file__).with_name('admin.py').read_text(encoding='utf-8')
 
-        self.assertEqual(source.count('TODO(entrada)'), 2)
+        self.assertEqual(source.count('TODO(entrada)'), 0)
 
 
 class FirstAdminPromotionTests(TestCase):

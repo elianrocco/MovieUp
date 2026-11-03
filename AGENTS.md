@@ -126,7 +126,10 @@ Definidas en `.env` (nunca versionar):
 - El primer alta por Google se promueve automáticamente a administrador completo (`is_staff` + `is_superuser`); las siguientes cuentas son comunes. Esta regla es fija.
 - El administrador gestiona cuentas desde Django Admin; correo y nombre son de solo lectura. El indicador de administrador sincroniza `is_staff` e `is_superuser`.
 - `createsuperuser` queda como acceso local de recuperación para una cuenta administrativa de emergencia.
-- Las cuentas con entradas asociadas no se deben eliminar; los guards quedan comentados con `TODO(entrada)` hasta crear esa app.
+- Las cuentas con entradas asociadas no se deben eliminar; `CuentaAdmin.delete_model` y `delete_queryset` bloquean el borrado individual y masivo, respaldados por `Entrada.cuenta` con `on_delete=PROTECT`.
+- Las entradas se crean solo mediante un servicio interno invocado por la compra; no tienen vista de alta ni edición manual.
+- Cada cliente ve solo el listado y detalle de sus propias entradas. El personal autorizado valida el código de una entrada una sola vez desde la vista de validación.
+- El reembolso elimina la entrada y revierte la disponibilidad/asiento de la función, pero la devolución de dinero queda fuera de este servicio. Se rechaza cuando faltan menos de 24 horas para el inicio; exactamente 24 horas se permite.
 - **Verificación manual:** la selección de una cuenta Google y el login OAuth real los completó el usuario en la tarea 6.4 antes de archivar el change.
     
 ## OpenSpec
