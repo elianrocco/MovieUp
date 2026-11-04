@@ -257,8 +257,8 @@ class SalaTemplateTagTests(SimpleTestCase):
         )
         self.assertEqual(javascript_map, CELL_CLASS_MAP)
 
-    def test_stylesheet_defines_the_three_cell_classes_and_colors(self):
-        css_path = Path(__file__).parent / 'static' / 'salas' / 'css' / 'salas.css'
+    def test_shared_stylesheet_defines_the_three_cell_classes_and_colors(self):
+        css_path = Path(__file__).parent.parent / 'static' / 'css' / 'forms.css'
         stylesheet = css_path.read_text(encoding='utf-8')
         expected_colors = {
             'celda--pasillo': '#888',
@@ -299,14 +299,14 @@ class SalaViewTests(TestCase):
         self.assertContains(response, self.sala.nombre)
         self.assertContains(response, '2D')
         self.assertContains(response, 'Dolby')
-        self.assertContains(response, 'href="/static/salas/css/salas.css"')
+        self.assertContains(response, 'href="/static/css/forms.css"')
 
     def test_detail_renders_read_only_grid_with_shared_css_without_grid_script(self):
         response = self.client.get(reverse('salas:sala_detail', args=[self.sala.pk]))
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.sala.nombre)
-        self.assertContains(response, 'href="/static/salas/css/salas.css"')
+        self.assertContains(response, 'href="/static/css/forms.css"')
         self.assertNotContains(response, 'salas/js/grid.js')
         self.assertContains(response, 'celda--pasillo')
         self.assertContains(response, 'celda--asiento')
@@ -322,7 +322,7 @@ class SalaViewTests(TestCase):
         response = self.client.get(reverse('salas:sala_create'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'href="/static/salas/css/salas.css"')
+        self.assertContains(response, 'href="/static/css/forms.css"')
         self.assertContains(response, 'src="/static/salas/js/grid.js"')
         self.assertContains(response, 'name="nombre" type="text" maxlength="45"')
         self.assertContains(response, 'name="tipo_sala" type="text" maxlength="45"')
@@ -443,7 +443,7 @@ class SalaViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.sala.nombre)
-        self.assertContains(response, 'href="/static/salas/css/salas.css"')
+        self.assertContains(response, 'href="/static/css/forms.css"')
 
         response = self.client.post(reverse('salas:sala_delete', args=[self.sala.pk]))
 

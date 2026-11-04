@@ -1,11 +1,6 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}{% if funcion %}Editar función{% else %}Crear función{% endif %}{% endblock %}
-
-{% block head %}
-    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
-{% endblock %}
 
 {% block content %}
     <h1>{% if funcion %}Editar función{% else %}Crear función{% endif %}</h1>

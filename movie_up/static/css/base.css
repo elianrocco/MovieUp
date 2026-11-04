@@ -1,5 +1,11 @@
 /* Base styles - Reset and page defaults */
 
+/* Force light rendering: native form controls (select popups, input spinners,
+   scrollbars) must not follow the OS dark preference on cream surfaces. */
+:root {
+  color-scheme: light;
+}
+
 /* Reset básico */
 * {
   margin: 0;

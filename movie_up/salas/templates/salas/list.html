@@ -1,11 +1,6 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Salas{% endblock %}
-
-{% block head %}
-    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
-{% endblock %}
 
 {% block content %}
     {% include 'salas/_listado.html' %}

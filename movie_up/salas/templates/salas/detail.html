@@ -1,12 +1,7 @@
 {% extends 'base.html' %}
-{% load static %}
 {% load salas_tags %}
 
 {% block title %}{{ sala.nombre }}{% endblock %}
-
-{% block head %}
-    <link rel="stylesheet" href="{% static 'salas/css/salas.css' %}">
-{% endblock %}
 
 {% block content %}
     <h1>{{ sala.nombre }}</h1>
