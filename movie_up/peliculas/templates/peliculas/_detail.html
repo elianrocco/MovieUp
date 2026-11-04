@@ -1,0 +1,32 @@
+<article class="page-card">
+  <header class="page-card__header">
+    <h1 class="page-card__title">{{ pelicula.titulo }}</h1>
+  </header>
+
+  <div class="page-card__body">
+    <dl class="detail-list">
+      <dt>Imagen de portada</dt>
+      <dd><img class="media-poster" src="{{ pelicula.imagen_portada.url }}" alt="{{ pelicula.titulo }}"></dd>
+      <dt>Género</dt>
+      <dd>{{ pelicula.genero }}</dd>
+      <dt>Duración</dt>
+      <dd>{{ pelicula.duracion_minutos }} minutos</dd>
+      <dt>Descripción</dt>
+      <dd>{{ pelicula.descripcion }}</dd>
+      <dt>Clasificación</dt>
+      <dd>{{ pelicula.clasificacion }}</dd>
+      <dt>Fecha de estreno</dt>
+      <dd>{{ pelicula.fecha_estreno }}</dd>
+      <dt>Tráiler</dt>
+      <dd><a href="{{ pelicula.url_trailer }}">{{ pelicula.url_trailer }}</a></dd>
+      <dt>En cartelera</dt>
+      <dd>{% if pelicula.en_cartelera %}Sí{% else %}No{% endif %}</dd>
+    </dl>
+  </div>
+
+  <div class="page-card__actions">
+    <a class="btn btn--neutral" href="{% url 'peliculas:pelicula_update' pelicula.pk %}">Editar</a>
+    <a class="btn btn--danger" href="{% url 'peliculas:pelicula_delete' pelicula.pk %}">Eliminar</a>
+    <a class="btn btn--neutral" href="{% url 'peliculas:pelicula_list' %}">Volver al listado</a>
+  </div>
+</article>

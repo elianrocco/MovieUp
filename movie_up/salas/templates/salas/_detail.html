@@ -1,0 +1,34 @@
+{% load salas_tags %}
+<article class="page-card">
+  <header class="page-card__header">
+    <h1 class="page-card__title">{{ sala.nombre }}</h1>
+  </header>
+
+  <div class="page-card__body">
+    <dl class="detail-list">
+      <dt>Tipo de sala</dt>
+      <dd>{{ sala.tipo_sala }}</dd>
+      <dt>Tipo de sonido</dt>
+      <dd>{{ sala.tipo_sonido }}</dd>
+      <dt>Capacidad</dt>
+      <dd>{{ sala.capacidad }}</dd>
+    </dl>
+
+    <h2>Distribución</h2>
+    <div class="seat-grid-viewport">
+      <div class="seat-grid" style="--grid-columns: {{ sala.distribucion.filas.0|length }};" aria-label="Distribución de la sala">
+        {% for fila in sala.distribucion.filas %}
+          {% for celda in fila|make_list %}
+            <span class="seat-grid__cell {{ celda|celda_clase }}"></span>
+          {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="page-card__actions">
+    <a class="btn btn--neutral" href="{% url 'salas:sala_update' sala.pk %}">Editar</a>
+    <a class="btn btn--danger" href="{% url 'salas:sala_delete' sala.pk %}">Eliminar</a>
+    <a class="btn btn--neutral" href="{% url 'salas:sala_list' %}">Volver al listado</a>
+  </div>
+</article>

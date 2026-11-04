@@ -42,6 +42,35 @@
   text-align: left;
 }
 
+.page-card h2 {
+  margin-block: 1.75rem 0.75rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  color: var(--text);
+}
+
+/* In-card text link: warm-black text with a brand underline keeps AA contrast
+   on the cream surface (a --primary text would not reach 4.5:1). */
+.page-card a:not(.btn) {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--primary);
+  text-underline-offset: 0.15em;
+}
+
+.page-card a:not(.btn):hover {
+  text-decoration-thickness: 2px;
+}
+
+/* Poster and file previews inside a card. */
+.media-poster {
+  display: block;
+  max-width: 220px;
+  margin-block: 0.5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
 .page-card__actions {
   display: flex;
   flex-wrap: wrap;
@@ -51,6 +80,10 @@
 
 /* Only delete confirmations centre their text. */
 .page-card--confirm {
+  text-align: center;
+}
+
+.page-card--confirm .page-card__body {
   text-align: center;
 }
 
@@ -112,6 +145,15 @@
 .form-field textarea:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 1px;
+}
+
+/* Checkboxes and radios must keep their natural box size. */
+.form-field input[type="checkbox"],
+.form-field input[type="radio"] {
+  width: auto;
+  min-height: auto;
+  padding: 0;
+  accent-color: var(--primary);
 }
 
 .form-field input[aria-invalid="true"] {
@@ -243,6 +285,11 @@ legend {
 
 .data-table td .actions {
   margin: 0;
+}
+
+/* Spacing between the row action buttons. */
+.data-table td .btn + .btn {
+  margin-left: 0.5rem;
 }
 
 /* --- Standalone link styled as a button ------------------------------ */

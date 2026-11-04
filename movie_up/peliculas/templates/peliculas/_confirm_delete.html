@@ -1,0 +1,23 @@
+<article class="page-card page-card--confirm">
+  <header class="page-card__header">
+    <h1 class="page-card__title">Confirmar eliminación</h1>
+  </header>
+
+  <div class="page-card__body">
+    {% if error %}
+    <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <p>¿Estás seguro de que deseas eliminar la película <strong>"{{ pelicula.titulo }}"</strong>?</p>
+
+    <p>Esta acción no se puede deshacer. La imagen asociada también será eliminada.</p>
+
+    <form method="post" action="{% url 'peliculas:pelicula_delete' pelicula.pk %}">
+      {% csrf_token %}
+      <div class="page-card__actions">
+        <button type="submit" class="btn btn--danger">Sí, eliminar</button>
+        <a class="btn btn--neutral" href="{% url 'peliculas:pelicula_detail' pelicula.pk %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</article>

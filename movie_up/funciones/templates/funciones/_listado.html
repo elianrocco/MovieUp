@@ -25,9 +25,9 @@
       <td>{{ funcion.disponibilidad }}</td>
       <td>{{ funcion.precio_entrada|floatformat:2 }}</td>
       <td>
-        <a href="{% url 'funciones:funcion_detail' funcion.pk %}">Ver</a>
-        <a href="{% url 'funciones:funcion_update' funcion.pk %}">Editar</a>
-        <a href="{% url 'funciones:funcion_delete' funcion.pk %}">Eliminar</a>
+        <a class="btn btn--neutral btn--sm" href="{% url 'funciones:funcion_detail' funcion.pk %}">Ver</a>
+        <a class="btn btn--neutral btn--sm" href="{% url 'funciones:funcion_update' funcion.pk %}">Editar</a>
+        <a class="btn btn--danger btn--sm" href="{% url 'funciones:funcion_delete' funcion.pk %}">Eliminar</a>
       </td>
     </tr>
     {% empty %}

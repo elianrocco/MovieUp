@@ -284,9 +284,11 @@
   font-family: 'Playfair Display', serif;
 }
 
+/* `:not(.btn)` keeps the fallback look for bare buttons while letting each
+   `.btn--*` variant decide its own colours inside the panel. */
 .management-panel .button-link,
-.management-panel button,
-.management-panel .actions a {
+.management-panel button:not(.btn),
+.management-panel .actions a:not(.btn) {
   display: inline-flex;
   min-height: 40px;
   align-items: center;

@@ -1,0 +1,21 @@
+<article class="page-card page-card--confirm">
+  <header class="page-card__header">
+    <h1 class="page-card__title">Eliminar sala</h1>
+  </header>
+
+  <div class="page-card__body">
+    {% if error %}
+    <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <p>¿Confirmás que querés eliminar la sala <strong>{{ sala.nombre }}</strong>?</p>
+
+    <form method="post" action="{% url 'salas:sala_delete' sala.pk %}">
+      {% csrf_token %}
+      <div class="page-card__actions">
+        <button type="submit" class="btn btn--danger">Sí, eliminar</button>
+        <a class="btn btn--neutral" href="{% url 'salas:sala_detail' sala.pk %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</article>

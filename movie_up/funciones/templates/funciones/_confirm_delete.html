@@ -1,0 +1,21 @@
+<article class="page-card page-card--confirm">
+  <header class="page-card__header">
+    <h1 class="page-card__title">Eliminar función</h1>
+  </header>
+
+  <div class="page-card__body">
+    {% if error %}
+    <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <p>¿Confirmás que querés eliminar la función de <strong>{{ funcion.pelicula.titulo }}</strong> en <strong>{{ funcion.sala.nombre }}</strong> del {{ funcion.inicio|date:"d/m/Y H:i" }}?</p>
+
+    <form method="post" action="{% url 'funciones:funcion_delete' funcion.pk %}">
+      {% csrf_token %}
+      <div class="page-card__actions">
+        <button type="submit" class="btn btn--danger">Sí, eliminar</button>
+        <a class="btn btn--neutral" href="{% url 'funciones:funcion_detail' funcion.pk %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</article>

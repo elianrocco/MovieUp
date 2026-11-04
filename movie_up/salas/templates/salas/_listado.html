@@ -19,9 +19,9 @@
       <td>{{ sala.tipo_sonido }}</td>
       <td>{{ sala.capacidad }}</td>
       <td>
-        <a href="{% url 'salas:sala_detail' sala.pk %}">Ver</a>
-        <a href="{% url 'salas:sala_update' sala.pk %}">Editar</a>
-        <a href="{% url 'salas:sala_delete' sala.pk %}">Eliminar</a>
+        <a class="btn btn--neutral btn--sm" href="{% url 'salas:sala_detail' sala.pk %}">Ver</a>
+        <a class="btn btn--neutral btn--sm" href="{% url 'salas:sala_update' sala.pk %}">Editar</a>
+        <a class="btn btn--danger btn--sm" href="{% url 'salas:sala_delete' sala.pk %}">Eliminar</a>
       </td>
     </tr>
     {% empty %}

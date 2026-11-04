@@ -3,11 +3,5 @@
 {% block title %}Eliminar sala{% endblock %}
 
 {% block content %}
-    <h1>Eliminar sala</h1>
-    <p>¿Confirmás que querés eliminar la sala <strong>{{ sala.nombre }}</strong>?</p>
-    <form method="post" action="{% url 'salas:sala_delete' sala.pk %}">
-        {% csrf_token %}
-        <button type="submit">Sí, eliminar</button>
-        <a href="{% url 'salas:sala_detail' sala.pk %}">Cancelar</a>
-    </form>
+    {% include 'salas/_confirm_delete.html' %}
 {% endblock %}

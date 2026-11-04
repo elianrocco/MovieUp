@@ -8,10 +8,10 @@
 
 ## 2. Plantillas en parciales y páginas con shell
 
-- [ ] 2.1 Dividir los templates de `peliculas` en `_detail.html`, `_form.html` y `_confirm_delete.html`, reutilizados por `detail.html`, `form.html` y `confirm_delete.html`, con la información en tarjeta centrada y las acciones como botones — Verificación: Playwright abre detalle, edición y borrado de una película: shell completo, tarjeta centrada, botones en lugar de enlaces planos y 0 errores de consola.
-- [ ] 2.2 Repetir la división en `funciones`, conservando el grid de distribución y su script en la página completa — Verificación: Playwright abre detalle, edición y borrado de una función con el grid visible y 0 errores de consola.
-- [ ] 2.3 Repetir la división en `salas`, conservando el editor de butacas con `grid.js` en la página completa — Verificación: Playwright crea y edita una sala desde su página completa y el editor responde.
-- [ ] 2.4 Convertir en botones las acciones Ver, Editar, Eliminar y Crear de los cuatro `_listado.html` — Verificación: Playwright en `/gestion/` muestra los botones en las tres pestañas y `docker compose exec web python movie_up/manage.py test core` termina OK.
+- [x] 2.1 Dividir los templates de `peliculas` en `_detail.html`, `_form.html` y `_confirm_delete.html`, reutilizados por `detail.html`, `form.html` y `confirm_delete.html`, con la información en tarjeta centrada y las acciones como botones — Verificación: Playwright abre detalle, edición y borrado de una película: shell completo, tarjeta centrada, botones en lugar de enlaces planos y 0 errores de consola.
+- [x] 2.2 Repetir la división en `funciones`, conservando el grid de distribución y su script en la página completa — Verificación: Playwright abre detalle, edición y borrado de una función con el grid visible y 0 errores de consola.
+- [x] 2.3 Repetir la división en `salas`, conservando el editor de butacas con `grid.js` en la página completa — Verificación: Playwright crea y edita una sala desde su página completa y el editor responde.
+- [x] 2.4 Convertir en botones las acciones Ver, Editar, Eliminar y Crear de los tres `_listado.html` (peliculas, funciones y salas) — Verificación: Playwright en `/gestion/` muestra los botones en las tres pestañas y `docker compose exec web python movie_up/manage.py test core` termina OK.
 
 ## 3. Modo fragmento en el servidor
 

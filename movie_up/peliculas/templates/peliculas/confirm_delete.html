@@ -3,16 +3,5 @@
 {% block title %}Confirmar Eliminación{% endblock %}
 
 {% block content %}
-    <h1>Confirmar Eliminación</h1>
-    
-    <p>¿Estás seguro de que deseas eliminar la película <strong>"{{ pelicula.titulo }}"</strong>?</p>
-    
-    <p>Esta acción no se puede deshacer. La imagen asociada también será eliminada.</p>
-    
-    <form method="post" action="{% url 'peliculas:pelicula_delete' pelicula.pk %}">
-        {% csrf_token %}
-        <button type="submit">Sí, eliminar</button>
-    </form>
-    
-    <a href="{% url 'peliculas:pelicula_detail' pelicula.pk %}">Cancelar</a>
+    {% include 'peliculas/_confirm_delete.html' %}
 {% endblock %}
