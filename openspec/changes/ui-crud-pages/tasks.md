@@ -38,9 +38,9 @@
 
 ## 6. Verificación de integración
 
-- [ ] 6.1 Suite completa y comprobaciones estáticas — Verificación: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas core`, `manage.py check` y `manage.py makemigrations --check` terminan con 0 errores (solo los dos warnings conocidos W036 de allauth).
-- [ ] 6.2 Validación estricta de la spec — Verificación: `openspec validate ui-crud-pages --strict` sale con código 0.
-- [ ] 6.3 Verificación visual final en navegador real de las nueve páginas CRUD, las tres pestañas de la gestión y los flujos de acceso — Verificación: registro de pantallas por rol sin desviaciones de paleta y con consola limpia.
+- [x] 6.1 Suite completa y comprobaciones estáticas — Verificación: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas core`, `manage.py check` y `manage.py makemigrations --check` terminan con 0 errores (solo los dos warnings conocidos W036 de allauth).
+- [x] 6.2 Validación estricta de la spec — Verificación: `openspec validate ui-crud-pages --strict` sale con código 0.
+- [x] 6.3 Verificación visual final en navegador real de las nueve páginas CRUD, las tres pestañas de la gestión y los flujos de acceso — Verificación: registro de pantallas por rol sin desviaciones de paleta y con consola limpia.
 
 ## Workflow follow-up
 
