@@ -69,6 +69,10 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SOCIALACCOUNT_ONLY = True
+# The nav and the buy CTA must reach Google's chooser in a single hop.
+# Without this, allauth renders its own "sign in via Google" confirmation
+# screen on GET (ui-crud-pages: "Inicio de sesión directo con Google").
+SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_ADAPTER = 'cuentas.adapters.CuentaSocialAccountAdapter'
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_SIGNUP_FIELDS = ['email*']

@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponse
 from django.template import engines
-from django.test import RequestFactory, SimpleTestCase, TestCase
+from django.test import Client, RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 
 from .decorators import staff_required
@@ -112,7 +112,48 @@ class NavStateTests(TestCase):
         self.assertIn('P', html)  # First letter of "Pedro"
 
 
-class FooterTests(SimpleTestCase):
+class LogoutNavTests(TestCase):
+    """ui-crud-pages 5.2: the nav closes the session with a POST, no interstitial."""
+
+    def setUp(self):
+        from cuentas.models import Cuenta
+
+        # A common account: the home page redirects staff to /gestion/.
+        self.user = Cuenta.objects.create_user('logout-nav@example.com', 'Logout Nav')
+        self.client.force_login(self.user)
+
+    def test_nav_renders_a_post_form_instead_of_a_get_link(self):
+        html = _render_base(
+            SimpleNamespace(is_authenticated=True, is_staff=True, nombre='Admin', foto_url='')
+        )
+
+        self.assertIn('action="/accounts/logout/"', html)
+        self.assertIn('<button type="submit" class="site-nav__logout">Logout</button>', html)
+        self.assertNotIn('href="/accounts/logout/"', html)
+
+    def test_post_closes_the_session_and_lands_home(self):
+        response = self.client.post(reverse('account_logout'))
+
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
+        page = self.client.get(reverse('home'))
+        self.assertNotContains(page, 'site-nav__logout')
+        self.assertContains(page, 'site-nav__login')
+
+    def test_post_without_csrf_token_is_rejected_and_keeps_the_session(self):
+        client = Client(enforce_csrf_checks=True)
+        client.force_login(self.user)
+
+        response = client.post(reverse('account_logout'))
+
+        self.assertEqual(response.status_code, 403)
+        page = client.get(reverse('home'))
+        self.assertContains(page, 'site-nav__logout')
+
+
+class FooterTests(TestCase):
+    """Rendering the footer renders base.html, which now resolves the Google
+    provider login URL (allauth touches the SocialApp table), so this needs a
+    database."""
     def test_footer_always_present(self):
         html = _render_base(AnonymousUser())
         self.assertIn('Elian', html)
@@ -239,10 +280,11 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse('home'))
         self.assertContains(response, 'https://example.com/trailer2')
 
-    def test_buy_button_without_session_redirects_to_login(self):
-        """Buy button without session redirects to login with ?next=/."""
+    def test_buy_button_without_session_goes_straight_to_google(self):
+        """Buy button without session reaches the Google flow, no access screen."""
         response = self.client.get(reverse('home'))
-        self.assertContains(response, '/accounts/login/?next=/')
+        self.assertContains(response, '/accounts/google/login/')
+        self.assertNotContains(response, '/accounts/login/?next=')
 
     def test_buy_button_with_session_has_placeholder(self):
         """Buy button with session has href='#' (D8 decision)."""

@@ -32,9 +32,9 @@
 
 ## 5. Acceso directo y cierre de sesión
 
-- [ ] 5.1 Apuntar el `Login` del nav y el `Comprar entradas` sin sesión a `{% provider_login_url "google" process="login" next=... %}` — Verificación: tests de `core/tests.py` actualizados (reemplazan la aserción de `/accounts/login/?next=/`) y Playwright: el clic en `Login` llega al flujo de Google sin mostrar la pantalla intermedia de acceso.
-- [ ] 5.2 Convertir el `Logout` del nav en un `<form method="post">` con token CSRF y botón estilado — Verificación: `LogoutNavTests` con `POST` que cierra sesión y redirige a `/` y sin token que no cierra; Playwright cierra sesión con una sola activación y aterriza en la página principal.
-- [ ] 5.3 E2E por rol completo con consola limpia — Verificación: Playwright recorre visitante (home, compra → Google), cuenta común (entradas) y administrador (gestión → operación de panel → `/admin/`) sin errores de consola.
+- [x] 5.1 Apuntar el `Login` del nav y el `Comprar entradas` sin sesión a `{% provider_login_url "google" process="login" next=... %}` — Verificación: tests de `core/tests.py` actualizados (reemplazan la aserción de `/accounts/login/?next=/`) y Playwright: el clic en `Login` llega al flujo de Google sin mostrar la pantalla intermedia de acceso.
+- [x] 5.2 Convertir el `Logout` del nav en un `<form method="post">` con token CSRF y botón estilado — Verificación: `LogoutNavTests` con `POST` que cierra sesión y redirige a `/` y sin token que no cierra; Playwright cierra sesión con una sola activación y aterriza en la página principal.
+- [x] 5.3 E2E por rol completo con consola limpia — Verificación: Playwright recorre visitante (home, compra → Google), cuenta común (entradas) y administrador (gestión → operación de panel → `/admin/`) sin errores de consola.
 
 ## 6. Verificación de integración
 

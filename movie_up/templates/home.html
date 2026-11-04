@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load socialaccount %}
 
 {% block title %}MovieUp - Cartelera de Cine{% endblock %}
 
@@ -22,7 +23,7 @@
           {% if user.is_authenticated %}
             <a href="#" class="btn btn--secondary">Comprar entradas</a>
           {% else %}
-            <a href="{% url 'account_login' %}?next=/" class="btn btn--secondary">Comprar entradas</a>
+            <a href="{% provider_login_url 'google' process='login' next='/' %}" class="btn btn--secondary">Comprar entradas</a>
           {% endif %}
         </div>
       </div>
@@ -57,7 +58,7 @@
             {% if user.is_authenticated %}
               <a href="#" class="btn btn--buy">Comprar</a>
             {% else %}
-              <a href="{% url 'account_login' %}?next=/" class="btn btn--buy">Comprar</a>
+              <a href="{% provider_login_url 'google' process='login' next='/' %}" class="btn btn--buy">Comprar</a>
             {% endif %}
           </div>
         </div>
