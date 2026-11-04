@@ -1,5 +1,5 @@
 <h1>Funciones</h1>
-<p><a class="button-link" href="{% url 'funciones:funcion_create' %}">Crear función</a></p>
+<p><a class="button-link" data-panel-link href="{% url 'funciones:funcion_create' %}">Crear función</a></p>
 
 <table class="data-table">
   <thead>
@@ -25,9 +25,9 @@
       <td>{{ funcion.disponibilidad }}</td>
       <td>{{ funcion.precio_entrada|floatformat:2 }}</td>
       <td>
-        <a class="btn btn--neutral btn--sm" href="{% url 'funciones:funcion_detail' funcion.pk %}">Ver</a>
-        <a class="btn btn--neutral btn--sm" href="{% url 'funciones:funcion_update' funcion.pk %}">Editar</a>
-        <a class="btn btn--danger btn--sm" href="{% url 'funciones:funcion_delete' funcion.pk %}">Eliminar</a>
+        <a class="btn btn--neutral btn--sm" data-panel-link href="{% url 'funciones:funcion_detail' funcion.pk %}">Ver</a>
+        <a class="btn btn--neutral btn--sm" data-panel-link href="{% url 'funciones:funcion_update' funcion.pk %}">Editar</a>
+        <a class="btn btn--danger btn--sm" data-panel-link href="{% url 'funciones:funcion_delete' funcion.pk %}">Eliminar</a>
       </td>
     </tr>
     {% empty %}

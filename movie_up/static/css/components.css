@@ -285,9 +285,10 @@
 }
 
 /* `:not(.btn)` keeps the fallback look for bare buttons while letting each
-   `.btn--*` variant decide its own colours inside the panel. */
+   `.btn--*` variant decide its own colours inside the panel; seat grid cells
+   are buttons too and keep their own size and colours (task 4.5). */
 .management-panel .button-link,
-.management-panel button:not(.btn),
+.management-panel button:not(.btn):not(.seat-grid__cell),
 .management-panel .actions a:not(.btn) {
   display: inline-flex;
   min-height: 40px;
@@ -319,6 +320,12 @@
 .management-panel th {
   background: var(--bg-muted);
   color: var(--text);
+}
+
+/* Accessible loading state shown while the panel swaps its content. */
+.panel-loading {
+  padding: 2rem 0;
+  color: var(--text-muted);
 }
 
 /* Responsive Hero */

@@ -1,5 +1,5 @@
 <h1>Salas</h1>
-<p><a class="button-link" href="{% url 'salas:sala_create' %}">Crear sala</a></p>
+<p><a class="button-link" data-panel-link href="{% url 'salas:sala_create' %}">Crear sala</a></p>
 
 <table class="data-table">
   <thead>
@@ -19,9 +19,9 @@
       <td>{{ sala.tipo_sonido }}</td>
       <td>{{ sala.capacidad }}</td>
       <td>
-        <a class="btn btn--neutral btn--sm" href="{% url 'salas:sala_detail' sala.pk %}">Ver</a>
-        <a class="btn btn--neutral btn--sm" href="{% url 'salas:sala_update' sala.pk %}">Editar</a>
-        <a class="btn btn--danger btn--sm" href="{% url 'salas:sala_delete' sala.pk %}">Eliminar</a>
+        <a class="btn btn--neutral btn--sm" data-panel-link href="{% url 'salas:sala_detail' sala.pk %}">Ver</a>
+        <a class="btn btn--neutral btn--sm" data-panel-link href="{% url 'salas:sala_update' sala.pk %}">Editar</a>
+        <a class="btn btn--danger btn--sm" data-panel-link href="{% url 'salas:sala_delete' sala.pk %}">Eliminar</a>
       </td>
     </tr>
     {% empty %}

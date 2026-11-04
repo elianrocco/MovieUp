@@ -10,11 +10,11 @@
 
     <p>¿Confirmás que querés eliminar la función de <strong>{{ funcion.pelicula.titulo }}</strong> en <strong>{{ funcion.sala.nombre }}</strong> del {{ funcion.inicio|date:"d/m/Y H:i" }}?</p>
 
-    <form method="post" action="{% url 'funciones:funcion_delete' funcion.pk %}">
+    <form method="post" data-panel-form action="{% url 'funciones:funcion_delete' funcion.pk %}">
       {% csrf_token %}
       <div class="page-card__actions">
         <button type="submit" class="btn btn--danger">Sí, eliminar</button>
-        <a class="btn btn--neutral" href="{% url 'funciones:funcion_detail' funcion.pk %}">Cancelar</a>
+        <a class="btn btn--neutral" data-panel-link href="{% url 'funciones:funcion_detail' funcion.pk %}">Cancelar</a>
       </div>
     </form>
   </div>

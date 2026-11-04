@@ -17,6 +17,15 @@ FORM_FIELDS = (
 )
 
 
+def _as_input_value(value):
+    """Dates must reach the input in ISO form, never localized (Oct. 6, 2026)."""
+    if value is None:
+        return ''
+    if hasattr(value, 'isoformat'):
+        return value.isoformat()
+    return value
+
+
 def _form_values(pelicula=None, post=None):
     """Values rendered by the form: posted data wins over the stored row."""
     values = {}
@@ -25,7 +34,7 @@ def _form_values(pelicula=None, post=None):
         value = post.get(field) if post is not None else ''
         if not value and pelicula is not None:
             value = getattr(pelicula, field, '')
-        values[field] = value if value is not None else ''
+        values[field] = _as_input_value(value)
 
     if post is not None:
         values['en_cartelera'] = 'en_cartelera' in post

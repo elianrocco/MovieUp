@@ -8,7 +8,7 @@
     <div class="error-message" role="alert">{{ error }}</div>
     {% endif %}
 
-    <form method="post" data-grid-form>
+    <form method="post" data-grid-form data-panel-form action="{% if sala %}{% url 'salas:sala_update' sala.pk %}{% else %}{% url 'salas:sala_create' %}{% endif %}">
       {% csrf_token %}
 
       <div class="form-field">
@@ -48,9 +48,9 @@
       <div class="page-card__actions">
         <button type="submit" class="btn btn--primary">{% if sala %}Guardar cambios{% else %}Crear sala{% endif %}</button>
         {% if sala %}
-          <a class="btn btn--neutral" href="{% url 'salas:sala_detail' sala.pk %}">Cancelar</a>
+          <a class="btn btn--neutral" data-panel-link href="{% url 'salas:sala_detail' sala.pk %}">Cancelar</a>
         {% else %}
-          <a class="btn btn--neutral" href="{% url 'salas:sala_list' %}">Cancelar</a>
+          <a class="btn btn--neutral" data-panel-link href="{% url 'salas:sala_list' %}">Cancelar</a>
         {% endif %}
       </div>
     </form>

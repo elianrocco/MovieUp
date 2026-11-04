@@ -12,11 +12,11 @@
 
     <p>Esta acción no se puede deshacer. La imagen asociada también será eliminada.</p>
 
-    <form method="post" action="{% url 'peliculas:pelicula_delete' pelicula.pk %}">
+    <form method="post" data-panel-form action="{% url 'peliculas:pelicula_delete' pelicula.pk %}">
       {% csrf_token %}
       <div class="page-card__actions">
         <button type="submit" class="btn btn--danger">Sí, eliminar</button>
-        <a class="btn btn--neutral" href="{% url 'peliculas:pelicula_detail' pelicula.pk %}">Cancelar</a>
+        <a class="btn btn--neutral" data-panel-link href="{% url 'peliculas:pelicula_detail' pelicula.pk %}">Cancelar</a>
       </div>
     </form>
   </div>

@@ -25,8 +25,8 @@
   </div>
 
   <div class="page-card__actions">
-    <a class="btn btn--neutral" href="{% url 'peliculas:pelicula_update' pelicula.pk %}">Editar</a>
-    <a class="btn btn--danger" href="{% url 'peliculas:pelicula_delete' pelicula.pk %}">Eliminar</a>
-    <a class="btn btn--neutral" href="{% url 'peliculas:pelicula_list' %}">Volver al listado</a>
+    <a class="btn btn--neutral" data-panel-link href="{% url 'peliculas:pelicula_update' pelicula.pk %}">Editar</a>
+    <a class="btn btn--danger" data-panel-link href="{% url 'peliculas:pelicula_delete' pelicula.pk %}">Eliminar</a>
+    <a class="btn btn--neutral" data-panel-link href="{% url 'peliculas:pelicula_list' %}">Volver al listado</a>
   </div>
 </article>

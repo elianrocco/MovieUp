@@ -8,7 +8,7 @@
     <div class="error-message" role="alert">{{ error }}</div>
     {% endif %}
 
-    <form method="post">
+    <form method="post" data-panel-form action="{% if funcion %}{% url 'funciones:funcion_update' funcion.pk %}{% else %}{% url 'funciones:funcion_create' %}{% endif %}">
       {% csrf_token %}
 
       <div class="form-field">
@@ -91,9 +91,9 @@
       <div class="page-card__actions">
         <button type="submit" class="btn btn--primary">{% if funcion %}Guardar cambios{% else %}Crear función{% endif %}</button>
         {% if funcion %}
-          <a class="btn btn--neutral" href="{% url 'funciones:funcion_detail' funcion.pk %}">Cancelar</a>
+          <a class="btn btn--neutral" data-panel-link href="{% url 'funciones:funcion_detail' funcion.pk %}">Cancelar</a>
         {% else %}
-          <a class="btn btn--neutral" href="{% url 'funciones:funcion_list' %}">Cancelar</a>
+          <a class="btn btn--neutral" data-panel-link href="{% url 'funciones:funcion_list' %}">Cancelar</a>
         {% endif %}
       </div>
     </form>

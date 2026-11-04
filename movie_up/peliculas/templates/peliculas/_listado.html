@@ -1,5 +1,5 @@
 <h1>Listado de Películas</h1>
-<p><a class="button-link" href="{% url 'peliculas:pelicula_create' %}">Crear Nueva Película</a></p>
+<p><a class="button-link" data-panel-link href="{% url 'peliculas:pelicula_create' %}">Crear Nueva Película</a></p>
 
 <table class="data-table">
   <thead>
@@ -21,9 +21,9 @@
       <td>{{ pelicula.fecha_estreno }}</td>
       <td>{% if pelicula.en_cartelera %}Sí{% else %}No{% endif %}</td>
       <td>
-        <a class="btn btn--neutral btn--sm" href="{% url 'peliculas:pelicula_detail' pelicula.pk %}">Ver</a>
-        <a class="btn btn--neutral btn--sm" href="{% url 'peliculas:pelicula_update' pelicula.pk %}">Editar</a>
-        <a class="btn btn--danger btn--sm" href="{% url 'peliculas:pelicula_delete' pelicula.pk %}">Eliminar</a>
+        <a class="btn btn--neutral btn--sm" data-panel-link href="{% url 'peliculas:pelicula_detail' pelicula.pk %}">Ver</a>
+        <a class="btn btn--neutral btn--sm" data-panel-link href="{% url 'peliculas:pelicula_update' pelicula.pk %}">Editar</a>
+        <a class="btn btn--danger btn--sm" data-panel-link href="{% url 'peliculas:pelicula_delete' pelicula.pk %}">Eliminar</a>
       </td>
     </tr>
     {% empty %}
