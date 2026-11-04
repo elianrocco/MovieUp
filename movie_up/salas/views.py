@@ -1,8 +1,9 @@
 import json
 
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 
 from core.decorators import staff_required
+from core.panel import panel_list_or_redirect, render_panel
 
 from . import services
 
@@ -34,13 +35,18 @@ def _distribution_from_post(post):
 
 @staff_required
 def sala_list(request):
-    return render(request, 'salas/list.html', {'salas': services.list_salas()})
+    return render_panel(
+        request,
+        'salas/list.html',
+        {'salas': services.list_salas()},
+        view='list',
+    )
 
 
 @staff_required
 def sala_detail(request, pk):
     sala = services.get_sala(pk)
-    return render(request, 'salas/detail.html', {'sala': sala})
+    return render_panel(request, 'salas/detail.html', {'sala': sala}, view='detail')
 
 
 @staff_required
@@ -49,9 +55,8 @@ def sala_create(request):
         data = request.POST.dict()
         try:
             services.create_sala(data)
-            return redirect('salas:sala_list')
         except ValueError as exc:
-            return render(
+            return render_panel(
                 request,
                 'salas/form.html',
                 {
@@ -59,12 +64,21 @@ def sala_create(request):
                     'form_values': _form_values(post=request.POST),
                     'initial_distribution': _distribution_from_post(request.POST),
                 },
+                view='form',
             )
 
-    return render(
+        return panel_list_or_redirect(
+            request,
+            redirect('salas:sala_list'),
+            'salas/list.html',
+            {'salas': services.list_salas()},
+        )
+
+    return render_panel(
         request,
         'salas/form.html',
         {'form_values': _form_values(), 'initial_distribution': None},
+        view='form',
     )
 
 
@@ -75,9 +89,8 @@ def sala_update(request, pk):
     if request.method == 'POST':
         try:
             services.update_sala(pk, request.POST.dict())
-            return redirect('salas:sala_detail', pk=pk)
         except ValueError as exc:
-            return render(
+            return render_panel(
                 request,
                 'salas/form.html',
                 {
@@ -88,9 +101,17 @@ def sala_update(request, pk):
                         _distribution_from_post(request.POST) or sala.distribucion
                     ),
                 },
+                view='form',
             )
 
-    return render(
+        return panel_list_or_redirect(
+            request,
+            redirect('salas:sala_detail', pk=pk),
+            'salas/list.html',
+            {'salas': services.list_salas()},
+        )
+
+    return render_panel(
         request,
         'salas/form.html',
         {
@@ -98,6 +119,7 @@ def sala_update(request, pk):
             'form_values': _form_values(sala=sala),
             'initial_distribution': sala.distribucion,
         },
+        view='form',
     )
 
 
@@ -105,7 +127,17 @@ def sala_update(request, pk):
 def sala_delete(request, pk):
     if request.method == 'POST':
         services.delete_sala(pk)
-        return redirect('salas:sala_list')
+        return panel_list_or_redirect(
+            request,
+            redirect('salas:sala_list'),
+            'salas/list.html',
+            {'salas': services.list_salas()},
+        )
 
     sala = services.get_sala(pk)
-    return render(request, 'salas/confirm_delete.html', {'sala': sala})
+    return render_panel(
+        request,
+        'salas/confirm_delete.html',
+        {'sala': sala},
+        view='form',
+    )

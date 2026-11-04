@@ -1,7 +1,8 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.utils import timezone
 
 from core.decorators import staff_required
+from core.panel import panel_list_or_redirect, render_panel
 
 from peliculas import services as peliculas_services
 from salas import services as salas_services
@@ -68,17 +69,23 @@ def _form_context(funcion=None, post=None, error=None):
 
 @staff_required
 def funcion_list(request):
-    return render(
+    return render_panel(
         request,
         'funciones/list.html',
         {'funciones': services.list_funciones()},
+        view='list',
     )
 
 
 @staff_required
 def funcion_detail(request, pk):
     funcion = services.get_funcion(pk)
-    return render(request, 'funciones/detail.html', {'funcion': funcion})
+    return render_panel(
+        request,
+        'funciones/detail.html',
+        {'funcion': funcion},
+        view='detail',
+    )
 
 
 @staff_required
@@ -86,15 +93,27 @@ def funcion_create(request):
     if request.method == 'POST':
         try:
             services.create_funcion(request.POST.dict())
-            return redirect('funciones:funcion_list')
         except ValueError as exc:
-            return render(
+            return render_panel(
                 request,
                 'funciones/form.html',
                 _form_context(post=request.POST, error=exc),
+                view='form',
             )
 
-    return render(request, 'funciones/form.html', _form_context())
+        return panel_list_or_redirect(
+            request,
+            redirect('funciones:funcion_list'),
+            'funciones/list.html',
+            {'funciones': services.list_funciones()},
+        )
+
+    return render_panel(
+        request,
+        'funciones/form.html',
+        _form_context(),
+        view='form',
+    )
 
 
 @staff_required
@@ -104,19 +123,27 @@ def funcion_update(request, pk):
     if request.method == 'POST':
         try:
             services.update_funcion(pk, request.POST.dict())
-            return redirect('funciones:funcion_detail', pk=pk)
         except ValueError as exc:
             funcion.refresh_from_db()
-            return render(
+            return render_panel(
                 request,
                 'funciones/form.html',
                 _form_context(funcion=funcion, post=request.POST, error=exc),
+                view='form',
             )
 
-    return render(
+        return panel_list_or_redirect(
+            request,
+            redirect('funciones:funcion_detail', pk=pk),
+            'funciones/list.html',
+            {'funciones': services.list_funciones()},
+        )
+
+    return render_panel(
         request,
         'funciones/form.html',
         _form_context(funcion=funcion),
+        view='form',
     )
 
 
@@ -125,14 +152,26 @@ def funcion_delete(request, pk):
     if request.method == 'POST':
         try:
             services.delete_funcion(pk)
-            return redirect('funciones:funcion_list')
         except ValueError as exc:
             funcion = services.get_funcion(pk)
-            return render(
+            return render_panel(
                 request,
                 'funciones/confirm_delete.html',
                 {'funcion': funcion, 'error': str(exc)},
+                view='form',
             )
 
+        return panel_list_or_redirect(
+            request,
+            redirect('funciones:funcion_list'),
+            'funciones/list.html',
+            {'funciones': services.list_funciones()},
+        )
+
     funcion = services.get_funcion(pk)
-    return render(request, 'funciones/confirm_delete.html', {'funcion': funcion})
+    return render_panel(
+        request,
+        'funciones/confirm_delete.html',
+        {'funcion': funcion},
+        view='form',
+    )

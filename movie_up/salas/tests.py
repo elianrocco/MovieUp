@@ -521,3 +521,132 @@ class AccesoRestringidoTests(TestCase):
         for ruta in self.rutas:
             response = self.client.get(ruta)
             self.assertEqual(response.status_code, 200, ruta)
+
+
+class PanelFragmentTests(TestCase):
+    """ui-crud-pages 3.1-3.4: the panel gets fragments, never a document."""
+
+    panel = {'X-Panel-Request': '1'}
+
+    def setUp(self):
+        self.sala = create_sala({
+            'nombre': 'Sala Panel',
+            'tipo_sala': '2D',
+            'tipo_sonido': 'Dolby',
+            'distribucion': {'version': 1, 'filas': ['PAR', 'AAR']},
+        })
+        self.staff = Cuenta.objects.create_user(
+            'staff-panel-salas@example.com', 'Staff Panel Salas', is_staff=True
+        )
+        self.client.force_login(self.staff)
+
+    def _panel_get(self, url):
+        return self.client.get(url, headers=self.panel)
+
+    def _page_urls(self):
+        return (
+            reverse('salas:sala_detail', args=[self.sala.pk]),
+            reverse('salas:sala_create'),
+            reverse('salas:sala_update', args=[self.sala.pk]),
+            reverse('salas:sala_delete', args=[self.sala.pk]),
+        )
+
+    def _distribution_payload(self):
+        return json.dumps({'version': 1, 'filas': ['PAR', 'AAR']})
+
+    def test_detail_answers_the_partial_without_a_document(self):
+        response = self._panel_get(reverse('salas:sala_detail', args=[self.sala.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'detail')
+        self.assertNotContains(response, '<html')
+        self.assertContains(response, 'page-card')
+
+    def test_form_and_confirmation_are_flagged_as_form(self):
+        for url in self._page_urls()[1:]:
+            with self.subTest(url=url):
+                response = self._panel_get(url)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response['X-Panel-View'], 'form')
+                self.assertNotContains(response, '<html')
+                self.assertContains(response, 'page-card')
+
+    def test_same_urls_answer_the_full_page_without_the_header(self):
+        for url in self._page_urls():
+            with self.subTest(url=url):
+                response = self.client.get(url)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, '<!DOCTYPE html>', html=False)
+                self.assertNotIn('X-Panel-View', response)
+
+    def test_create_success_returns_the_list_fragment(self):
+        response = self.client.post(
+            reverse('salas:sala_create'),
+            {
+                'nombre': 'Sala Nueva Panel',
+                'tipo_sala': '2D',
+                'tipo_sonido': 'Dolby',
+                'distribucion': self._distribution_payload(),
+            },
+            headers=self.panel,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'list')
+        self.assertNotContains(response, '<html')
+        self.assertContains(response, 'Sala Nueva Panel')
+        self.assertTrue(Sala.objects.filter(nombre='Sala Nueva Panel').exists())
+
+    def test_update_success_returns_the_list_fragment(self):
+        response = self.client.post(
+            reverse('salas:sala_update', args=[self.sala.pk]),
+            {
+                'nombre': 'Sala Renombrada',
+                'tipo_sala': '3D',
+                'tipo_sonido': 'DTS',
+                'distribucion': self._distribution_payload(),
+            },
+            headers=self.panel,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'list')
+        self.assertContains(response, 'Sala Renombrada')
+        self.assertEqual(Sala.objects.get(pk=self.sala.pk).nombre, 'Sala Renombrada')
+
+    def test_delete_success_returns_the_list_without_the_record(self):
+        response = self.client.post(
+            reverse('salas:sala_delete', args=[self.sala.pk]), {}, headers=self.panel
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'list')
+        self.assertNotContains(response, 'Sala Panel')
+        self.assertFalse(Sala.objects.filter(pk=self.sala.pk).exists())
+
+    def test_error_returns_the_form_with_message_and_sent_data(self):
+        response = self.client.post(
+            reverse('salas:sala_create'),
+            {
+                'nombre': 'Sala Panel',
+                'tipo_sala': 'IMAX',
+                'tipo_sonido': 'Dolby',
+                'distribucion': self._distribution_payload(),
+            },
+            headers=self.panel,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'form')
+        self.assertNotContains(response, '<html')
+        self.assertContains(response, 'Ya existe una sala')
+        self.assertContains(response, 'value="IMAX"')
+        self.assertEqual(Sala.objects.count(), 1)
+
+    def test_update_fragment_carries_the_stored_distribution(self):
+        response = self._panel_get(reverse('salas:sala_update', args=[self.sala.pk]))
+
+        self.assertContains(response, 'id="initial-distribution"')
+        self.assertContains(response, '"filas": ["PAR", "AAR"]')

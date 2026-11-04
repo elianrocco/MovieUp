@@ -15,11 +15,11 @@
 
 ## 3. Modo fragmento en el servidor
 
-- [ ] 3.1 Agregar en `movie_up/core/` un helper de fragmento que detecte el header `X-Panel-Request` y alterne entre la plantilla completa y la parcial, y aplicarlo al detalle, al formulario y a la confirmación de las tres apps — Verificación: tests nuevos por app que pidan cada vista con el header y asserten la parcial sin documento `<html>`, y la misma vista sin header devuelva la página completa.
-- [ ] 3.2 Hacer que las respuestas de panel incluyan `X-Panel-View: list|form` y que el éxito de un `POST` devuelva el listado de la app en lugar de un redirect — Verificación: tests de `POST` con header en las tres apps: éxito → listado con el registro nuevo/actualizado/sin el eliminado, error → formulario con el mensaje del servicio.
-- [ ] 3.3 Extender `core/decorators.py` para que, ante una petición de panel sin sesión válida, responda `401` con `X-Panel-Redirect` en lugar de un redirect — Verificación: `AuthPanelTests` que envíen el header sin sesión y asserten 401 con la URL de retorno.
-- [ ] 3.4 Completitud del fragmento de edición de salas: el parcial de editar incluye el `json_script` de `initial_distribution` con la distribución real de la sala y el campo `distribucion` oculto dentro del formulario — Verificación: test que pida la edición con el header `X-Panel-Request` y asserte que el JSON de la sala aparece en el fragmento y coincide con el almacenado.
-- [ ] 3.5 Correr la suite completa — Verificación: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas core` termina OK.
+- [x] 3.1 Agregar en `movie_up/core/` un helper de fragmento que detecte el header `X-Panel-Request` y alterne entre la plantilla completa y la parcial, y aplicarlo al detalle, al formulario y a la confirmación de las tres apps — Verificación: tests nuevos por app que pidan cada vista con el header y asserten la parcial sin documento `<html>`, y la misma vista sin header devuelva la página completa.
+- [x] 3.2 Hacer que las respuestas de panel incluyan `X-Panel-View: list|form|detail` y que el éxito de un `POST` devuelva el listado de la app en lugar de un redirect — Verificación: tests de `POST` con header en las tres apps: éxito → listado con el registro nuevo/actualizado/sin el eliminado, error → formulario con el mensaje del servicio.
+- [x] 3.3 Extender `core/decorators.py` para que, ante una petición de panel sin sesión válida, responda `401` con `X-Panel-Redirect` en lugar de un redirect — Verificación: `AuthPanelTests` que envíen el header sin sesión y asserten 401 con la URL de retorno.
+- [x] 3.4 Completitud del fragmento de edición de salas: el parcial de editar incluye el `json_script` de `initial_distribution` con la distribución real de la sala y el campo `distribucion` oculto dentro del formulario — Verificación: test que pida la edición con el header `X-Panel-Request` y asserte que el JSON de la sala aparece en el fragmento y coincide con el almacenado.
+- [x] 3.5 Correr la suite completa — Verificación: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas core` termina OK.
 
 ## 4. Navegación interna del panel
 

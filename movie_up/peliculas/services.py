@@ -63,8 +63,14 @@ def update_pelicula(pk, data, image_file=None):
     
     Raises:
         Http404: Si la película no existe
+        ValueError: Si otra película ya usa el título enviado
     """
     pelicula = get_pelicula(pk)
+
+    titulo = data.get('titulo')
+    if titulo:
+        if Pelicula.objects.filter(titulo=titulo.strip()).exclude(pk=pk).exists():
+            raise ValueError(f"Ya existe una película con el título '{titulo.strip()}'")
     
     # Actualizar solo campos no vacíos
     for field, value in data.items():

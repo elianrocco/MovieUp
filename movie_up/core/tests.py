@@ -401,3 +401,59 @@ class GestionViewTests(TestCase):
         account.refresh_from_db()
         self.assertTrue(account.is_staff)
         self.assertTrue(account.is_superuser)
+
+
+class AuthPanelTests(TestCase):
+    """ui-crud-pages 3.3: panel requests never follow a redirect."""
+
+    panel = {'X-Panel-Request': '1'}
+
+    def _panel_urls(self):
+        return (
+            reverse('gestion'),
+            reverse('salas:sala_list'),
+            reverse('salas:sala_detail', args=[1]),
+            reverse('peliculas:pelicula_create'),
+            reverse('funciones:funcion_delete', args=[1]),
+        )
+
+    def test_expired_session_answers_401_with_the_login_url(self):
+        expected = f'{settings.LOGIN_URL}?{urlencode({"next": "/gestion/"}, safe="/")}'
+
+        for url in self._panel_urls():
+            with self.subTest(url=url):
+                response = self.client.get(url, headers=self.panel)
+
+                self.assertEqual(response.status_code, 401)
+                self.assertEqual(response['X-Panel-Redirect'], expected)
+
+    def test_full_page_without_session_keeps_the_login_redirect(self):
+        response = self.client.get(reverse('salas:sala_list'))
+
+        expected = f'{settings.LOGIN_URL}?{urlencode({"next": "/salas/"}, safe="/")}'
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, expected)
+
+    def test_common_account_is_sent_home_from_the_panel(self):
+        from cuentas.models import Cuenta
+
+        user = Cuenta.objects.create_user('panel-common@example.com', 'Panel Common')
+        self.client.force_login(user)
+
+        response = self.client.get(reverse('salas:sala_list'), headers=self.panel)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, '/')
+
+    def test_staff_reaches_the_panel_fragment(self):
+        from cuentas.models import Cuenta
+
+        staff = Cuenta.objects.create_user(
+            'panel-staff@example.com', 'Panel Staff', is_staff=True
+        )
+        self.client.force_login(staff)
+
+        response = self.client.get(reverse('salas:sala_list'), headers=self.panel)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'list')

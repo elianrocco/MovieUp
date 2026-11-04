@@ -14,48 +14,48 @@
       <div class="form-field">
         <label for="titulo">Título</label>
         <input type="text" id="titulo" name="titulo" maxlength="150"
-               value="{{ pelicula.titulo|default:'' }}"
+               value="{{ form_values.titulo }}"
                {% if not pelicula %}required{% endif %}>
       </div>
 
       <div class="form-field">
         <label for="genero">Género</label>
         <input type="text" id="genero" name="genero" maxlength="45"
-               value="{{ pelicula.genero|default:'' }}"
+               value="{{ form_values.genero }}"
                {% if not pelicula %}required{% endif %}>
       </div>
 
       <div class="form-field">
         <label for="duracion_minutos">Duración (minutos)</label>
         <input type="number" id="duracion_minutos" name="duracion_minutos" min="1"
-               value="{{ pelicula.duracion_minutos|default:'' }}"
+               value="{{ form_values.duracion_minutos }}"
                {% if not pelicula %}required{% endif %}>
       </div>
 
       <div class="form-field">
         <label for="descripcion">Descripción</label>
         <textarea id="descripcion" name="descripcion" rows="5" cols="50"
-                  {% if not pelicula %}required{% endif %}>{{ pelicula.descripcion|default:'' }}</textarea>
+                  {% if not pelicula %}required{% endif %}>{{ form_values.descripcion }}</textarea>
       </div>
 
       <div class="form-field">
         <label for="clasificacion">Clasificación</label>
         <input type="text" id="clasificacion" name="clasificacion" maxlength="10"
-               value="{{ pelicula.clasificacion|default:'' }}"
+               value="{{ form_values.clasificacion }}"
                {% if not pelicula %}required{% endif %}>
       </div>
 
       <div class="form-field">
         <label for="fecha_estreno">Fecha de estreno</label>
         <input type="date" id="fecha_estreno" name="fecha_estreno"
-               value="{{ pelicula.fecha_estreno|default:'' }}"
+               value="{{ form_values.fecha_estreno }}"
                {% if not pelicula %}required{% endif %}>
       </div>
 
       <div class="form-field">
         <label for="url_trailer">URL del tráiler</label>
         <input type="url" id="url_trailer" name="url_trailer" maxlength="255"
-               value="{{ pelicula.url_trailer|default:'' }}"
+               value="{{ form_values.url_trailer }}"
                {% if not pelicula %}required{% endif %}>
       </div>
 
@@ -71,7 +71,7 @@
       <div class="form-field">
         <label for="en_cartelera">
           <input type="checkbox" id="en_cartelera" name="en_cartelera"
-                 {% if pelicula.en_cartelera %}checked{% endif %}>
+                 {% if form_values.en_cartelera %}checked{% endif %}>
           En cartelera
         </label>
       </div>
