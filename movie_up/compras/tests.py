@@ -1,7 +1,9 @@
 from datetime import timedelta
+from urllib.parse import urlencode
 
 from django.http import Http404
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from cuentas.models import Cuenta
@@ -229,3 +231,111 @@ class PrepararCompraTests(CompraDataMixin, TestCase):
     def test_missing_movie_raises_404(self):
         with self.assertRaises(Http404):
             preparar_compra(999999)
+
+
+class CompraViewTests(CompraDataMixin, TestCase):
+    def test_common_account_renders_purchase_page(self):
+        self.create_funcion()
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'compras/compra_pelicula.html')
+        self.assertContains(response, self.pelicula.titulo)
+        self.assertContains(response, 'Funciones disponibles')
+
+    def test_visitor_is_sent_to_google_login_with_purchase_next(self):
+        expected = (
+            f'{reverse("google_login")}?'
+            f'{urlencode({"process": "login", "next": f"/compras/{self.pelicula.pk}/"})}'
+        )
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, expected)
+
+    def test_staff_account_is_redirected_to_management(self):
+        staff = Cuenta.objects.create_superuser(
+            'staff@example.com', 'Staff', password='Strong-test-password-123'
+        )
+        self.client.force_login(staff)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertRedirects(response, '/gestion/', fetch_redirect_response=False)
+
+    def test_missing_movie_returns_404(self):
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get('/compras/999999/')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_hero_reuses_home_structure_without_buy_button(self):
+        self.create_funcion()
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        for value in (
+            'class="hero"',
+            'hero__image',
+            'hero__title',
+            'hero__description',
+            'hero__meta',
+            'hero__buttons',
+            self.pelicula.url_trailer,
+        ):
+            self.assertContains(response, value)
+        self.assertNotContains(response, 'btn--secondary')
+
+    def test_function_item_renders_all_fields(self):
+        funcion = self.create_funcion()
+        funcion.subtitulada = True
+        funcion.disponibilidad = 7
+        funcion.save(update_fields=['subtitulada', 'disponibilidad'])
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        for value in (
+            timezone.localtime(funcion.inicio).strftime('%d/%m/%Y %H:%M'),
+            '2D',
+            'Dolby',
+            'Español',
+            'Sí',
+            '$1500.00',
+            '>7</span>',
+            'Comprar entradas',
+        ):
+            self.assertContains(response, value)
+
+    def test_empty_state_when_no_sellable_functions(self):
+        self.create_funcion(activa=False)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertContains(response, 'No hay funciones disponibles')
+        self.assertNotContains(response, 'funcion-item')
+
+    def test_sold_out_button_is_disabled_without_href(self):
+        funcion = self.create_funcion()
+        funcion.disponibilidad = 0
+        funcion.save(update_fields=['disponibilidad'])
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertContains(response, 'Entradas agotadas')
+        self.assertContains(response, 'disabled')
+        self.assertNotContains(response, 'href="#"')
+
+    def test_purchase_page_loads_its_stylesheet(self):
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertContains(response, 'css/compras.css')

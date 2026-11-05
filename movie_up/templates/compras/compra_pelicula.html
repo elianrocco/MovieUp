@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}MovieUp - Comprar entradas{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/compras.css' %}">
+{% endblock %}
+
+{% block content %}
+  {% include 'includes/pelicula_hero.html' with pelicula=pelicula mostrar_compra=False %}
+
+  <section class="compra-lista">
+    <h2 class="compra-lista__titulo">Funciones disponibles</h2>
+    {% if funciones %}
+      <ul class="funciones">
+        {% for funcion in funciones %}
+          <li class="funcion-item">
+            <ul class="funcion-item__meta">
+              <li class="funcion-item__dato">
+                <span class="funcion-item__etiqueta">Inicio</span>
+                <span class="funcion-item__valor">{{ funcion.inicio|date:"d/m/Y H:i" }}</span>
+              </li>
+              <li class="funcion-item__dato">
+                <span class="funcion-item__etiqueta">Sala</span>
+                <span class="funcion-item__valor">{{ funcion.sala.tipo_sala }}</span>
+              </li>
+              <li class="funcion-item__dato">
+                <span class="funcion-item__etiqueta">Sonido</span>
+                <span class="funcion-item__valor">{{ funcion.sala.tipo_sonido }}</span>
+              </li>
+              <li class="funcion-item__dato">
+                <span class="funcion-item__etiqueta">Idioma</span>
+                <span class="funcion-item__valor">{{ funcion.idioma }}</span>
+              </li>
+              <li class="funcion-item__dato">
+                <span class="funcion-item__etiqueta">Subtitulada</span>
+                <span class="funcion-item__valor">{{ funcion.subtitulada|yesno:"Sí,No" }}</span>
+              </li>
+              <li class="funcion-item__dato">
+                <span class="funcion-item__etiqueta">Precio</span>
+                <span class="funcion-item__valor">${{ funcion.precio_entrada|floatformat:2 }}</span>
+              </li>
+              <li class="funcion-item__dato">
+                <span class="funcion-item__etiqueta">Disponibles</span>
+                <span class="funcion-item__valor">{{ funcion.disponibilidad }}</span>
+              </li>
+            </ul>
+            <div class="funcion-item__accion">
+              {% if funcion.disponibilidad < 1 %}
+                <button type="button" class="btn btn--buy btn--sold-out" disabled aria-disabled="true">
+                  Entradas agotadas
+                </button>
+              {% else %}
+                <button type="button" class="btn btn--buy">
+                  Comprar entradas
+                </button>
+              {% endif %}
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <section class="empty-state">
+        <h3 class="empty-state__title">No hay funciones disponibles</h3>
+        <p class="empty-state__text">Vuelve pronto para ver los horarios de esta película</p>
+      </section>
+    {% endif %}
+  </section>
+{% endblock %}

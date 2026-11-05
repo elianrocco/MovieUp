@@ -7,7 +7,7 @@
 
 ## 2. Hero y gating compartidos
 
-- [ ] 2.1 Extraer el hero de `templates/home.html` a `templates/includes/pelicula_hero.html` con `pelicula` y `mostrar_compra`, y hacer que la home lo incluya con `mostrar_compra=True` — Verificación: la home renderiza el mismo hero (imagen, título, descripción, género, clasificación y botón `Trailer` dentro) y los tests de `core` siguen pasando.
+- [x] 2.1 Extraer el hero de `templates/home.html` a `templates/includes/pelicula_hero.html` con `pelicula` y `mostrar_compra`, y hacer que la home lo incluya con `mostrar_compra=True` — Verificación: la home renderiza el mismo hero (imagen, título, descripción, género, clasificación y botón `Trailer` dentro) y los tests de `core` siguen pasando.
 - [ ] 2.2 Extraer el botón de compra a `templates/includes/comprar_entradas_button.html`: autenticado → `/compras/<pelicula_id>/`; visitante → `provider_login_url` con `next` a esa página; usarlo en el hero y en las tarjetas de la home — Verificación: tests de `core` que afirman el `href` de cada tarjeta y el `next` del visitante, y el `Login` del nav sigue apuntando a `next='/'`.
 
 ## 3. Servicios de compra
@@ -17,10 +17,10 @@
 
 ## 4. Vista, URL y plantilla
 
-- [ ] 4.1 Implementar `compra_pelicula(request, pelicula_id)` y su ruta `/compras/<pelicula_id>/`: visitante → login de Google con `next` a esa página; staff → `/gestion/`; cuenta común → render de la compra — Verificación: tests de los tres accesos y del 404.
-- [ ] 4.2 Crear `templates/compras/compra_pelicula.html` con el hero sin botón de compra, el listado de funciones con inicio, tipo de sala, tipo de sonido, idioma, subtitulada, precio con `$`, disponibilidad y CTA, el estado vacío y el botón `Entradas agotadas` deshabilitado cuando la disponibilidad es 0 — Verificación: tests que renderizan un ítem completo, el estado vacío y el botón agotado sin `href`, y que la página carga `static/css/compras.css` en el `<head>`.
-- [ ] 4.3 Crear `static/css/compras.css` con el listado en filas alineadas a la izquierda, el CTA a la derecha en desktop y apilado en móvil, y el fondo atenuado del botón agotado con texto de contraste AA — Verificación: Playwright revisa la página en desktop y móvil, el color computado del botón agotado y la ausencia de desbordes.
-- [ ] 4.4 Renderizar el botón `Comprar entradas` de cada función sin destino en este cambio — Verificación: test que afirma que el ítem de una función con disponibilidad mayor que cero incluye el texto `Comprar entradas` y no tiene `href`.
+- [x] 4.1 Implementar `compra_pelicula(request, pelicula_id)` y su ruta `/compras/<pelicula_id>/`: visitante → login de Google con `next` a esa página; staff → `/gestion/`; cuenta común → render de la compra — Verificación: tests de los tres accesos y del 404.
+- [x] 4.2 Crear `templates/compras/compra_pelicula.html` con el hero sin botón de compra, el listado de funciones con inicio, tipo de sala, tipo de sonido, idioma, subtitulada, precio con `$`, disponibilidad y CTA, el estado vacío y el botón `Entradas agotadas` deshabilitado cuando la disponibilidad es 0 — Verificación: tests que renderizan un ítem completo, el estado vacío y el botón agotado sin `href`, y que la página carga `static/css/compras.css` en el `<head>`.
+- [x] 4.3 Crear `static/css/compras.css` con el listado en filas alineadas a la izquierda, el CTA a la derecha en desktop y apilado en móvil, y el fondo atenuado del botón agotado con texto de contraste AA — Verificación: Playwright revisa la página en desktop y móvil, el color computado del botón agotado y la ausencia de desbordes.
+- [x] 4.4 Renderizar el botón `Comprar entradas` de cada función sin destino en este cambio — Verificación: test que afirma que el ítem de una función con disponibilidad mayor que cero incluye el texto `Comprar entradas` y no tiene `href`.
 
 ## 5. Integración y verificación
 
