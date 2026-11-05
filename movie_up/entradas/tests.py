@@ -22,6 +22,7 @@ from .services import (
     _indice_fila,
     crear_entrada,
     eliminar_entrada,
+    eliminar_entradas_por_finalizacion,
     etiqueta_fila,
     listar_entradas,
     obtener_entrada,
@@ -393,6 +394,59 @@ class EliminarEntradaServiceTests(EntradaDataMixin, TestCase):
         available_seats = sum(row.count('A') for row in self.funcion.distribucion['filas'])
         self.assertEqual(self.funcion.disponibilidad, available_seats)
         self.assertEqual(self.funcion.entradas_compradas, 0)
+
+    def test_bulk_finalization_deletes_all_entries_without_changing_function(self):
+        self.create(seat_number=1)
+        self.create(seat_number=2)
+        self.funcion.fin = timezone.now() - timedelta(seconds=1)
+        self.funcion.save(update_fields=['fin'])
+        self.funcion.refresh_from_db()
+        before = (
+            self.funcion.distribucion,
+            self.funcion.disponibilidad,
+            self.funcion.entradas_compradas,
+        )
+
+        eliminadas = eliminar_entradas_por_finalizacion(self.funcion.pk)
+
+        self.assertEqual(eliminadas, 2)
+        self.assertFalse(Entrada.objects.filter(funcion=self.funcion).exists())
+        self.funcion.refresh_from_db()
+        self.assertEqual(
+            (
+                self.funcion.distribucion,
+                self.funcion.disponibilidad,
+                self.funcion.entradas_compradas,
+            ),
+            before,
+        )
+
+    def test_bulk_finalization_without_entries_is_idempotent(self):
+        self.funcion.fin = timezone.now() - timedelta(seconds=1)
+        self.funcion.save(update_fields=['fin'])
+
+        self.assertEqual(eliminar_entradas_por_finalizacion(self.funcion.pk), 0)
+        self.assertEqual(eliminar_entradas_por_finalizacion(self.funcion.pk), 0)
+
+    def test_bulk_finalization_leaves_other_functions_untouched(self):
+        self.create(seat_number=1)
+        other_funcion = self.create_funcion(
+            ['APA'], start=timezone.now() + timedelta(days=2)
+        )
+        other_entry = crear_entrada(other_funcion.pk, self.cuenta.pk, 1, 'A')
+        self.funcion.fin = timezone.now() - timedelta(seconds=1)
+        self.funcion.save(update_fields=['fin'])
+
+        eliminar_entradas_por_finalizacion(self.funcion.pk)
+
+        self.assertTrue(Entrada.objects.filter(pk=other_entry.pk).exists())
+
+    def test_bulk_finalization_rejects_invalid_id(self):
+        for invalid in (0, -1, True, 'A'):
+            with self.subTest(invalid=invalid), self.assertRaisesRegex(
+                ValueError, 'función'
+            ):
+                eliminar_entradas_por_finalizacion(invalid)
 
 
 class EntradaReadServiceTests(EntradaDataMixin, TestCase):

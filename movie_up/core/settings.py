@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'core',
+    'compras',
     'cuentas',
     'entradas',
     'funciones',

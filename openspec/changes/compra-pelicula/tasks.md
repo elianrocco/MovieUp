@@ -2,8 +2,8 @@
 
 ## 1. Alta de la app `compras`
 
-- [ ] 1.1 Crear la app con la skill `django-app-creator` (`startapp` desde `movie_up/`), registrarla como `'compras',` en `INSTALLED_APPS`, crear `templates/compras/.gitkeep`, `urls.py` y `services.py` vacío, e incluir `path('compras/', include('compras.urls'))` en `core/urls.py` — Verificación: `docker compose exec web python movie_up/manage.py check` termina con 0 errores y los archivos de la app existen.
-- [ ] 1.2 Actualizar el árbol de `movie_up/` en `AGENTS.md` y `README.md` con la línea `compras/` en orden alfabético, según la skill — Verificación: ambos árboles listan `compras/` antes de `cuentas/` y conservan `core/` como último elemento.
+- [x] 1.1 Crear la app con la skill `django-app-creator` (`startapp` desde `movie_up/`), registrarla como `'compras',` en `INSTALLED_APPS`, crear `templates/compras/.gitkeep`, `urls.py` y `services.py` vacío, e incluir `path('compras/', include('compras.urls'))` en `core/urls.py` — Verificación: `docker compose exec web python movie_up/manage.py check` termina con 0 errores y los archivos de la app existen.
+- [x] 1.2 Actualizar el árbol de `movie_up/` en `AGENTS.md` y `README.md` con la línea `compras/` en orden alfabético, según la skill — Verificación: ambos árboles listan `compras/` antes de `cuentas/` y conservan `core/` como último elemento.
 
 ## 2. Hero y gating compartidos
 
@@ -12,8 +12,8 @@
 
 ## 3. Servicios de compra
 
-- [ ] 3.1 Agregar `eliminar_entradas_por_finalizacion(funcion_id)` en `entradas/services.py`, que borra todas las entradas de la función sin tocar sus contadores, disponibilidad ni distribución — Verificación: tests en `entradas/tests.py` de borrado completo, de función sin entradas, de idempotencia, de otra función intacta y de contadores intactos.
-- [ ] 3.2 Implementar en `compras/services.py` `obtener_pelicula`, `barrer_funciones_vencidas`, `listar_funciones_vendibles` y `preparar_compra`, con barrido atómico `select_for_update` acotado a la película, filtro `funcion_activa=True` + `fin > now` y orden por `inicio` — Verificación: tests en `compras/tests.py` de 404, película inexistente, funciones activas/futuras, exclusión de inactivas y vencidas, orden, barrido de entradas, `funcion_activa=False`, campos de la función intactos, idempotencia y otra película sin tocar.
+- [x] 3.1 Agregar `eliminar_entradas_por_finalizacion(funcion_id)` en `entradas/services.py`, que borra todas las entradas de la función sin tocar sus contadores, disponibilidad ni distribución — Verificación: tests en `entradas/tests.py` de borrado completo, de función sin entradas, de idempotencia, de otra función intacta y de contadores intactos.
+- [x] 3.2 Implementar en `compras/services.py` `obtener_pelicula`, `barrer_funciones_vencidas`, `listar_funciones_vendibles` y `preparar_compra`, con barrido atómico `select_for_update` acotado a la película, filtro `funcion_activa=True` + `fin > now` y orden por `inicio` — Verificación: tests en `compras/tests.py` de 404, película inexistente, funciones activas/futuras, exclusión de inactivas y vencidas, orden, barrido de entradas, `funcion_activa=False`, campos de la función intactos, idempotencia y otra película sin tocar.
 
 ## 4. Vista, URL y plantilla
 

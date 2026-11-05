@@ -185,6 +185,13 @@ def eliminar_entrada(entrada_id, motivo):
     entrada.delete()
 
 
+@transaction.atomic
+def eliminar_entradas_por_finalizacion(funcion_id):
+    funcion_pk = _entero_positivo(funcion_id, 'El identificador de la función')
+    eliminadas, _ = Entrada.objects.filter(funcion_id=funcion_pk).delete()
+    return eliminadas
+
+
 def listar_entradas(cuenta_id):
     cuenta_pk = _entero_positivo(cuenta_id, 'El identificador de la cuenta')
     return (
