@@ -1,0 +1,7 @@
+{% load socialaccount %}
+{% url 'compras:compra_pelicula' pelicula.pk as compra_url %}
+{% if user.is_authenticated %}
+  <a href="{{ compra_url }}" class="{{ css_class|default:'btn btn--buy' }}">Comprar entradas</a>
+{% else %}
+  <a href="{% provider_login_url 'google' process='login' next=compra_url %}" class="{{ css_class|default:'btn btn--buy' }}">Comprar entradas</a>
+{% endif %}

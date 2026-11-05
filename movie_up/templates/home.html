@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load socialaccount %}
 
 {% block title %}MovieUp - Cartelera de Cine{% endblock %}
 
@@ -34,11 +33,7 @@
             <a href="{{ pelicula.url_trailer }}" target="_blank" rel="noopener noreferrer" class="btn btn--trailer">
               Trailer
             </a>
-            {% if user.is_authenticated %}
-              <a href="#" class="btn btn--buy">Comprar</a>
-            {% else %}
-              <a href="{% provider_login_url 'google' process='login' next='/' %}" class="btn btn--buy">Comprar</a>
-            {% endif %}
+            {% include 'includes/comprar_entradas_button.html' with pelicula=pelicula css_class='btn btn--buy' %}
           </div>
         </div>
       {% endfor %}

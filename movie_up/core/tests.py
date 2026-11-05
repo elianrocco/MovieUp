@@ -280,23 +280,30 @@ class HomeViewTests(TestCase):
         response = self.client.get(reverse('home'))
         self.assertContains(response, 'https://example.com/trailer2')
 
-    def test_buy_button_without_session_goes_straight_to_google(self):
-        """Buy button without session reaches the Google flow, no access screen."""
+    def test_buy_button_without_session_keeps_purchase_next(self):
+        """Visitor buy links carry next to the purchase page of their movie."""
         response = self.client.get(reverse('home'))
-        self.assertContains(response, '/accounts/google/login/')
+        for movie in (self.pelicula_cartelera_1, self.pelicula_cartelera_2):
+            self.assertContains(response, f'next=%2Fcompras%2F{movie.pk}%2F')
         self.assertNotContains(response, '/accounts/login/?next=')
 
-    def test_buy_button_with_session_has_placeholder(self):
-        """Buy button with session has href='#' (D8 decision)."""
+    def test_buy_button_with_session_links_to_purchase_page(self):
+        """Authenticated buy links navigate to the purchase page of their movie."""
         from cuentas.models import Cuenta
         user = Cuenta.objects.create_user(
-            correo='user@example.com',
-            nombre='Test User'
+            correo='buyer@example.com',
+            nombre='Buyer'
         )
         self.client.force_login(user)
         response = self.client.get(reverse('home'))
-        # Should have href="#" for authenticated users
-        self.assertContains(response, 'href="#"')
+        for movie in (self.pelicula_cartelera_1, self.pelicula_cartelera_2):
+            self.assertContains(response, f'href="/compras/{movie.pk}/"')
+        self.assertNotContains(response, 'href="#"')
+
+    def test_nav_login_has_no_purchase_next(self):
+        """Nav Login keeps the plain Google flow; it does not inherit the buy next."""
+        response = self.client.get(reverse('home'))
+        self.assertContains(response, 'href="/accounts/google/login/?process=login"')
 
 
 class AuthRedirectSettingsTests(SimpleTestCase):

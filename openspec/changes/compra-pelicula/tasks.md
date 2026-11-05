@@ -8,7 +8,7 @@
 ## 2. Hero y gating compartidos
 
 - [x] 2.1 Extraer el hero de `templates/home.html` a `templates/includes/pelicula_hero.html` con `pelicula` y `mostrar_compra`, y hacer que la home lo incluya con `mostrar_compra=True` — Verificación: la home renderiza el mismo hero (imagen, título, descripción, género, clasificación y botón `Trailer` dentro) y los tests de `core` siguen pasando.
-- [ ] 2.2 Extraer el botón de compra a `templates/includes/comprar_entradas_button.html`: autenticado → `/compras/<pelicula_id>/`; visitante → `provider_login_url` con `next` a esa página; usarlo en el hero y en las tarjetas de la home — Verificación: tests de `core` que afirman el `href` de cada tarjeta y el `next` del visitante, y el `Login` del nav sigue apuntando a `next='/'`.
+- [x] 2.2 Extraer el botón de compra a `templates/includes/comprar_entradas_button.html`: autenticado → `/compras/<pelicula_id>/`; visitante → `provider_login_url` con `next` a esa página; usarlo en el hero y en las tarjetas de la home — Verificación: tests de `core` que afirman el `href` de cada tarjeta y el `next` del visitante, y el `Login` del nav sigue apuntando a `next='/'`.
 
 ## 3. Servicios de compra
 
@@ -24,9 +24,9 @@
 
 ## 5. Integración y verificación
 
-- [ ] 5.1 Correr la suite completa, `manage.py check` y `manage.py makemigrations --check` — Verificación: `docker compose exec web python movie_up/manage.py test compras peliculas salas funciones cuentas entradas core`, `check` y `makemigrations --check` terminan con 0 errores.
-- [ ] 5.2 Validar la spec del cambio en modo estricto — Verificación: `openspec validate compra-pelicula --strict` sale con código 0.
-- [ ] 5.3 Verificar en navegador real: visitante desde la home al login con `next` de compra, cuenta común en la compra con el hero y el listado, función agotada, película sin funciones, cuenta administradora redirigida a `/gestion/` y consola limpia — Verificación: registro de pantallas con la URL y el estado observado en cada caso.
+- [x] 5.1 Correr la suite completa, `manage.py check` y `manage.py makemigrations --check` — Verificación: `docker compose exec web python movie_up/manage.py test compras peliculas salas funciones cuentas entradas core`, `check` y `makemigrations --check` terminan con 0 errores.
+- [x] 5.2 Validar la spec del cambio en modo estricto — Verificación: `openspec validate compra-pelicula --strict` sale con código 0.
+- [x] 5.3 Verificar en navegador real: visitante desde la home al login con `next` de compra, cuenta común en la compra con el hero y el listado, función agotada, película sin funciones, cuenta administradora redirigida a `/gestion/` y consola limpia — Verificación: registro de pantallas con la URL y el estado observado en cada caso.
 
 ## Workflow follow-up
 
