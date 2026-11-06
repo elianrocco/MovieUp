@@ -74,7 +74,7 @@ El sistema SHALL listar las funciones de la película con `funcion_activa` activ
 
 ### Requirement: Datos de cada función
 
-Cada ítem del listado SHALL mostrar el inicio en hora local de Buenos Aires, el tipo de sala, el tipo de sonido, el idioma, si es subtitulada, el precio con signo `$`, la disponibilidad y un botón `Comprar entradas`.
+Cada ítem del listado SHALL mostrar el inicio en hora local de Buenos Aires, el tipo de sala, el tipo de sonido, el idioma, si es subtitulada, el precio con signo `$`, la disponibilidad y un botón `Comprar entradas`. Los siete datos SHALL aparecer en una sola línea dentro del ítem, sin salto de línea entre ellos.
 
 #### Scenario: Ítem con todos los datos
 
@@ -95,6 +95,11 @@ Cada ítem del listado SHALL mostrar el inicio en hora local de Buenos Aires, el
 
 - **WHEN** una función tiene disponibilidad mayor que cero
 - **THEN** el ítem muestra esa cantidad de entradas disponibles
+
+#### Scenario: Todos los datos en una sola línea
+
+- **WHEN** se renderiza un ítem del listado en una ventana de escritorio
+- **THEN** inicio, tipo de sala, tipo de sonido, idioma, subtitulada, precio y disponibilidad aparecen en la misma fila, sin partirse en dos
 
 ### Requirement: Entradas agotadas
 
@@ -203,12 +208,17 @@ El sistema SHALL ofrecer la vista `/compras/<pelicula_id>/funciones/<funcion_id>
 
 ### Requirement: Cuadrícula de asientos de la función
 
-La vista SHALL mostrar debajo del nav, centrada, la cuadrícula con el encabezado `Elija sus asientos` y la distribución de esa función, con el mismo estilo y colores que el editor de sala: gris para `P`, azul para `A` y dorado para `R`. Las entradas ya vendidas MUST aparecer como celdas `R`.
+La vista SHALL mostrar el encabezado `Elija sus asientos` y la cuadrícula de la distribución dentro de un rectángulo horizontal de bordes redondeados con el dorado del nav, con margen del 10% del ancho de pantalla a cada lado y padding vertical apenas suficiente. Los colores SHALL ser gris para `P`, azul para `A` y dorado para `R`, y las entradas ya vendidas MUST aparecer como celdas `R`.
 
 #### Scenario: Encabezado y centrado
 
 - **WHEN** se carga la vista de selección de asientos
 - **THEN** aparece el mensaje `Elija sus asientos` centrado por encima de la cuadrícula y la cuadrícula aparece centrada debajo del nav
+
+#### Scenario: Panel dorado de la cuadrícula
+
+- **WHEN** se carga la vista de selección de asientos
+- **THEN** el encabezado y la cuadrícula aparecen dentro de un rectángulo de bordes redondeados con el dorado del nav, que deja un margen del 10% del ancho de pantalla a cada lado y sobresale apenas por arriba y por abajo de su contenido
 
 #### Scenario: Colores de las celdas
 
@@ -246,7 +256,7 @@ Solo las celdas `A` de la cuadrícula SHALL ser interactivas. Un clic sobre una 
 
 ### Requirement: Datos de solo lectura de la compra
 
-Debajo de la cuadrícula la vista SHALL mostrar, en filas centradas y con la etiqueta encima de cada ítem, los datos de la película y de la función: título y descripción; idioma, subtitulada, tipo de sala y tipo de sonido; inicio, fin y duración. Todos los datos, el contador y el total MUST ser de solo lectura: solo la cuadrícula y el botón de confirmación admiten interacción.
+Debajo del panel dorado la vista SHALL mostrar los datos dentro de un rectángulo blanco de bordes redondeados del mismo ancho, pegado por arriba al panel dorado y con margen entre sus filas centradas, cada ítem con la etiqueta encima: título y descripción; idioma, subtitulada, tipo de sala y tipo de sonido; inicio, fin y duración. Todos los datos, el contador y el total MUST ser de solo lectura: solo la cuadrícula y el botón de confirmación admiten interacción.
 
 #### Scenario: Cada ítem con su etiqueta encima
 
@@ -268,9 +278,14 @@ Debajo de la cuadrícula la vista SHALL mostrar, en filas centradas y con la eti
 - **WHEN** se inspecciona la vista
 - **THEN** los datos, el contador y el total no admiten interacción y solo la cuadrícula y el botón `Confirmar compra` la admiten
 
+#### Scenario: Panel blanco pegado al dorado
+
+- **WHEN** se carga la vista de selección de asientos
+- **THEN** las filas de datos aparecen dentro de un rectángulo blanco de bordes redondeados cuyo borde superior toca el borde inferior del panel dorado, con un margen visible entre sus filas
+
 ### Requirement: Resumen de la compra
 
-La vista SHALL mostrar abajo a la derecha el contador `Cantidad de entradas` y el total de la compra, cada uno con su etiqueta a la izquierda y no arriba. El contador SHALL igualar la cantidad de celdas seleccionadas y el total SHALL ser ese valor multiplicado por el precio de la entrada, con signo `$` y dos decimales; ambos se actualizan con cada cambio de selección.
+La vista SHALL mostrar el resumen dentro de un rectángulo blanco de bordes redondeados del mismo ancho que los otros paneles y con margen por arriba y por abajo. Dentro, abajo a la derecha, SHALL estar el contador `Cantidad de entradas` y el total, cada uno con su etiqueta a la izquierda y no arriba. El contador SHALL igualar las celdas seleccionadas y el total SHALL ser ese valor por el precio de la entrada, con `$` y dos decimales; ambos se actualizan con cada cambio de selección.
 
 #### Scenario: Selección de dos asientos
 
@@ -286,6 +301,11 @@ La vista SHALL mostrar abajo a la derecha el contador `Cantidad de entradas` y e
 
 - **WHEN** la vista carga con ninguna celda seleccionada
 - **THEN** el contador muestra 0 y el total muestra $0.00
+
+#### Scenario: Panel del resumen con márgenes
+
+- **WHEN** se carga la vista de selección de asientos
+- **THEN** el rectángulo blanco del resumen queda separado por un margen del rectángulo de los datos, tanto por arriba como por abajo
 
 ### Requirement: Botón de confirmar compra
 
@@ -336,12 +356,17 @@ En este cambio la confirmación MUST avanzar directamente como si el pago se hub
 
 ### Requirement: Vista de compra realizada
 
-Tras crear las entradas, el sistema SHALL mostrar el mensaje `Compra realizada con éxito, puede ver sus entradas en` seguido del botón `Mis entradas`, que SHALL conducir a `/entradas/`. La confirmación SHALL presentarse centrada.
+Tras crear las entradas, el sistema SHALL mostrar el mensaje `Compra realizada con éxito, puede ver sus entradas en` y, debajo de él, centrado y con un margen pequeño arriba, el botón `Mis entradas` que SHALL conducir a `/entradas/`. El botón SHALL usar el dorado del nav en lugar del rojo. La confirmación SHALL presentarse centrada.
 
 #### Scenario: Mensaje de éxito
 
 - **WHEN** la compra se confirma con éxito
 - **THEN** aparece el mensaje `Compra realizada con éxito, puede ver sus entradas en` con el botón `Mis entradas`
+
+#### Scenario: Botón debajo del mensaje
+
+- **WHEN** se renderiza la pantalla de compra realizada
+- **THEN** el botón `Mis entradas` aparece por debajo del mensaje, centrado, con un margen pequeño arriba y con el dorado del nav como fondo
 
 #### Scenario: Botón Mis entradas
 
