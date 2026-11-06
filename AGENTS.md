@@ -75,7 +75,8 @@ MovieUp/
     │       ├── 2026-11-02-login-google/
     │       ├── 2026-11-03-ui-shell/
     │       ├── 2026-11-05-compra-pelicula/
-    │       └── 2026-11-05-ui-crud-pages/
+    │       ├── 2026-11-05-ui-crud-pages/
+    │       └── 2026-11-06-compra-asientos/
     └── specs/
         ├── .gitkeep
         ├── compras/
