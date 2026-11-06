@@ -2,7 +2,11 @@ from django.db import transaction
 from django.http import Http404
 from django.utils import timezone
 
-from entradas.services import eliminar_entradas_por_finalizacion, etiqueta_fila
+from entradas.services import (
+    crear_entrada,
+    eliminar_entradas_por_finalizacion,
+    etiqueta_fila,
+)
 from funciones.models import Funcion
 from peliculas.models import Pelicula
 from salas.services import validar_distribucion
@@ -88,3 +92,50 @@ def construir_cuadricula(funcion):
         'ancho': len(filas_normalizadas[0]),
         'marca': ','.join(filas_normalizadas),
     }
+
+
+def _parsear_celdas(celdas):
+    pares = []
+    for celda in celdas:
+        partes = str(celda).split(':')
+        if len(partes) != 2:
+            raise ValueError('La selección de asientos no es válida.')
+
+        fila = partes[0].strip().upper()
+        numero = partes[1].strip()
+        if not fila or not numero.isdecimal():
+            raise ValueError('La selección de asientos no es válida.')
+
+        pares.append((fila, int(numero)))
+
+    if not pares:
+        raise ValueError('Debe seleccionar al menos un asiento.')
+    if len(set(pares)) != len(pares):
+        raise ValueError('Hay asientos repetidos en la selección.')
+
+    return pares
+
+
+@transaction.atomic
+def confirmar_compra(funcion_id, cuenta_id, celdas, marca_distribucion):
+    pares = _parsear_celdas(celdas)
+
+    try:
+        funcion = Funcion.objects.select_for_update().get(pk=funcion_id)
+    except Funcion.DoesNotExist as exc:
+        raise ValueError('La función seleccionada ya no existe.') from exc
+
+    if not funcion.funcion_activa or funcion.fin <= timezone.now():
+        raise ValueError('La función seleccionada ya no está disponible.')
+
+    filas = validar_distribucion(funcion.distribucion)['filas']
+    if marca_distribucion != ','.join(filas):
+        raise ValueError('La distribución de la función cambió. Volvé a cargar la página.')
+
+    if funcion.disponibilidad < len(pares):
+        raise ValueError('No hay suficientes entradas disponibles.')
+
+    entradas = []
+    for fila, asiento in pares:
+        entradas.append(crear_entrada(funcion.pk, cuenta_id, asiento, fila))
+    return entradas

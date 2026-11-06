@@ -8,12 +8,14 @@ from django.utils import timezone
 
 from cuentas.models import Cuenta
 from entradas.models import Entrada
+from entradas.services import crear_entrada
 from funciones.models import Funcion
 from peliculas.models import Pelicula
 from salas.models import Sala
 
 from .services import (
     barrer_funciones_vencidas,
+    confirmar_compra,
     listar_funciones_vendibles,
     obtener_funcion_vendible,
     obtener_pelicula,
@@ -272,6 +274,120 @@ class PrepararCompraTests(CompraDataMixin, TestCase):
     def test_missing_movie_raises_404(self):
         with self.assertRaises(Http404):
             preparar_compra(999999)
+
+
+class ConfirmarCompraTests(CompraDataMixin, TestCase):
+    def assert_funcion_unchanged(self, funcion, filas, disponibilidad, compradas):
+        funcion.refresh_from_db()
+        self.assertEqual(funcion.distribucion['filas'], filas)
+        self.assertEqual(funcion.disponibilidad, disponibilidad)
+        self.assertEqual(funcion.entradas_compradas, compradas)
+
+    def test_creates_one_entry_per_selected_seat(self):
+        funcion = self.create_funcion()
+
+        entradas = confirmar_compra(funcion.pk, self.cuenta.pk, ['A:1', 'A:2'], 'AA')
+
+        self.assertEqual(len(entradas), 2)
+        self.assert_funcion_unchanged(funcion, ['RR'], 0, 2)
+        registradas = Entrada.objects.filter(funcion=funcion).order_by('n_asiento')
+        self.assertEqual(
+            [(e.l_fila, e.n_asiento, e.cuenta_id) for e in registradas],
+            [('A', 1, self.cuenta.pk), ('A', 2, self.cuenta.pk)],
+        )
+
+    def test_empty_selection_is_rejected(self):
+        funcion = self.create_funcion()
+
+        with self.assertRaisesMessage(ValueError, 'al menos un asiento'):
+            confirmar_compra(funcion.pk, self.cuenta.pk, [], 'AA')
+
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+        self.assert_funcion_unchanged(funcion, ['AA'], 2, 0)
+
+    def test_malformed_cells_are_rejected(self):
+        funcion = self.create_funcion()
+
+        with self.assertRaisesMessage(ValueError, 'no es válida'):
+            confirmar_compra(funcion.pk, self.cuenta.pk, ['A', 'A:2'], 'AA')
+
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+
+    def test_repeated_seats_are_rejected_and_cells_are_normalized(self):
+        funcion = self.create_funcion()
+
+        with self.assertRaisesMessage(ValueError, 'repetidos'):
+            confirmar_compra(
+                funcion.pk, self.cuenta.pk, ['A:1', ' a:1 ', 'A:2'], 'AA'
+            )
+
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+        self.assert_funcion_unchanged(funcion, ['AA'], 2, 0)
+
+    def test_stale_distribution_mark_is_rejected(self):
+        funcion = self.create_funcion()
+
+        with self.assertRaisesMessage(ValueError, 'distribución de la función cambió'):
+            confirmar_compra(funcion.pk, self.cuenta.pk, ['A:1'], 'XX')
+
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+
+    def test_insufficient_availability_is_rejected(self):
+        funcion = self.create_funcion()
+        funcion.disponibilidad = 0
+        funcion.save(update_fields=['disponibilidad'])
+
+        with self.assertRaisesMessage(ValueError, 'suficientes entradas disponibles'):
+            confirmar_compra(funcion.pk, self.cuenta.pk, ['A:1'], 'AA')
+
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+
+    def test_deactivated_function_rejects_the_batch(self):
+        funcion = self.create_funcion()
+        funcion.funcion_activa = False
+        funcion.save(update_fields=['funcion_activa'])
+
+        with self.assertRaisesMessage(ValueError, 'ya no está disponible'):
+            confirmar_compra(
+                funcion.pk, self.cuenta.pk, ['A:1', 'A:2'], 'AA'
+            )
+
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+
+    def test_expired_function_rejects_the_batch(self):
+        funcion = self.expire(self.create_funcion())
+
+        with self.assertRaisesMessage(ValueError, 'ya no está disponible'):
+            confirmar_compra(
+                funcion.pk, self.cuenta.pk, ['A:1', 'A:2'], 'AA'
+            )
+
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+
+    def test_seat_taken_after_page_load_rejects_the_batch(self):
+        funcion = self.create_funcion()
+        crear_entrada(funcion.pk, self.cuenta.pk, 1, 'A')
+
+        with self.assertRaisesMessage(ValueError, 'distribución de la función cambió'):
+            confirmar_compra(funcion.pk, self.cuenta.pk, ['A:2'], 'AA')
+
+        self.assertEqual(Entrada.objects.filter(funcion=funcion).count(), 1)
+        self.assert_funcion_unchanged(funcion, ['RA'], 1, 1)
+
+    def test_batch_rolls_back_when_a_later_seat_is_occupied(self):
+        funcion = self.create_funcion()
+        funcion.distribucion = {'version': 4, 'filas': ['AAA']}
+        funcion.disponibilidad = 3
+        funcion.save(update_fields=['distribucion', 'disponibilidad'])
+        crear_entrada(funcion.pk, self.cuenta.pk, 1, 'A')
+
+        with self.assertRaisesMessage(ValueError, 'ya está reservado'):
+            confirmar_compra(
+                funcion.pk, self.cuenta.pk, ['A:2', 'A:1'], 'RAA'
+            )
+
+        self.assertEqual(Entrada.objects.filter(funcion=funcion).count(), 1)
+        self.assert_funcion_unchanged(funcion, ['RAA'], 2, 1)
 
 
 class CompraViewTests(CompraDataMixin, TestCase):
@@ -654,3 +770,84 @@ class SeleccionDatosTests(CompraDataMixin, TestCase):
         self.assertNotIn('<input', datos_html)
         self.assertContains(response, '<output class="resumen__valor" data-contador>')
         self.assertContains(response, '<output class="resumen__valor" data-total>')
+
+
+class SeleccionPostTests(CompraDataMixin, TestCase):
+    def test_post_without_session_is_sent_to_login_with_next(self):
+        funcion = self.create_funcion()
+        url = f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        expected = (
+            f'{reverse("google_login")}?'
+            f'{urlencode({"process": "login", "next": url})}'
+        )
+
+        response = self.client.post(url, {'celda': ['A:1'], 'distribucion': 'AA'})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, expected)
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+
+    def test_valid_post_redirects_to_success_and_creates_the_entries(self):
+        funcion = self.create_funcion()
+        url = f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(
+            url, {'celda': ['A:1', 'A:2'], 'distribucion': 'AA'}
+        )
+
+        self.assertRedirects(
+            response, f'{url}?compra=exitosa', fetch_redirect_response=False
+        )
+        self.assertEqual(Entrada.objects.filter(funcion=funcion).count(), 2)
+        funcion.refresh_from_db()
+        self.assertEqual(funcion.disponibilidad, 0)
+        self.assertEqual(funcion.distribucion['filas'], ['RR'])
+
+    def test_post_without_cells_shows_error_and_creates_nothing(self):
+        funcion = self.create_funcion()
+        url = f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(url, {'celda': [], 'distribucion': 'AA'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'role="alert"')
+        self.assertContains(response, 'Debe seleccionar al menos un asiento')
+        self.assertContains(response, 'Elija sus asientos')
+        self.assertFalse(Entrada.objects.filter(funcion=funcion).exists())
+        funcion.refresh_from_db()
+        self.assertEqual(funcion.disponibilidad, 2)
+
+    def test_post_with_occupied_seat_shows_error_and_creates_nothing(self):
+        funcion = self.create_funcion()
+        funcion.distribucion = {'version': 4, 'filas': ['AAA']}
+        funcion.disponibilidad = 3
+        funcion.save(update_fields=['distribucion', 'disponibilidad'])
+        crear_entrada(funcion.pk, self.cuenta.pk, 1, 'A')
+        url = f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(
+            url, {'celda': ['A:2', 'A:1'], 'distribucion': 'RAA'}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'ya está reservado')
+        self.assertEqual(Entrada.objects.filter(funcion=funcion).count(), 1)
+        funcion.refresh_from_db()
+        self.assertEqual(funcion.disponibilidad, 2)
+        self.assertEqual(funcion.distribucion['filas'], ['RAA'])
+
+    def test_post_with_stale_distribution_shows_error_and_reloads_the_grid(self):
+        funcion = self.create_funcion()
+        crear_entrada(funcion.pk, self.cuenta.pk, 1, 'A')
+        url = f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(url, {'celda': ['A:2'], 'distribucion': 'AA'})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'La distribución de la función cambió')
+        self.assertEqual(Entrada.objects.filter(funcion=funcion).count(), 1)
+        self.assertContains(response, 'title="Reservado"')

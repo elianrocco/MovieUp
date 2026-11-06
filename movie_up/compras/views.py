@@ -37,6 +37,21 @@ def seleccionar_asientos(request, pelicula_id, funcion_id):
         return redirect('/gestion/')
 
     funcion = services.obtener_funcion_vendible(pelicula_id, funcion_id)
+    error = None
+    if request.method == 'POST':
+        try:
+            services.confirmar_compra(
+                funcion.pk,
+                request.user.pk,
+                request.POST.getlist('celda'),
+                request.POST.get('distribucion', ''),
+            )
+        except ValueError as exc:
+            error = str(exc)
+            funcion.refresh_from_db()
+        else:
+            return redirect(f'{request.path}?compra=exitosa')
+
     return render(
         request,
         'compras/seleccion_asientos.html',
@@ -44,5 +59,6 @@ def seleccionar_asientos(request, pelicula_id, funcion_id):
             'pelicula': funcion.pelicula,
             'funcion': funcion,
             'cuadricula': services.construir_cuadricula(funcion),
+            'error': error,
         },
     )

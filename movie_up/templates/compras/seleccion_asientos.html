@@ -12,6 +12,10 @@
   <section class="seleccion">
     <h1 class="seleccion__titulo">Elija sus asientos</h1>
 
+    {% if error %}
+      <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+
     <div class="seat-grid-viewport seleccion__viewport">
       <div class="seat-grid" style="--grid-columns: {{ cuadricula.ancho }};" aria-label="Distribución de la función">
         {% for fila in cuadricula.filas %}
