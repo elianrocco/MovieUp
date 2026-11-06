@@ -54,6 +54,7 @@ MovieUp/
 │   ├── compras/
 │   ├── cuentas/
 │   ├── entradas/
+│   ├── estadisticas/
 │   ├── funciones/
 │   ├── peliculas/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
 │   ├── salas/

@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'compras',
     'cuentas',
     'entradas',
+    'estadisticas',
     'funciones',
     'peliculas',
     'salas',
