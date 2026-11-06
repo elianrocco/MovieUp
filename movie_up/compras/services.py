@@ -2,9 +2,12 @@ from django.db import transaction
 from django.http import Http404
 from django.utils import timezone
 
-from entradas.services import eliminar_entradas_por_finalizacion
+from entradas.services import eliminar_entradas_por_finalizacion, etiqueta_fila
 from funciones.models import Funcion
 from peliculas.models import Pelicula
+from salas.services import validar_distribucion
+
+CELL_TITLES = {'P': 'Pasillo', 'A': 'Asiento', 'R': 'Reservado'}
 
 
 def obtener_pelicula(pelicula_id):
@@ -12,6 +15,21 @@ def obtener_pelicula(pelicula_id):
         return Pelicula.objects.get(pk=pelicula_id)
     except Pelicula.DoesNotExist as exc:
         raise Http404('Película no encontrada') from exc
+
+
+def obtener_funcion_vendible(pelicula_id, funcion_id):
+    try:
+        funcion = Funcion.objects.select_related('pelicula', 'sala').get(
+            pk=funcion_id,
+            pelicula_id=pelicula_id,
+        )
+    except Funcion.DoesNotExist as exc:
+        raise Http404('Función no encontrada') from exc
+
+    if not funcion.funcion_activa or funcion.fin <= timezone.now():
+        raise Http404('Función no disponible')
+
+    return funcion
 
 
 @transaction.atomic
@@ -42,3 +60,31 @@ def preparar_compra(pelicula_id):
     pelicula = obtener_pelicula(pelicula_id)
     barrer_funciones_vencidas(pelicula_id)
     return pelicula, listar_funciones_vendibles(pelicula_id)
+
+
+def construir_cuadricula(funcion):
+    distribucion = validar_distribucion(funcion.distribucion)
+    filas_normalizadas = distribucion['filas']
+
+    filas = []
+    for indice_fila, celdas in enumerate(filas_normalizadas):
+        etiqueta = etiqueta_fila(indice_fila + 1)
+        ordinal = 0
+        celdas_render = []
+        for celda in celdas:
+            if celda in {'A', 'R'}:
+                ordinal += 1
+            asiento = ordinal if celda == 'A' else None
+            titulo = (
+                f'Fila {etiqueta}, asiento {asiento}'
+                if asiento is not None
+                else CELL_TITLES[celda]
+            )
+            celdas_render.append({'tipo': celda, 'asiento': asiento, 'titulo': titulo})
+        filas.append({'etiqueta': etiqueta, 'celdas': celdas_render})
+
+    return {
+        'filas': filas,
+        'ancho': len(filas_normalizadas[0]),
+        'marca': ','.join(filas_normalizadas),
+    }

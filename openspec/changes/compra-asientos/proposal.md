@@ -24,7 +24,7 @@ El botón `Comprar entradas` de cada función del listado no tiene destino: la s
 
 ### Modified Capabilities
 
-- `compras`: MODIFIED de "Botón de compra de cada función" (el botón ahora navega a la vista de selección de asientos) y ADDED de los requisitos de la vista de selección, la cuadrícula interactiva, los datos de solo lectura, el resumen con contador y total, la confirmación atómica de la compra y la vista de éxito.
+- `compras`: REMOVED de "Botón de compra de cada función" + ADDED de "Destino del botón de compra de cada función" (el botón ahora navega a la vista de selección de asientos) y ADDED de los requisitos de la vista de selección, la cuadrícula interactiva, los datos de solo lectura, el resumen con contador y total, la confirmación atómica de la compra y la vista de éxito.
 
 ## Impact
 

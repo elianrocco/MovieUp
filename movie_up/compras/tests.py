@@ -15,6 +15,7 @@ from salas.models import Sala
 from .services import (
     barrer_funciones_vencidas,
     listar_funciones_vendibles,
+    obtener_funcion_vendible,
     obtener_pelicula,
     preparar_compra,
 )
@@ -87,6 +88,46 @@ class ObtenerPeliculaTests(CompraDataMixin, TestCase):
     def test_missing_movie_raises_404(self):
         with self.assertRaises(Http404):
             obtener_pelicula(999999)
+
+
+class ObtenerFuncionVendibleTests(CompraDataMixin, TestCase):
+    def test_returns_active_future_function_of_the_movie(self):
+        funcion = self.create_funcion()
+
+        resultado = obtener_funcion_vendible(self.pelicula.pk, funcion.pk)
+
+        self.assertEqual(resultado, funcion)
+        self.assertEqual(resultado.pelicula, self.pelicula)
+        self.assertEqual(resultado.sala, self.sala)
+
+    def test_missing_movie_raises_404(self):
+        funcion = self.create_funcion()
+
+        with self.assertRaises(Http404):
+            obtener_funcion_vendible(999999, funcion.pk)
+
+    def test_missing_function_raises_404(self):
+        with self.assertRaises(Http404):
+            obtener_funcion_vendible(self.pelicula.pk, 999999)
+
+    def test_function_of_another_movie_raises_404(self):
+        otra_pelicula = self.create_pelicula('Otra película')
+        funcion = self.create_funcion(pelicula=otra_pelicula)
+
+        with self.assertRaises(Http404):
+            obtener_funcion_vendible(self.pelicula.pk, funcion.pk)
+
+    def test_inactive_function_raises_404(self):
+        funcion = self.create_funcion(activa=False)
+
+        with self.assertRaises(Http404):
+            obtener_funcion_vendible(self.pelicula.pk, funcion.pk)
+
+    def test_expired_function_raises_404(self):
+        funcion = self.expire(self.create_funcion())
+
+        with self.assertRaises(Http404):
+            obtener_funcion_vendible(self.pelicula.pk, funcion.pk)
 
 
 class BarrerFuncionesVencidasTests(CompraDataMixin, TestCase):
@@ -333,9 +374,283 @@ class CompraViewTests(CompraDataMixin, TestCase):
         self.assertContains(response, 'disabled')
         self.assertNotContains(response, 'href="#"')
 
+    def test_available_buy_button_links_to_its_function_selection(self):
+        first = self.create_funcion()
+        second = self.create_funcion(start=timezone.now() + timedelta(days=4))
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertContains(
+            response,
+            f'<a href="/compras/{self.pelicula.pk}/funciones/{first.pk}/" class="btn btn--buy">',
+        )
+        self.assertContains(
+            response,
+            f'<a href="/compras/{self.pelicula.pk}/funciones/{second.pk}/" class="btn btn--buy">',
+        )
+
+    def test_sold_out_button_does_not_link_to_selection(self):
+        funcion = self.create_funcion()
+        funcion.disponibilidad = 0
+        funcion.save(update_fields=['disponibilidad'])
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/')
+
+        self.assertNotContains(response, f'/funciones/{funcion.pk}/')
+
     def test_purchase_page_loads_its_stylesheet(self):
         self.client.force_login(self.cuenta)
 
         response = self.client.get(f'/compras/{self.pelicula.pk}/')
 
         self.assertContains(response, 'css/compras.css')
+
+
+class SeleccionAsientosViewTests(CompraDataMixin, TestCase):
+    def test_common_account_renders_selection_page(self):
+        funcion = self.create_funcion()
+        url = f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'compras/seleccion_asientos.html')
+        self.assertEqual(response.context['funcion'], funcion)
+        self.assertEqual(response.context['pelicula'], self.pelicula)
+
+    def test_visitor_is_sent_to_google_login_with_selection_next(self):
+        funcion = self.create_funcion()
+        url = f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        expected = (
+            f'{reverse("google_login")}?'
+            f'{urlencode({"process": "login", "next": url})}'
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, expected)
+
+    def test_staff_account_is_redirected_to_management(self):
+        funcion = self.create_funcion()
+        staff = Cuenta.objects.create_superuser(
+            'staff-selection@example.com', 'Staff', password='Strong-test-password-123'
+        )
+        self.client.force_login(staff)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/')
+
+        self.assertRedirects(response, '/gestion/', fetch_redirect_response=False)
+
+    def test_missing_movie_returns_404(self):
+        funcion = self.create_funcion()
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/999999/funciones/{funcion.pk}/')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_missing_function_returns_404(self):
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/funciones/999999/')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_function_of_another_movie_returns_404(self):
+        otra_pelicula = self.create_pelicula('Otra película')
+        funcion = self.create_funcion(pelicula=otra_pelicula)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_inactive_function_returns_404(self):
+        funcion = self.create_funcion(activa=False)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/')
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_expired_function_returns_404(self):
+        funcion = self.expire(self.create_funcion())
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/')
+
+        self.assertEqual(response.status_code, 404)
+
+
+class SeleccionCuadriculaTests(CompraDataMixin, TestCase):
+    def render_selection(self, distribucion=None, disponibilidad=None):
+        funcion = self.create_funcion()
+        updates = []
+        if distribucion is not None:
+            funcion.distribucion = distribucion
+            updates.append('distribucion')
+        if disponibilidad is not None:
+            funcion.disponibilidad = disponibilidad
+            updates.append('disponibilidad')
+        if updates:
+            funcion.save(update_fields=updates)
+        self.client.force_login(self.cuenta)
+        return self.client.get(f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/')
+
+    def test_grid_renders_cell_colors_from_distribution(self):
+        response = self.render_selection({'version': 1, 'filas': ['APA']})
+
+        self.assertContains(response, 'celda--asiento', count=2)
+        self.assertContains(response, 'celda--pasillo', count=1)
+
+    def test_available_cells_are_buttons_with_row_and_seat(self):
+        response = self.render_selection({'version': 1, 'filas': ['APA']})
+
+        self.assertContains(response, 'data-fila="A"', count=2)
+        self.assertContains(response, 'data-asiento="1"')
+        self.assertContains(response, 'data-asiento="2"')
+        self.assertContains(response, 'title="Fila A, asiento 2"')
+
+    def test_seat_ordinal_counts_reserved_cells(self):
+        response = self.render_selection({'version': 1, 'filas': ['ARA']})
+
+        self.assertContains(response, 'data-asiento="1"')
+        self.assertContains(response, 'data-asiento="3"')
+        self.assertNotContains(response, 'data-asiento="2"')
+        self.assertContains(response, 'title="Reservado"')
+
+    def test_sold_seat_renders_as_inert_reserved_span(self):
+        response = self.render_selection({'version': 1, 'filas': ['RA']})
+
+        self.assertContains(response, 'celda--reservado')
+        self.assertContains(response, 'title="Reservado"')
+        self.assertContains(response, 'data-asiento="2"')
+        self.assertNotContains(response, 'data-asiento="1"')
+
+    def test_second_row_uses_bijective_label(self):
+        response = self.render_selection({'version': 1, 'filas': ['AA', 'AA']})
+
+        self.assertContains(response, 'data-fila="A"', count=2)
+        self.assertContains(response, 'data-fila="B"', count=2)
+
+    def test_grid_uses_function_distribution_not_sala(self):
+        funcion = self.create_funcion()
+        self.sala.distribucion = {'version': 9, 'filas': ['RR']}
+        self.sala.save(update_fields=['distribucion'])
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/')
+
+        self.assertContains(response, 'data-asiento="1"')
+        self.assertContains(response, 'data-asiento="2"')
+        self.assertNotContains(response, 'celda--reservado')
+
+    def test_header_and_initial_summary_state(self):
+        response = self.render_selection()
+
+        self.assertContains(response, 'Elija sus asientos')
+        self.assertContains(response, 'Cantidad de entradas')
+        self.assertContains(response, 'data-contador>0')
+        self.assertContains(response, 'data-total>$0.00')
+        self.assertContains(response, 'data-precio="1500.00"')
+        self.assertContains(response, 'name="distribucion" value="AA"')
+        self.assertContains(response, 'csrfmiddlewaretoken')
+        self.assertContains(response, 'Confirmar compra')
+        self.assertContains(response, 'data-confirmar disabled')
+        self.assertContains(response, 'btn--sold-out')
+
+    def test_sold_out_function_renders_without_selectable_seats(self):
+        response = self.render_selection(
+            distribucion={'version': 1, 'filas': ['RR']},
+            disponibilidad=0,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'celda--reservado', count=2)
+        self.assertNotContains(response, 'data-asiento')
+
+    def test_selection_page_loads_its_stylesheet(self):
+        response = self.render_selection()
+
+        self.assertContains(response, 'css/compras.css')
+
+
+class SeleccionDatosTests(CompraDataMixin, TestCase):
+    def render_selection(self, subtitulada=True):
+        funcion = self.create_funcion()
+        funcion.subtitulada = subtitulada
+        funcion.save(update_fields=['subtitulada'])
+        self.client.force_login(self.cuenta)
+        return funcion, self.client.get(
+            f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        )
+
+    def test_each_item_shows_its_label_above_the_value(self):
+        funcion, response = self.render_selection()
+
+        for label in (
+            'Título',
+            'Descripción',
+            'Idioma',
+            'Subtitulada',
+            'Tipo de sala',
+            'Tipo de sonido',
+            'Inicio',
+            'Fin',
+            'Duración',
+        ):
+            self.assertContains(response, f'datos__etiqueta">{label}<')
+
+        for value in (
+            self.pelicula.titulo,
+            self.pelicula.descripcion,
+            'Español',
+            'Sí',
+            '2D',
+            'Dolby',
+            timezone.localtime(funcion.inicio).strftime('%d/%m/%Y %H:%M'),
+            timezone.localtime(funcion.fin).strftime('%d/%m/%Y %H:%M'),
+            '100 min',
+        ):
+            self.assertContains(response, value)
+
+    def test_rows_appear_below_the_grid_in_spec_order(self):
+        _, response = self.render_selection()
+        html = response.content.decode()
+
+        positions = [
+            html.index('class="seat-grid"'),
+            html.index('datos__etiqueta">Título<'),
+            html.index('datos__etiqueta">Descripción<'),
+            html.index('datos__etiqueta">Idioma<'),
+            html.index('datos__etiqueta">Subtitulada<'),
+            html.index('datos__etiqueta">Tipo de sala<'),
+            html.index('datos__etiqueta">Tipo de sonido<'),
+            html.index('datos__etiqueta">Inicio<'),
+            html.index('datos__etiqueta">Fin<'),
+            html.index('datos__etiqueta">Duración<'),
+            html.index('class="resumen"'),
+        ]
+
+        self.assertEqual(positions, sorted(positions))
+
+    def test_subtitulada_shows_no_when_the_function_is_not_subtitled(self):
+        _, response = self.render_selection(subtitulada=False)
+
+        self.assertContains(response, 'datos__valor">No<')
+        self.assertNotContains(response, 'datos__valor">Sí<')
+
+    def test_data_rows_and_summary_are_read_only(self):
+        _, response = self.render_selection()
+        html = response.content.decode()
+        datos_html = html.split('class="datos"')[1].split('class="resumen"')[0]
+
+        self.assertNotIn('<a', datos_html)
+        self.assertNotIn('<button', datos_html)
+        self.assertNotIn('<input', datos_html)
+        self.assertContains(response, '<output class="resumen__valor" data-contador>')
+        self.assertContains(response, '<output class="resumen__valor" data-total>')

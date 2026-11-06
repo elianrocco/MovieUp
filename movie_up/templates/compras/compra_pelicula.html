@@ -52,9 +52,9 @@
                   Entradas agotadas
                 </button>
               {% else %}
-                <button type="button" class="btn btn--buy">
+                <a href="{% url 'compras:seleccionar_asientos' pelicula.pk funcion.pk %}" class="btn btn--buy">
                   Comprar entradas
-                </button>
+                </a>
               {% endif %}
             </div>
           </li>
