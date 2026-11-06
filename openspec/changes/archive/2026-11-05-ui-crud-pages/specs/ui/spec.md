@@ -1,18 +1,5 @@
 # Spec Delta
 
-## MODIFIED Requirements
-
-### Requirement: Gating de Comprar entradas
-El botón `Comprar entradas` (del hero o de cualquier tarjeta) SHALL conducir al inicio de sesión con Google cuando no hay sesión iniciada, conservando el destino de retorno y sin renderizar la pantalla intermedia de acceso. Con sesión iniciada el botón SHALL quedarse sin destino hasta que exista la vista de compra, que se define en otro cambio.
-
-#### Scenario: Compra sin sesión
-- **WHEN** un visitante hace clic en `Comprar entradas`
-- **THEN** es conducido directamente al flujo de inicio de sesión con Google con retorno a la página principal, sin que se muestre la pantalla intermedia de acceso
-
-#### Scenario: Compra con sesión mientras no existe la vista de compra
-- **WHEN** una cuenta autenticada hace clic en `Comprar entradas`
-- **THEN** el botón no navega a ninguna parte y queda a la espera de la vista de compra
-
 ## ADDED Requirements
 
 ### Requirement: Presentación de detalle, formulario y borrado de las páginas CRUD
