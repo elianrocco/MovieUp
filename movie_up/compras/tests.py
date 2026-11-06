@@ -694,6 +694,12 @@ class SeleccionCuadriculaTests(CompraDataMixin, TestCase):
 
         self.assertContains(response, 'css/compras.css')
 
+    def test_selection_page_loads_its_script(self):
+        response = self.render_selection()
+
+        self.assertContains(response, 'compras/js/seleccion_asientos.js')
+        self.assertContains(response, 'data-compra-grid')
+
 
 class SeleccionDatosTests(CompraDataMixin, TestCase):
     def render_selection(self, subtitulada=True):
@@ -851,3 +857,57 @@ class SeleccionPostTests(CompraDataMixin, TestCase):
         self.assertContains(response, 'La distribución de la función cambió')
         self.assertEqual(Entrada.objects.filter(funcion=funcion).count(), 1)
         self.assertContains(response, 'title="Reservado"')
+
+
+class CompraExitosaTests(CompraDataMixin, TestCase):
+    def success_url(self, funcion):
+        return f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/?compra=exitosa'
+
+    def test_success_page_shows_the_message_and_the_entries_button(self):
+        funcion = self.create_funcion()
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(self.success_url(funcion))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'compras/compra_exitosa.html')
+        self.assertContains(
+            response, 'Compra realizada con éxito, puede ver sus entradas en'
+        )
+        self.assertContains(response, 'href="/entradas/"')
+        self.assertContains(response, '>Mis entradas</a>')
+
+    def test_success_page_has_no_grid_form_or_data(self):
+        funcion = self.create_funcion()
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(self.success_url(funcion))
+
+        self.assertNotContains(response, 'seat-grid')
+        self.assertNotContains(response, 'Elija sus asientos')
+        self.assertNotContains(response, 'data-compra-form')
+        self.assertNotContains(response, 'datos__etiqueta')
+
+    def test_url_without_the_success_param_still_shows_the_selection_grid(self):
+        funcion = self.create_funcion()
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(
+            f'/compras/{self.pelicula.pk}/funciones/{funcion.pk}/'
+        )
+
+        self.assertTemplateUsed(response, 'compras/seleccion_asientos.html')
+        self.assertContains(response, 'Elija sus asientos')
+
+    def test_visitor_on_the_success_url_is_sent_to_login(self):
+        funcion = self.create_funcion()
+        url = self.success_url(funcion)
+        expected = (
+            f'{reverse("google_login")}?'
+            f'{urlencode({"process": "login", "next": url})}'
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, expected)

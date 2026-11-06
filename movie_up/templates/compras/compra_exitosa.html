@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}MovieUp - Compra realizada{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" href="{% static 'css/compras.css' %}">
+{% endblock %}
+
+{% block content %}
+  <section class="exito">
+    <h1 class="exito__mensaje">Compra realizada con éxito, puede ver sus entradas en</h1>
+    <a href="{% url 'entradas:entrada_list' %}" class="btn btn--buy">Mis entradas</a>
+  </section>
+{% endblock %}

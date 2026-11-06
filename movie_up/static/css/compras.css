@@ -176,6 +176,32 @@
   min-height: 44px;
 }
 
+.celda--seleccionada {
+  background-color: var(--primary);
+}
+
+.exito {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 75%;
+  margin: 6rem auto;
+  text-align: center;
+}
+
+.exito__mensaje {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.exito .btn {
+  min-height: 44px;
+}
+
 @media (max-width: 1024px) {
   .funcion-item__meta {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -210,5 +236,10 @@
 
   .resumen .btn {
     width: 100%;
+  }
+
+  .exito {
+    width: 95%;
+    margin: 4rem auto;
   }
 }

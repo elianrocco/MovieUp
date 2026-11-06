@@ -52,6 +52,9 @@ def seleccionar_asientos(request, pelicula_id, funcion_id):
         else:
             return redirect(f'{request.path}?compra=exitosa')
 
+    if request.method == 'GET' and request.GET.get('compra') == 'exitosa':
+        return render(request, 'compras/compra_exitosa.html')
+
     return render(
         request,
         'compras/seleccion_asientos.html',

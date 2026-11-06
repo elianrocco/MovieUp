@@ -8,6 +8,10 @@
   <link rel="stylesheet" href="{% static 'css/compras.css' %}">
 {% endblock %}
 
+{% block scripts %}
+  <script src="{% static 'compras/js/seleccion_asientos.js' %}" defer></script>
+{% endblock %}
+
 {% block content %}
   <section class="seleccion">
     <h1 class="seleccion__titulo">Elija sus asientos</h1>
@@ -17,7 +21,7 @@
     {% endif %}
 
     <div class="seat-grid-viewport seleccion__viewport">
-      <div class="seat-grid" style="--grid-columns: {{ cuadricula.ancho }};" aria-label="Distribución de la función">
+      <div class="seat-grid" data-compra-grid style="--grid-columns: {{ cuadricula.ancho }};" aria-label="Distribución de la función">
         {% for fila in cuadricula.filas %}
           {% for celda in fila.celdas %}
             {% if celda.asiento %}

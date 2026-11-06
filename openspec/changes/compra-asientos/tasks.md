@@ -28,17 +28,17 @@
 
 ## 5. Selección interactiva, contador y total
 
-- [ ] 5.1 Crear `movie_up/compras/static/compras/js/seleccion_asientos.js` (cargado con `defer` en la plantilla) que al hacer clic alterna `celda--seleccionada`/`aria-pressed` solo en botones de asiento, reescribe los inputs ocultos `celda` (`FILA:ASIENTO`), recalcula el contador y el total en centavos con `data-precio` (formato `$0.00` sin separador de miles) y alterna `disabled` + `btn--sold-out` del botón de confirmación; agregar en `compras.css` `.celda--seleccionada` con `var(--primary)`, verificando con Playwright en desktop y móvil: clic en `A` cambia a rojo y suma, clic en rojo vuelve a azul y resta, clic en `P`/`R` no hace nada, el total es cantidad × precio y el botón pasa de deshabilitado a habilitado.
-- [ ] 5.2 Verificar con Playwright que la consola del navegador queda sin errores en la vista de selección y que el flujo completo lista → selección → confirmación → éxito navega correctamente (capturas en `.playwright-mcp/`).
+- [x] 5.1 Crear `movie_up/compras/static/compras/js/seleccion_asientos.js` (cargado con `defer` en la plantilla) que al hacer clic alterna `celda--seleccionada`/`aria-pressed` solo en botones de asiento, reescribe los inputs ocultos `celda` (`FILA:ASIENTO`), recalcula el contador y el total en centavos con `data-precio` (formato `$0.00` sin separador de miles) y alterna `disabled` + `btn--sold-out` del botón de confirmación; agregar en `compras.css` `.celda--seleccionada` con `var(--primary)`, verificando con Playwright en desktop y móvil: clic en `A` cambia a rojo y suma, clic en rojo vuelve a azul y resta, clic en `P`/`R` no hace nada, el total es cantidad × precio y el botón pasa de deshabilitado a habilitado.
+- [x] 5.2 Verificar con Playwright que la consola del navegador queda sin errores en la vista de selección y que el flujo completo lista → selección → confirmación → éxito navega correctamente (capturas en `.playwright-mcp/`).
 
 ## 6. Pantalla de compra realizada
 
-- [ ] 6.1 Renderizar con `?compra=exitosa` el mensaje `Compra realizada con éxito, puede ver sus entradas en` y el botón `Mis entradas` apuntando a `entradas:entrada_list` (`/entradas/`), centrado y sin cuadrícula; verificar con tests que el mensaje, el destino del botón y la ausencia de la cuadrícula se cumplen, y con Playwright que el redirect POST-GET no reenvía la compra al recargar.
+- [x] 6.1 Renderizar con `?compra=exitosa` el mensaje `Compra realizada con éxito, puede ver sus entradas en` y el botón `Mis entradas` apuntando a `entradas:entrada_list` (`/entradas/`), centrado y sin cuadrícula; verificar con tests que el mensaje, el destino del botón y la ausencia de la cuadrícula se cumplen, y con Playwright que el redirect POST-GET no reenvía la compra al recargar.
 
 ## 7. Verificación de integración
 
-- [ ] 7.1 Correr la suite completa `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas compras core`, más `manage.py check` y `manage.py makemigrations --check --dry-run`, y verificar que todo pasa sin errores ni migraciones pendientes.
-- [ ] 7.2 Repetir la verificación Playwright final del flujo completo en desktop y móvil con la consola limpia, y dejar las capturas en `.playwright-mcp/`.
+- [x] 7.1 Correr la suite completa `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas compras core`, más `manage.py check` y `manage.py makemigrations --check --dry-run`, y verificar que todo pasa sin errores ni migraciones pendientes.
+- [x] 7.2 Repetir la verificación Playwright final del flujo completo en desktop y móvil con la consola limpia, y dejar las capturas en `.playwright-mcp/`.
 
 ## Workflow follow-up
 
