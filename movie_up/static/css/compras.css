@@ -32,8 +32,8 @@
 }
 
 .funcion-item__meta {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  align-items: flex-start;
   gap: 0.75rem 1.5rem;
   margin: 0;
   padding: 0;
@@ -83,8 +83,29 @@
 
 /* --- Seat selection view ---------------------------------------------- */
 
+.panel {
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-inline: 10vw;
+}
+
+.panel--gold {
+  background: var(--gold);
+}
+
+.panel--gold .seleccion__titulo {
+  color: var(--on-gold);
+}
+
+.panel--light {
+  background: var(--surface);
+}
+
+.panel--resumen {
+  margin-block: 1.5rem;
+}
+
 .seleccion {
-  width: 75%;
   margin: 3rem auto;
 }
 
@@ -105,7 +126,6 @@
 .datos {
   display: grid;
   gap: 1.25rem;
-  margin-top: 2.5rem;
 }
 
 .datos__fila {
@@ -148,7 +168,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 1rem 1.5rem;
-  margin-top: 2.5rem;
 }
 
 .resumen__campo {
@@ -182,9 +201,8 @@
 
 .exito {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 1rem;
   width: 75%;
   margin: 6rem auto;
@@ -202,12 +220,6 @@
   min-height: 44px;
 }
 
-@media (max-width: 1024px) {
-  .funcion-item__meta {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 768px) {
   .compra-lista {
     width: 95%;
@@ -218,16 +230,8 @@
     align-items: stretch;
   }
 
-  .funcion-item__meta {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .funcion-item__accion .btn {
     width: 100%;
-  }
-
-  .seleccion {
-    width: 95%;
   }
 
   .datos__fila {

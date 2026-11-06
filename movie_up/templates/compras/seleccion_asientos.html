@@ -14,92 +14,98 @@
 
 {% block content %}
   <section class="seleccion">
-    <h1 class="seleccion__titulo">Elija sus asientos</h1>
+    <div class="panel panel--gold">
+      <h1 class="seleccion__titulo">Elija sus asientos</h1>
 
-    {% if error %}
-      <div class="error-message" role="alert">{{ error }}</div>
-    {% endif %}
+      {% if error %}
+        <div class="error-message" role="alert">{{ error }}</div>
+      {% endif %}
 
-    <div class="seat-grid-viewport seleccion__viewport">
-      <div class="seat-grid" data-compra-grid style="--grid-columns: {{ cuadricula.ancho }};" aria-label="Distribución de la función">
-        {% for fila in cuadricula.filas %}
-          {% for celda in fila.celdas %}
-            {% if celda.asiento %}
-              <button type="button"
-                      class="seat-grid__cell {{ celda.tipo|celda_clase }}"
-                      data-fila="{{ fila.etiqueta }}"
-                      data-asiento="{{ celda.asiento }}"
-                      aria-pressed="false"
-                      title="{{ celda.titulo }}"
-                      aria-label="{{ celda.titulo }}"></button>
-            {% else %}
-              <span class="seat-grid__cell {{ celda.tipo|celda_clase }}"
-                    title="{{ celda.titulo }}"></span>
-            {% endif %}
+      <div class="seat-grid-viewport seleccion__viewport">
+        <div class="seat-grid" data-compra-grid style="--grid-columns: {{ cuadricula.ancho }};" aria-label="Distribución de la función">
+          {% for fila in cuadricula.filas %}
+            {% for celda in fila.celdas %}
+              {% if celda.asiento %}
+                <button type="button"
+                        class="seat-grid__cell {{ celda.tipo|celda_clase }}"
+                        data-fila="{{ fila.etiqueta }}"
+                        data-asiento="{{ celda.asiento }}"
+                        aria-pressed="false"
+                        title="{{ celda.titulo }}"
+                        aria-label="{{ celda.titulo }}"></button>
+              {% else %}
+                <span class="seat-grid__cell {{ celda.tipo|celda_clase }}"
+                      title="{{ celda.titulo }}"></span>
+              {% endif %}
+            {% endfor %}
           {% endfor %}
-        {% endfor %}
-      </div>
-    </div>
-
-    <div class="datos">
-      <div class="datos__fila">
-        <div class="datos__item">
-          <span class="datos__etiqueta">Título</span>
-          <span class="datos__valor">{{ pelicula.titulo }}</span>
-        </div>
-      </div>
-      <div class="datos__fila">
-        <div class="datos__item datos__item--ancho">
-          <span class="datos__etiqueta">Descripción</span>
-          <span class="datos__valor">{{ pelicula.descripcion }}</span>
-        </div>
-      </div>
-      <div class="datos__fila">
-        <div class="datos__item">
-          <span class="datos__etiqueta">Idioma</span>
-          <span class="datos__valor">{{ funcion.idioma }}</span>
-        </div>
-        <div class="datos__item">
-          <span class="datos__etiqueta">Subtitulada</span>
-          <span class="datos__valor">{{ funcion.subtitulada|yesno:"Sí,No" }}</span>
-        </div>
-        <div class="datos__item">
-          <span class="datos__etiqueta">Tipo de sala</span>
-          <span class="datos__valor">{{ funcion.sala.tipo_sala }}</span>
-        </div>
-        <div class="datos__item">
-          <span class="datos__etiqueta">Tipo de sonido</span>
-          <span class="datos__valor">{{ funcion.sala.tipo_sonido }}</span>
-        </div>
-      </div>
-      <div class="datos__fila">
-        <div class="datos__item">
-          <span class="datos__etiqueta">Inicio</span>
-          <span class="datos__valor">{{ funcion.inicio|date:"d/m/Y H:i" }}</span>
-        </div>
-        <div class="datos__item">
-          <span class="datos__etiqueta">Fin</span>
-          <span class="datos__valor">{{ funcion.fin|date:"d/m/Y H:i" }}</span>
-        </div>
-        <div class="datos__item">
-          <span class="datos__etiqueta">Duración</span>
-          <span class="datos__valor">{{ pelicula.duracion_minutos }} min</span>
         </div>
       </div>
     </div>
 
-    <form method="post" class="resumen" data-compra-form data-precio="{{ funcion.precio_entrada }}">
-      {% csrf_token %}
-      <input type="hidden" name="distribucion" value="{{ cuadricula.marca }}">
-      <div class="resumen__campo">
-        <span class="resumen__etiqueta">Cantidad de entradas</span>
-        <output class="resumen__valor" data-contador>0</output>
+    <div class="panel panel--light">
+      <div class="datos">
+        <div class="datos__fila">
+          <div class="datos__item">
+            <span class="datos__etiqueta">Título</span>
+            <span class="datos__valor">{{ pelicula.titulo }}</span>
+          </div>
+        </div>
+        <div class="datos__fila">
+          <div class="datos__item datos__item--ancho">
+            <span class="datos__etiqueta">Descripción</span>
+            <span class="datos__valor">{{ pelicula.descripcion }}</span>
+          </div>
+        </div>
+        <div class="datos__fila">
+          <div class="datos__item">
+            <span class="datos__etiqueta">Idioma</span>
+            <span class="datos__valor">{{ funcion.idioma }}</span>
+          </div>
+          <div class="datos__item">
+            <span class="datos__etiqueta">Subtitulada</span>
+            <span class="datos__valor">{{ funcion.subtitulada|yesno:"Sí,No" }}</span>
+          </div>
+          <div class="datos__item">
+            <span class="datos__etiqueta">Tipo de sala</span>
+            <span class="datos__valor">{{ funcion.sala.tipo_sala }}</span>
+          </div>
+          <div class="datos__item">
+            <span class="datos__etiqueta">Tipo de sonido</span>
+            <span class="datos__valor">{{ funcion.sala.tipo_sonido }}</span>
+          </div>
+        </div>
+        <div class="datos__fila">
+          <div class="datos__item">
+            <span class="datos__etiqueta">Inicio</span>
+            <span class="datos__valor">{{ funcion.inicio|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="datos__item">
+            <span class="datos__etiqueta">Fin</span>
+            <span class="datos__valor">{{ funcion.fin|date:"d/m/Y H:i" }}</span>
+          </div>
+          <div class="datos__item">
+            <span class="datos__etiqueta">Duración</span>
+            <span class="datos__valor">{{ pelicula.duracion_minutos }} min</span>
+          </div>
+        </div>
       </div>
-      <div class="resumen__campo">
-        <span class="resumen__etiqueta">Total</span>
-        <output class="resumen__valor" data-total>$0.00</output>
-      </div>
-      <button type="submit" class="btn btn--buy btn--sold-out" data-confirmar disabled aria-disabled="true">Confirmar compra</button>
-    </form>
+    </div>
+
+    <div class="panel panel--light panel--resumen">
+      <form method="post" class="resumen" data-compra-form data-precio="{{ funcion.precio_entrada }}">
+        {% csrf_token %}
+        <input type="hidden" name="distribucion" value="{{ cuadricula.marca }}">
+        <div class="resumen__campo">
+          <span class="resumen__etiqueta">Cantidad de entradas</span>
+          <output class="resumen__valor" data-contador>0</output>
+        </div>
+        <div class="resumen__campo">
+          <span class="resumen__etiqueta">Total</span>
+          <output class="resumen__valor" data-total>$0.00</output>
+        </div>
+        <button type="submit" class="btn btn--buy btn--sold-out" data-confirmar disabled aria-disabled="true">Confirmar compra</button>
+      </form>
+    </div>
   </section>
 {% endblock %}

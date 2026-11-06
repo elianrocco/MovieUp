@@ -700,6 +700,24 @@ class SeleccionCuadriculaTests(CompraDataMixin, TestCase):
         self.assertContains(response, 'compras/js/seleccion_asientos.js')
         self.assertContains(response, 'data-compra-grid')
 
+    def test_view_renders_the_three_panels_in_order(self):
+        response = self.render_selection()
+        html = response.content.decode()
+
+        self.assertEqual(html.count('panel--gold'), 1)
+        self.assertEqual(html.count('panel panel--light'), 2)
+        self.assertContains(response, 'panel--resumen')
+        posiciones = [
+            html.index('panel--gold'),
+            html.index('Elija sus asientos'),
+            html.index('panel panel--light'),
+            html.index('class="datos"'),
+            html.index('panel--resumen'),
+            html.index('class="resumen"'),
+        ]
+
+        self.assertEqual(posiciones, sorted(posiciones))
+
 
 class SeleccionDatosTests(CompraDataMixin, TestCase):
     def render_selection(self, subtitulada=True):
@@ -911,3 +929,14 @@ class CompraExitosaTests(CompraDataMixin, TestCase):
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, expected)
+
+    def test_success_button_is_gold_and_below_the_message(self):
+        funcion = self.create_funcion()
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(self.success_url(funcion))
+        html = response.content.decode()
+
+        self.assertContains(response, 'btn btn--gold')
+        self.assertNotContains(response, 'btn--buy')
+        self.assertLess(html.index('exito__mensaje'), html.index('btn btn--gold'))

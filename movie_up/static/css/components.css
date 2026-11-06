@@ -206,6 +206,25 @@
   background: color-mix(in oklch, var(--primary) 80%, black);
 }
 
+.btn--gold {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.btn--gold:hover {
+  opacity: 0.8;
+}
+
+.btn--gold-outline {
+  background: var(--gold);
+  color: var(--on-gold);
+  border: 2px solid var(--primary);
+}
+
+.btn--gold-outline:hover {
+  opacity: 0.8;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

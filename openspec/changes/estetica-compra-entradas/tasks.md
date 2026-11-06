@@ -4,15 +4,15 @@
 
 ## 1. Listado de funciones en una sola línea
 
-- [ ] 1.1 Cambiar `.funcion-item__meta` en `movie_up/static/css/compras.css` de un grid fijo de 4 columnas a `flex` con wrap y items a ancho de contenido, quitando los media queries de columnas de ese bloque; verificar en navegador desktop (1280×900) con Playwright que los siete datos de cada ítem comparten la misma fila (misma coordenada `top`) y que `docker compose exec web python movie_up/manage.py test compras` sigue pasando.
+- [x] 1.1 Cambiar `.funcion-item__meta` en `movie_up/static/css/compras.css` de un grid fijo de 4 columnas a `flex` con `nowrap` y `min-width: 0` (los siete datos nunca pasan a otra fila; el texto de un valor largo se parte dentro de su celda), quitando los media queries de columnas de ese bloque; verificar en navegador desktop (1280×900) con Playwright que los siete datos de cada ítem comparten la misma fila (misma coordenada `top`) y que `docker compose exec web python movie_up/manage.py test compras` sigue pasando.
 
 ## 2. Paneles de la vista de selección
 
-- [ ] 2.1 Envolver el encabezado + cuadrícula, las filas de datos y el resumen en wrappers `.panel--gold` y `.panel--light` en `movie_up/templates/compras/seleccion_asientos.html` y crear sus estilos en `compras.css` (`margin-inline: 10vw`, `border-radius: 12px`, `--gold` con el título en `--on-gold`, `--surface` en los blancos, panel de datos sin margen superior para quedar pegado al dorado, `margin-block` en el del resumen, y `.seleccion` sin `width: 75%`), verificando con tests de plantilla (clases de los tres paneles) y con Playwright desktop: ancho del panel igual al 80% de la ventana, contacto entre el panel dorado y el blanco de datos, margen arriba y abajo del resumen y consola sin errores.
+- [x] 2.1 Envolver el encabezado + cuadrícula, las filas de datos y el resumen en wrappers `.panel--gold` y `.panel--light` en `movie_up/templates/compras/seleccion_asientos.html` y crear sus estilos en `compras.css` (`margin-inline: 10vw`, `border-radius: 12px`, `--gold` con el título en `--on-gold`, `--surface` en los blancos, panel de datos sin margen superior para quedar pegado al dorado, `margin-block` en el del resumen, y `.seleccion` sin `width: 75%`), verificando con tests de plantilla (clases de los tres paneles) y con Playwright desktop: ancho del panel igual al 80% de la ventana, contacto entre el panel dorado y el blanco de datos, margen arriba y abajo del resumen y consola sin errores.
 
 ## 3. Pantalla de éxito con botón dorado
 
-- [ ] 3.1 Agregar `.btn--gold` (fondo `--gold`, texto `--on-gold`, hover en opacidad) y `.btn--gold-outline` (mismo fondo + contorno `--primary`) en `movie_up/static/css/components.css`, y pasar `.exito` a columna en `compra_exitosa.html` + `compras.css` con el botón `Mis entradas` debajo del mensaje, centrado, con margen pequeño arriba y la clase `.btn--gold`; verificar con test de plantilla (orden mensaje→botón y clases) y con Playwright desktop que el botón queda debajo y centrado sobre fondo dorado con `href="/entradas/"`.
+- [x] 3.1 Agregar `.btn--gold` (fondo `--gold`, texto `--on-gold`, hover en opacidad) y `.btn--gold-outline` (mismo fondo + contorno `--primary`) en `movie_up/static/css/components.css`, y pasar `.exito` a columna en `compra_exitosa.html` + `compras.css` con el botón `Mis entradas` debajo del mensaje, centrado, con margen pequeño arriba y la clase `.btn--gold`; verificar con test de plantilla (orden mensaje→botón y clases) y con Playwright desktop que el botón queda debajo y centrado sobre fondo dorado con `href="/entradas/"`.
 
 ## Lote 2 — Entradas
 
