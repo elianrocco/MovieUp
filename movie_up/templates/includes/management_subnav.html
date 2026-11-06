@@ -15,8 +15,8 @@
      href="{% url 'admin:index' %}"{% if active_tab == 'accounts' %} aria-current="page"{% endif %}>
     Cuentas
   </a>
-  <button type="button" class="management-subnav__item management-subnav__item--disabled"
-          aria-disabled="true" disabled>
+  <button type="button" class="management-subnav__item"
+          data-management-tab="statistics" aria-pressed="false">
     Estadísticas
   </button>
 </nav>

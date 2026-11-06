@@ -1,0 +1,36 @@
+<div class="statistics" data-statistics>
+  {% for period, period_statistics in estadisticas.items %}
+    <section class="statistics__period"
+             data-stats-period="{{ period }}"
+             aria-label="Estadísticas {{ period }}"
+             {% if period != 'semanal' %}hidden{% endif %}>
+      <h2>Recaudación por género · {{ period|capfirst }}</h2>
+      {% if period_statistics.generos %}
+        <div class="stats-chart" role="group" aria-label="Recaudación por género en el periodo {{ period }}">
+          <div class="stats-chart__plot">
+            <div class="stats-chart__columns">
+              {% for genre in period_statistics.generos %}
+                <div class="stats-chart__column">
+                  <span class="stats-chart__total" title="Recaudación {{ genre.genero }}">
+                    ${{ genre.recaudacion|floatformat:2 }}
+                  </span>
+                  <span class="stats-chart__bar stats-chart__bar--gold"
+                        style="height: {{ genre.altura_vh }}vh"
+                        role="img"
+                        aria-label="{{ genre.genero }}: ${{ genre.recaudacion|floatformat:2 }}"></span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="stats-chart__labels" aria-hidden="true">
+            {% for genre in period_statistics.generos %}
+              <span class="stats-chart__genre" title="{{ genre.genero }}">{{ genre.genero }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      {% else %}
+        <p class="statistics__empty">No hay géneros registrados.</p>
+      {% endif %}
+    </section>
+  {% endfor %}
+</div>

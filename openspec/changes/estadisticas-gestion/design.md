@@ -30,7 +30,7 @@ Se pre-renderizan los tres periodos (semanal, mensual, anual) en el contexto de 
 
 ### D3 — API de `estadisticas/services.py`
 - `build_estadisticas(ahora=None)` → `{'semanal': …, 'mensual': …, 'anual': …}`; cada periodo: `generos: [{genero, recaudacion, altura_vh}]` y `peliculas: [{titulo, genero, entradas, recaudacion, es_lider}]`.
-- **Un solo query**: se traen las funciones con `inicio` dentro del año en curso (semana y mes en curso siempre caen dentro del año en curso) y los tres periodos se derivan filtrando en memoria — una query, tres modos.
+- **Un solo query**: se traen las funciones dentro de un rango que cubre el año calendario actual y la semana completa en curso: inicio = el menor entre el lunes de la semana actual y el 1 de enero; fin = el mayor entre el lunes de la semana siguiente y el 1 de enero del año siguiente. Así no se omiten funciones de diciembre/enero cuando la semana cruza un límite anual. Los tres periodos se derivan filtrando en memoria — una query, tres modos.
 - Helpers puros y testeables: `_rango_periodo(modo, ahora)` con fronteras `[inicio, fin)` en hora Argentina (semana = lunes 00:00 → lunes siguiente 00:00, **con los días ya pasados de la semana en curso incluidos — confirmado con el usuario**; mes y año = calendario), `altura_barra(recaudacion)` y las agregaciones por género/película.
 - Dinero siempre en `Decimal` (`precio_entrada × entradas_compradas` por función, luego suma); el formato de presentación reutiliza la convención monetaria ya existente en el resumen de compra.
 

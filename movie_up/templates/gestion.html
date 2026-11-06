@@ -3,6 +3,10 @@
 
 {% block title %}Gestión central · MovieUp{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'estadisticas/css/estadisticas.css' %}">
+{% endblock %}
+
 {% block content %}
   <div class="management-page">
     {% include 'includes/management_subnav.html' with active_tab='movies' %}
@@ -19,6 +23,10 @@
       <section class="management-panel" id="management-panel-rooms"
                data-management-panel="rooms" aria-label="Listado de salas" hidden>
         {% include 'salas/_listado.html' %}
+      </section>
+      <section class="management-panel" id="management-panel-statistics"
+               data-management-panel="statistics" aria-label="Estadísticas" hidden>
+        {% include 'estadisticas/_panel.html' %}
       </section>
     </div>
   </div>

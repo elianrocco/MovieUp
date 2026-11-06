@@ -414,9 +414,23 @@ class GestionViewTests(TestCase):
             'Estadísticas',
         ):
             self.assertContains(response, value)
-        self.assertEqual(response.content.count(b'data-management-tab='), 3)
+        self.assertEqual(response.content.count(b'data-management-tab='), 4)
+        self.assertContains(response, 'data-management-tab="statistics"')
+        self.assertNotContains(response, 'data-management-tab="statistics" disabled')
         self.assertContains(response, 'Estadísticas')
         self.assertContains(response, reverse('admin:index'))
+
+    def test_dashboard_prerenders_statistics_panel_for_all_periods(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse('gestion'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'data-management-panel="statistics"')
+        self.assertEqual(response.content.count(b'data-stats-period='), 3)
+        self.assertContains(response, 'Recaudación por género · Semanal')
+        self.assertContains(response, 'Recaudación por género · Mensual')
+        self.assertContains(response, 'Recaudación por género · Anual')
 
     def test_admin_index_uses_movieup_shell_and_accounts_subnav(self):
         self.client.force_login(self.admin)

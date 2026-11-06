@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
+from estadisticas import services as estadisticas_services
 from funciones import services as funciones_services
 from peliculas.models import Pelicula
 from peliculas import services as peliculas_services
@@ -48,6 +49,7 @@ def gestion(request):
             'peliculas': peliculas_services.list_peliculas(),
             'funciones': funciones_services.list_funciones(),
             'salas': salas_services.list_salas(),
+            'estadisticas': estadisticas_services.build_estadisticas(),
         },
     )
 
