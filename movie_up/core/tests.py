@@ -427,10 +427,17 @@ class GestionViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'data-management-panel="statistics"')
-        self.assertEqual(response.content.count(b'data-stats-period='), 3)
+        self.assertEqual(response.content.count(b'data-stats-period='), 6)
+        for period in ('semanal', 'mensual', 'anual'):
+            self.assertEqual(
+                response.content.count(f'data-stats-period="{period}"'.encode()), 2
+            )
         self.assertContains(response, 'Recaudación por género · Semanal')
         self.assertContains(response, 'Recaudación por género · Mensual')
         self.assertContains(response, 'Recaudación por género · Anual')
+        self.assertContains(response, 'data-stats-switch')
+        self.assertContains(response, 'data-stats-period-label')
+        self.assertContains(response, 'estadisticas/js/periodos.js')
 
     def test_admin_index_uses_movieup_shell_and_accounts_subnav(self):
         self.client.force_login(self.admin)

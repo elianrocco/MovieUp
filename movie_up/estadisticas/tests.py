@@ -3,8 +3,8 @@ from decimal import Decimal
 from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
-from django.test import SimpleTestCase, TestCase
 from django.template.loader import render_to_string
+from django.test import SimpleTestCase, TestCase
 
 from funciones.models import Funcion
 from peliculas.models import Pelicula
@@ -197,6 +197,51 @@ class StatisticsAggregationTests(TestCase):
         for period in stats.values():
             self.assertEqual(period['generos'], [])
             self.assertEqual(period['peliculas'], [])
+
+        html = render_to_string('estadisticas/_panel.html', {'estadisticas': stats})
+        weekly_list = html.split('class="statistics__movie-period"', 1)[1].split(
+            '</section>', 1
+        )[0]
+        self.assertIn('No hay películas registradas.', weekly_list)
+
+    def test_movie_list_is_ranked_and_marks_only_the_highest_revenue(self):
+        b_leader = self.create_movie('B Leader tie', 'Drama')
+        a_leader = self.create_movie('A Leader tie', 'Comedia')
+        low_movie = self.create_movie('Low Movie', 'Drama')
+        self.create_function(b_leader, tickets=2, price='200.00')
+        self.create_function(a_leader, tickets=4, price='100.00')
+        self.create_function(low_movie, tickets=1, price='50.00')
+
+        stats = build_estadisticas(self.ahora)
+        html = render_to_string('estadisticas/_panel.html', {'estadisticas': stats})
+        weekly_list = html.split('class="statistics__movie-period"', 1)[1].split(
+            '</section>', 1
+        )[0]
+        titles = [movie['titulo'] for movie in stats['semanal']['peliculas']]
+
+        self.assertEqual(titles, ['A Leader tie', 'B Leader tie', 'Low Movie'])
+        self.assertEqual(weekly_list.count('class="statistics__movie-card"'), 3)
+        self.assertEqual(weekly_list.count('class="statistics__movie-row"'), 3)
+        self.assertEqual(weekly_list.count('Mayor recaudación'), 1)
+        self.assertLess(weekly_list.index('A Leader tie'), weekly_list.index('B Leader tie'))
+        self.assertLess(weekly_list.index('B Leader tie'), weekly_list.index('Low Movie'))
+        self.assertIn('4 entradas vendidas', weekly_list)
+        self.assertIn('$400.00', weekly_list)
+        self.assertIn('class="statistics__movie-genre"', weekly_list)
+
+    def test_period_switcher_starts_weekly_with_three_sections_per_zone(self):
+        html = render_to_string(
+            'estadisticas/_panel.html',
+            {'estadisticas': build_estadisticas(self.ahora)},
+        )
+
+        self.assertIn('data-current-period="semanal"', html)
+        self.assertIn('data-stats-period-label aria-live="polite">Semanal', html)
+        self.assertEqual(html.count('data-stats-period='), 6)
+        for period in ('semanal', 'mensual', 'anual'):
+            self.assertEqual(html.count(f'data-stats-period="{period}"'), 2)
+        self.assertNotIn('data-stats-period="semanal" aria-label="Estadísticas semanal" hidden', html)
+        self.assertNotIn('data-stats-period="semanal" aria-label="Películas semanal" hidden', html)
 
     def test_chart_renders_totals_above_gold_bars_and_genres_below_baseline(self):
         self.create_movie('Drama Movie', 'Drama')

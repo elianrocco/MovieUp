@@ -18,19 +18,19 @@
 
 ## 4. Listado de películas y distintivo
 
-- [ ] 4.1 Construir el listado en `_panel.html` + CSS: cada película en un panel blanco `--surface` con márgenes en todos sus lados, título/género/entradas/recaudación en una sola línea, orden ya servido por el service con el distintivo dorado en la primera fila y estado vacío cuando no hay películas; verificar con tests de plantilla que los cuatro datos aparecen juntos, que el distintivo está en la película líder y que el formato de moneda sigue la convención existente del resumen de compra.
-- [ ] 4.2 Verificar con Playwright desktop la fila del listado con sus cuatro datos en una línea y el distintivo dorado en la película con más recaudación; captura en `.playwright-mcp/` con consola limpia.
+- [x] 4.1 Construir el listado en `_panel.html` + CSS: cada película en un panel blanco `--surface` con márgenes en todos sus lados, título/género/entradas/recaudación en una sola línea, orden ya servido por el service con el distintivo dorado en la primera fila y estado vacío cuando no hay películas; verificar con tests de plantilla que los cuatro datos aparecen juntos, que el distintivo está en la película líder y que el formato de moneda sigue la convención existente del resumen de compra.
+- [x] 4.2 Verificar con Playwright desktop la fila del listado con sus cuatro datos en una línea y el distintivo dorado en la película con más recaudación; captura en `.playwright-mcp/` con consola limpia.
 
 ## 5. Selector de periodo semanal, mensual y anual
 
-- [ ] 5.1 Agregar el botón `.stats-switch` alineado a la derecha entre la zona de gráficos y la de listados, con su JS `estadisticas/static/estadisticas/js/periodos.js` que cicla semanal → mensual → anual → semanal, alterna los bloques `[data-stats-period]` y actualiza la etiqueta con el modo actual; verificar con tests de plantilla que el botón existe, que hay tres bloques por zona y que la etiqueta inicial indica el modo semanal.
-- [ ] 5.2 Verificar con Playwright desktop que al hacer clic en el switcher cambian gráfico y listado juntos, que la etiqueta recorre los tres modos y que la URL permanece en `/gestion/` durante todo el recorrido; capturas de cada modo en `.playwright-mcp/` con consola sin errores.
+- [x] 5.1 Agregar el botón `.stats-switch` alineado a la derecha entre la zona de gráficos y la de listados, con su JS `estadisticas/static/estadisticas/js/periodos.js` que cicla semanal → mensual → anual → semanal, alterna los bloques `[data-stats-period]` y actualiza la etiqueta con el modo actual; verificar con tests de plantilla que el botón existe, que hay tres bloques por zona y que la etiqueta inicial indica el modo semanal.
+- [x] 5.2 Verificar con Playwright desktop que al hacer clic en el switcher cambian gráfico y listado juntos, que la etiqueta recorre los tres modos y que la URL permanece en `/gestion/` durante todo el recorrido; capturas de cada modo en `.playwright-mcp/` con consola sin errores.
 
 ## 6. Integración
 
-- [ ] 6.1 Correr la suite completa `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas compras core estadisticas`; verificar que todos los tests pasan.
-- [ ] 6.2 Correr `docker compose exec web python movie_up/manage.py check` y `docker compose exec web python movie_up/manage.py makemigrations --check --dry-run`; verificar que no hay errores del sistema ni migraciones pendientes.
+- [x] 6.1 Correr la suite completa `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas compras core estadisticas`; verificar que todos los tests pasan.
+- [x] 6.2 Correr `docker compose exec web python movie_up/manage.py check` y `docker compose exec web python movie_up/manage.py makemigrations --check --dry-run`; verificar que no hay errores del sistema ni migraciones pendientes.
 
 ## 7. Verificación final desktop
 
-- [ ] 7.1 Repetir el recorrido completo en Playwright **solo desktop** (1280×900): `/gestion/` → clic `Estadísticas` (panel visible, URL intacta) → gráfico → listado → switcher en sus tres modos → capturas nuevas en `.playwright-mcp/` con consola sin errores.
+- [x] 7.1 Repetir el recorrido completo en Playwright **solo desktop** (1280×900): `/gestion/` → clic `Estadísticas` (panel visible, URL intacta) → gráfico → listado → switcher en sus tres modos → capturas nuevas en `.playwright-mcp/` con consola sin errores.

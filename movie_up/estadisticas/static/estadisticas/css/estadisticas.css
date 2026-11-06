@@ -17,6 +17,88 @@
   color: var(--text);
 }
 
+.statistics__movie-period[hidden] {
+  display: none;
+}
+
+.statistics__movie-period h2 {
+  margin: 1.5rem 0 0.75rem;
+  font-family: 'Playfair Display', serif;
+  color: var(--text);
+}
+
+.statistics__movies {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statistics__movie-card {
+  margin: 0.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 4px 14px oklch(0.3 0.05 70 / 0.08);
+}
+
+.statistics__movie-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1rem;
+  align-items: center;
+}
+
+.statistics__movie-title {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  white-space: nowrap;
+}
+
+.statistics__movie-title-text,
+.statistics__movie-genre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statistics__movie-title-text {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.statistics__leader-badge {
+  flex: none;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--on-gold);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statistics__movie-genre,
+.statistics__movie-tickets,
+.statistics__movie-revenue {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.statistics__movie-tickets,
+.statistics__movie-revenue {
+  text-align: right;
+}
+
+.statistics__movie-revenue {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .stats-chart {
   width: 100%;
   overflow: hidden;
@@ -91,4 +173,10 @@
   margin: 2rem 0;
   color: var(--text-muted);
   text-align: center;
+}
+
+.statistics__switcher {
+  display: flex;
+  justify-content: flex-end;
+  margin: 1rem 0.75rem;
 }
