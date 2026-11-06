@@ -106,12 +106,14 @@ MovieUp/
     │       ├── 2026-11-05-compra-pelicula/
     │       ├── 2026-11-05-ui-crud-pages/
     │       ├── 2026-11-06-compra-asientos/
-    │       └── 2026-11-06-estetica-compra-entradas/
+    │       ├── 2026-11-06-estetica-compra-entradas/
+    │       └── 2026-11-06-estadisticas-gestion/
     └── specs/
         ├── .gitkeep
         ├── compras/
         ├── cuentas/
         ├── entradas/
+        ├── estadisticas/
         ├── funciones/
         ├── movies/
         ├── salas/
