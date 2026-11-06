@@ -100,14 +100,18 @@ MovieUp/
     │       ├── 2026-11-01-crud-funciones/
     │       ├── 2026-11-01-crud-salas/
     │       ├── 2026-11-02-crud-entradas/
-    │       └── 2026-11-02-login-google/
+    │       ├── 2026-11-02-login-google/
+    │       ├── 2026-11-03-ui-shell/
+    │       └── 2026-11-05-compra-pelicula/
     └── specs/
         ├── .gitkeep
+        ├── compras/
         ├── cuentas/
         ├── entradas/
         ├── funciones/
         ├── movies/
-        └── salas/
+        ├── salas/
+        └── ui/
 ```
 
 ### Configuración y despliegue con Docker
