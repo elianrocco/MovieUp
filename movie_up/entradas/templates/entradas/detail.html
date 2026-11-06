@@ -1,30 +1,65 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Detalle de entrada{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'entradas/css/entradas.css' %}">
+{% endblock %}
+
 {% block content %}
-    <h1>{{ entrada.funcion.pelicula.titulo }}</h1>
-    <dl>
-        <dt>Código</dt>
-        <dd>{{ entrada.codigo }}</dd>
-        <dt>Estado</dt>
-        <dd>{% if entrada.activa %}Pendiente de validación{% else %}Validada{% endif %}</dd>
-        <dt>Fecha y hora de inicio</dt>
-        <dd>{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</dd>
-        <dt>Fila</dt>
-        <dd>{{ entrada.l_fila }}</dd>
-        <dt>Asiento</dt>
-        <dd>{{ entrada.n_asiento }}</dd>
-        <dt>Sala</dt>
-        <dd>{{ entrada.funcion.sala.nombre }}</dd>
-        <dt>Tipo de sala</dt>
-        <dd>{{ entrada.funcion.sala.tipo_sala }}</dd>
-        <dt>Tipo de sonido</dt>
-        <dd>{{ entrada.funcion.sala.tipo_sonido }}</dd>
-        <dt>Capacidad de la sala</dt>
-        <dd>{{ entrada.funcion.sala.capacidad }}</dd>
-    </dl>
-    <nav>
-        <a href="{% url 'entradas:entrada_list' %}">Volver a mis entradas</a>
-    </nav>
+    <div class="panel panel--gold detalle">
+        <h1 class="detalle__titulo">{{ entrada.funcion.pelicula.titulo }}</h1>
+
+        {% if error %}
+        <div class="error-message" role="alert">{{ error }}</div>
+        {% endif %}
+
+        <dl class="detalle__datos">
+            <div class="detalle__item">
+                <dt>Código</dt>
+                <dd>{{ entrada.codigo }}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Estado</dt>
+                <dd>{% if entrada.activa %}Pendiente de validación{% else %}Validada{% endif %}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Fecha y hora de inicio</dt>
+                <dd>{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Fila</dt>
+                <dd>{{ entrada.l_fila }}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Asiento</dt>
+                <dd>{{ entrada.n_asiento }}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Sala</dt>
+                <dd>{{ entrada.funcion.sala.nombre }}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Tipo de sala</dt>
+                <dd>{{ entrada.funcion.sala.tipo_sala }}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Tipo de sonido</dt>
+                <dd>{{ entrada.funcion.sala.tipo_sonido }}</dd>
+            </div>
+            <div class="detalle__item">
+                <dt>Capacidad de la sala</dt>
+                <dd>{{ entrada.funcion.sala.capacidad }}</dd>
+            </div>
+        </dl>
+
+        <div class="detalle__acciones">
+            <a href="{% url 'entradas:entrada_list' %}" class="btn btn--gold-outline">Volver a mis entradas</a>
+            <form method="post" action="{% url 'entradas:entrada_reembolsar' entrada.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn--gold-outline">Reembolso</button>
+            </form>
+        </div>
+    </div>
 {% endblock %}

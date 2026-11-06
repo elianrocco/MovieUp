@@ -1,35 +1,47 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Mis entradas{% endblock %}
 
+{% block head %}
+  <link rel="stylesheet" href="{% static 'entradas/css/entradas.css' %}">
+{% endblock %}
+
 {% block content %}
     <h1>Mis entradas</h1>
-    <table>
-        <thead>
-        <tr>
-            <th>Película</th>
-            <th>Sala</th>
-            <th>Inicio</th>
-            <th>Fila</th>
-            <th>Asiento</th>
-            <th>Estado</th>
-            <th>Detalle</th>
-        </tr>
-        </thead>
-        <tbody>
+    <ul class="entradas">
         {% for entrada in entradas %}
-        <tr>
-            <td>{{ entrada.funcion.pelicula.titulo }}</td>
-            <td>{{ entrada.funcion.sala.nombre }}</td>
-            <td>{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</td>
-            <td>{{ entrada.l_fila }}</td>
-            <td>{{ entrada.n_asiento }}</td>
-            <td>{% if entrada.activa %}Pendiente de validación{% else %}Validada{% endif %}</td>
-            <td><a href="{% url 'entradas:entrada_detail' entrada.pk %}">Ver entrada</a></td>
-        </tr>
+        <li class="entrada-card">
+            <div class="entrada-card__datos">
+                <div class="entrada-card__dato">
+                    <span class="entrada-card__etiqueta">Película</span>
+                    <span class="entrada-card__valor">{{ entrada.funcion.pelicula.titulo }}</span>
+                </div>
+                <div class="entrada-card__dato">
+                    <span class="entrada-card__etiqueta">Sala</span>
+                    <span class="entrada-card__valor">{{ entrada.funcion.sala.nombre }}</span>
+                </div>
+                <div class="entrada-card__dato">
+                    <span class="entrada-card__etiqueta">Inicio</span>
+                    <span class="entrada-card__valor">{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</span>
+                </div>
+                <div class="entrada-card__dato">
+                    <span class="entrada-card__etiqueta">Fila</span>
+                    <span class="entrada-card__valor">{{ entrada.l_fila }}</span>
+                </div>
+                <div class="entrada-card__dato">
+                    <span class="entrada-card__etiqueta">Asiento</span>
+                    <span class="entrada-card__valor">{{ entrada.n_asiento }}</span>
+                </div>
+                <div class="entrada-card__dato">
+                    <span class="entrada-card__etiqueta">Estado</span>
+                    <span class="entrada-card__valor">{% if entrada.activa %}Pendiente de validación{% else %}Validada{% endif %}</span>
+                </div>
+            </div>
+            <a href="{% url 'entradas:entrada_detail' entrada.pk %}" class="btn btn--gold-outline">Ver entrada</a>
+        </li>
         {% empty %}
-        <tr><td colspan="7">No tenés entradas.</td></tr>
+        <li class="entradas__vacio">No tenés entradas.</li>
         {% endfor %}
-        </tbody>
-    </table>
+    </ul>
 {% endblock %}

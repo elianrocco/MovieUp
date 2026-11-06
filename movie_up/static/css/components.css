@@ -225,6 +225,26 @@
   opacity: 0.8;
 }
 
+/* Panels */
+
+.panel {
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-inline: 10vw;
+}
+
+.panel--gold {
+  background: var(--gold);
+}
+
+.panel--light {
+  background: var(--surface);
+}
+
+.panel--resumen {
+  margin-block: 1.5rem;
+}
+
 /* Empty State */
 .empty-state {
   text-align: center;

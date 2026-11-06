@@ -1,0 +1,107 @@
+/* My entries - list and detail */
+
+.entradas {
+  display: grid;
+  gap: 1rem;
+  margin: 3rem 10vw;
+  padding: 0;
+  list-style: none;
+}
+
+.entrada-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: var(--gold);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+
+.entrada-card__datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem 2rem;
+}
+
+.entrada-card__dato {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.entrada-card__etiqueta {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--on-gold);
+}
+
+.entrada-card__valor {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--on-gold);
+}
+
+.entradas__vacio {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* Detail */
+
+.detalle {
+  margin-block: 3rem;
+}
+
+.detalle__titulo {
+  margin: 0 0 1.5rem;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem;
+  text-align: center;
+  color: var(--on-gold);
+}
+
+.detalle__datos {
+  display: grid;
+  gap: 1.25rem;
+  margin: 0;
+  justify-items: center;
+  text-align: center;
+}
+
+.detalle__item {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.detalle__item dt {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--on-gold);
+}
+
+.detalle__item dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--on-gold);
+}
+
+.detalle__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.detalle__acciones form {
+  margin: 0;
+}

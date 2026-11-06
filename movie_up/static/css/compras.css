@@ -83,26 +83,8 @@
 
 /* --- Seat selection view ---------------------------------------------- */
 
-.panel {
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  margin-inline: 10vw;
-}
-
-.panel--gold {
-  background: var(--gold);
-}
-
 .panel--gold .seleccion__titulo {
   color: var(--on-gold);
-}
-
-.panel--light {
-  background: var(--surface);
-}
-
-.panel--resumen {
-  margin-block: 1.5rem;
 }
 
 .seleccion {

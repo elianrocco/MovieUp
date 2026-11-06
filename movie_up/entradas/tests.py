@@ -517,6 +517,17 @@ class EntradaViewTests(EntradaDataMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'No tenés entradas.')
 
+    def test_list_renders_gold_cards_with_gold_outline_button(self):
+        self.create(seat_number=1)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(reverse('entradas:entrada_list'))
+
+        self.assertContains(response, 'entradas/css/entradas.css')
+        self.assertContains(response, 'entrada-card')
+        self.assertContains(response, 'btn btn--gold-outline')
+        self.assertContains(response, 'Ver entrada')
+
     def test_detail_shows_allowed_data_without_ids_or_distribution(self):
         entry = self.create(seat_number=1)
         self.client.force_login(self.cuenta)
@@ -544,6 +555,23 @@ class EntradaViewTests(EntradaDataMixin, TestCase):
             self.assertContains(response, text)
         for forbidden in ('funcion_id', 'cuenta_id', 'distribucion', 'entradas_compradas'):
             self.assertNotContains(response, forbidden)
+
+    def test_detail_shows_both_buttons_and_refund_form(self):
+        entrada = self.create(seat_number=1)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(reverse('entradas:entrada_detail', args=[entrada.pk]))
+
+        self.assertContains(response, 'entradas/css/entradas.css')
+        self.assertContains(response, 'panel--gold')
+        self.assertContains(response, 'btn btn--gold-outline')
+        self.assertContains(response, 'Volver a mis entradas')
+        self.assertContains(response, 'Reembolso')
+        self.assertContains(
+            response,
+            f'action="{reverse("entradas:entrada_reembolsar", args=[entrada.pk])}"',
+        )
+        self.assertContains(response, 'csrfmiddlewaretoken')
 
     def test_detail_hides_foreign_and_missing_entries_with_404(self):
         own_entry = self.create(seat_number=1)
@@ -594,6 +622,84 @@ class EntradaViewTests(EntradaDataMixin, TestCase):
 
         response = self.client.post(url, {'codigo': entry.codigo})
         self.assertContains(response, 'No se encontró ninguna entrada activa')
+
+
+class ReembolsoViewTests(EntradaDataMixin, TestCase):
+    def refund_url(self, entrada):
+        return reverse('entradas:entrada_reembolsar', args=[entrada.pk])
+
+    def test_refund_deletes_entry_and_restores_function(self):
+        entrada = self.create(seat_number=1)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(self.refund_url(entrada))
+
+        self.assertRedirects(
+            response, reverse('entradas:entrada_list'), fetch_redirect_response=False
+        )
+        self.assertFalse(Entrada.objects.filter(pk=entrada.pk).exists())
+        self.funcion.refresh_from_db()
+        self.assertEqual(self.funcion.distribucion['filas'], ['APA'])
+        self.assertEqual(self.funcion.disponibilidad, 2)
+        self.assertEqual(self.funcion.entradas_compradas, 0)
+
+    def test_refund_shows_error_for_validated_entry_and_keeps_it(self):
+        entrada = self.create(seat_number=1)
+        entrada.activa = False
+        entrada.save(update_fields=['activa'])
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(self.refund_url(entrada))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'ya validada')
+        self.assertContains(response, 'role="alert"')
+        self.assertTrue(Entrada.objects.filter(pk=entrada.pk).exists())
+
+    def test_refund_shows_error_within_24_hours_and_keeps_entry(self):
+        funcion = self.create_funcion(['APA'], start=timezone.now() + timedelta(hours=2))
+        entrada = self.create(seat_number=1, function=funcion)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(self.refund_url(entrada))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, '24 horas')
+        self.assertTrue(Entrada.objects.filter(pk=entrada.pk).exists())
+
+    def test_refund_of_foreign_entry_returns_404(self):
+        entrada = self.create(seat_number=1)
+        other_account = Cuenta.objects.create_user('other-refund@example.com', 'Other')
+        self.client.force_login(other_account)
+
+        response = self.client.post(self.refund_url(entrada))
+
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(Entrada.objects.filter(pk=entrada.pk).exists())
+
+    def test_refund_of_missing_entry_returns_404(self):
+        self.client.force_login(self.cuenta)
+
+        response = self.client.post(reverse('entradas:entrada_reembolsar', args=[999999]))
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_is_not_allowed(self):
+        entrada = self.create(seat_number=1)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(self.refund_url(entrada))
+
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(Entrada.objects.filter(pk=entrada.pk).exists())
+
+    def test_anonymous_post_redirects_to_login(self):
+        entrada = self.create(seat_number=1)
+
+        response = self.client.post(self.refund_url(entrada))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Entrada.objects.filter(pk=entrada.pk).exists())
 
 
 class ValidarEntradaServiceTests(EntradaDataMixin, TestCase):
