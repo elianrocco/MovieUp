@@ -80,7 +80,8 @@ MovieUp/
     │       ├── 2026-11-06-compra-asientos/
     │       ├── 2026-11-06-estetica-compra-entradas/
     │       ├── 2026-11-06-estadisticas-gestion/
-    │       └── 2026-11-07-ui-validar-entradas/
+    │       ├── 2026-11-07-ui-validar-entradas/
+    │       └── 2026-11-07-fondo-decorativo/
     └── specs/
         ├── .gitkeep
         ├── compras/
