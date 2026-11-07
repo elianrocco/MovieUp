@@ -1,0 +1,47 @@
+{% load static %}
+<div class="chatbot-widget" id="chatbot-widget">
+  <button class="chatbot-launcher" id="chatbot-launcher" type="button"
+          aria-label="Abrir chat de MovieUp" aria-controls="chatbot-panel"
+          aria-expanded="false">
+    <img src="{% static 'chatbot/icon.png' %}" alt="">
+  </button>
+
+  <aside class="chatbot-panel" id="chatbot-panel" aria-label="Chat de ayuda"
+         aria-hidden="true" hidden>
+    <header class="chatbot-panel__header">
+      <div>
+        <h2 class="chatbot-panel__title">Asistente MovieUp</h2>
+        <p class="chatbot-panel__subtitle">Ayuda sobre cartelera y entradas</p>
+      </div>
+      <button class="chatbot-panel__close" id="chatbot-close" type="button"
+              aria-label="Cerrar chat">×</button>
+    </header>
+
+    <div class="chatbot-messages" id="chatbot-messages" role="log"
+         aria-live="polite" aria-relevant="additions text" tabindex="0">
+      <article class="chatbot-message chatbot-message--assistant">
+        <p class="chatbot-message__label">MovieUp</p>
+        <p>Puedo ayudarte con estas preguntas:</p>
+        <div class="chatbot-suggestions" aria-label="Preguntas que puede responder el asistente">
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Qué funciones hay para una película que elija?">Funciones de una película que elija</button>
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Qué películas hay actualmente en cartelera?">Películas en cartelera</button>
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Cuál es la película más nueva?">La película más nueva</button>
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Cada cuánto se publican películas nuevas?">Frecuencia de estrenos</button>
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Cómo compro entradas paso a paso?">Cómo comprar entradas</button>
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Cómo reembolso una entrada y cuáles son las restricciones?">Cómo reembolsar una entrada</button>
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Cómo uso mi entrada virtual?">Cómo usar la entrada virtual</button>
+          <button class="chatbot-suggestion" type="button" data-chatbot-question="¿Qué datos se guardan al registrarme con Google?">Datos guardados al registrarme con Google</button>
+        </div>
+      </article>
+    </div>
+
+    <form class="chatbot-composer" id="chatbot-form">
+      {% csrf_token %}
+      <label class="chatbot-visually-hidden" for="chatbot-question">Escribí tu pregunta</label>
+      <textarea class="chatbot-composer__input" id="chatbot-question" name="question"
+                rows="2" maxlength="2000" placeholder="Escribí tu pregunta…"
+                required></textarea>
+      <button class="chatbot-composer__submit" id="chatbot-submit" type="submit">Enviar</button>
+    </form>
+  </aside>
+</div>

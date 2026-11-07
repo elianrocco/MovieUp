@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="{% static 'css/site-shell.css' %}">
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+  {% if not user.is_staff %}
+    <link rel="stylesheet" href="{% static 'chatbot/chatbot.css' %}">
+  {% endif %}
   {% block head %}{% endblock %}
 </head>
 <body>
@@ -28,6 +31,11 @@
   <footer class="site-footer" id="site-footer">
     {% include 'includes/site_footer.html' %}
   </footer>
+
+  {% if not user.is_staff %}
+    {% include 'chatbot/widget.html' %}
+    <script src="{% static 'chatbot/chatbot.js' %}" defer></script>
+  {% endif %}
 
   {% block scripts %}{% endblock %}
 </body>

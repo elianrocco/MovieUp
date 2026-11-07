@@ -7,6 +7,7 @@ from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 from django.utils import timezone
 
+from cuentas.models import Cuenta
 from funciones.models import Funcion
 from peliculas.models import Pelicula
 from salas.models import Sala
@@ -167,3 +168,43 @@ class ChatbotEndpointTests(SimpleTestCase):
 
     def test_endpoint_rejects_get(self):
         self.assertEqual(self.client.get(self.url).status_code, 405)
+
+
+class ChatWidgetVisibilityTests(TestCase):
+    def test_visitor_sees_widget_and_all_eight_starter_questions(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="site-header"')
+        self.assertContains(response, 'id="chatbot-launcher"')
+        self.assertContains(response, 'src="/static/chatbot/icon.png"')
+        self.assertEqual(response.content.count(b'data-chatbot-question='), 8)
+        self.assertContains(response, 'id="site-footer"')
+
+    def test_common_account_sees_widget(self):
+        account = Cuenta.objects.create_user(
+            correo='chatbot-customer@example.com',
+            nombre='Chatbot Customer',
+            password='test-password',
+        )
+        self.client.force_login(account)
+
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="chatbot-launcher"')
+
+    def test_staff_account_does_not_see_widget(self):
+        staff = Cuenta.objects.create_superuser(
+            correo='chatbot-staff@example.com',
+            nombre='Chatbot Staff',
+            password='test-password',
+        )
+        self.client.force_login(staff)
+
+        response = self.client.get(reverse('home'), follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.request['PATH_INFO'], '/gestion/')
+        self.assertNotContains(response, 'id="chatbot-launcher"')
+        self.assertNotContains(response, 'id="chatbot-panel"')
