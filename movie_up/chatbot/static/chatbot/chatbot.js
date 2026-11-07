@@ -10,12 +10,16 @@
   const input = document.getElementById('chatbot-question');
   const submitButton = document.getElementById('chatbot-submit');
   const header = document.getElementById('site-header');
+  const managementSubnav = document.querySelector('.management-subnav');
   const footer = document.getElementById('site-footer');
   const conversation = [];
   let pending = false;
 
   const updateGeometry = () => {
-    const headerBottom = header ? header.getBoundingClientRect().bottom : 0;
+    const navigationBottoms = [header, managementSubnav]
+      .filter(Boolean)
+      .map((navigation) => navigation.getBoundingClientRect().bottom);
+    const headerBottom = Math.max(0, ...navigationBottoms);
     const footerTop = footer
       ? footer.getBoundingClientRect().top
       : window.innerHeight;
@@ -32,6 +36,7 @@
   if ('ResizeObserver' in window) {
     const observer = new ResizeObserver(updateGeometry);
     if (header) observer.observe(header);
+    if (managementSubnav) observer.observe(managementSubnav);
     if (footer) observer.observe(footer);
     observers.push(observer);
   }

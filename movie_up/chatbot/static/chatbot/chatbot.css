@@ -138,6 +138,7 @@
 .chatbot-message p {
   margin: 0 0 0.5rem;
   text-align: left;
+  white-space: pre-wrap;
 }
 
 .chatbot-message p:last-child {

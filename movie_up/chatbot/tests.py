@@ -38,6 +38,7 @@ class PromptContextTests(SimpleTestCase):
         self.assertIn('{history}', services.PROMPT_TEMPLATE)
         self.assertIn('{question}', services.PROMPT_TEMPLATE)
         self.assertIn('No inventes', services.PROMPT_TEMPLATE)
+        self.assertIn('sin sintaxis Markdown', services.PROMPT_TEMPLATE)
 
     @patch('chatbot.services.is_available', return_value=True)
     @patch('chatbot.services._get_chain')
@@ -181,6 +182,14 @@ class ChatWidgetVisibilityTests(TestCase):
         self.assertEqual(response.content.count(b'data-chatbot-question='), 8)
         self.assertContains(response, 'id="site-footer"')
 
+    def test_visitor_sees_widget_on_admin_login_shell(self):
+        response = self.client.get(reverse('admin:login'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="site-header"')
+        self.assertContains(response, 'class="management-subnav"')
+        self.assertContains(response, 'id="chatbot-launcher"')
+
     def test_common_account_sees_widget(self):
         account = Cuenta.objects.create_user(
             correo='chatbot-customer@example.com',
@@ -208,3 +217,7 @@ class ChatWidgetVisibilityTests(TestCase):
         self.assertEqual(response.request['PATH_INFO'], '/gestion/')
         self.assertNotContains(response, 'id="chatbot-launcher"')
         self.assertNotContains(response, 'id="chatbot-panel"')
+
+        admin_index = self.client.get(reverse('admin:index'))
+        self.assertEqual(admin_index.status_code, 200)
+        self.assertNotContains(admin_index, 'id="chatbot-launcher"')
