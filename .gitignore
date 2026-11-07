@@ -29,3 +29,4 @@ movie_up/imgs/
 .DS_Store
 # Local AI runtime state
 .atl/
+chroma_db/

@@ -32,6 +32,7 @@ urlpatterns = [
     path('peliculas/', include('peliculas.urls')),
     path('salas/', include('salas.urls')),
     path('accounts/', include('allauth.urls')),
+    path('chatbot/', include('chatbot.urls')),
 ]
 
 if settings.DEBUG:
