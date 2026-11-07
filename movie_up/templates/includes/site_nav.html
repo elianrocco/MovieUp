@@ -1,8 +1,11 @@
 {% load static %}
 {% load socialaccount %}
 <nav class="site-nav">
+  {% if user.is_staff %}
+    <a href="{% url 'entradas:entrada_validar' %}" class="site-nav__validation">Validar entradas</a>
+  {% endif %}
   <a href="/" class="site-nav__brand">
-    <span class="site-nav__logo" aria-hidden="true"></span>
+    <img src="{% static 'img/logo21.jpg' %}" alt="" class="site-nav__logo">
     <span class="site-nav__name">MovieUp</span>
   </a>
   <div class="site-nav__actions">

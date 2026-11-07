@@ -47,6 +47,10 @@ Reutiliza `.btn--gold` (tamaño de botón dentro del rango 40–56px, par AA, ho
 **D6 — Todo el contenido dentro del unico panel.**
 Encabezado, formulario, mensaje de resultado y `dl` de datos comparten el mismo panel, de modo que el resultado posterior a la validación también quede contenido (escenario "Resultado dentro del panel").
 
+**D7 — Datos validados en filas etiqueta/valor con separación uniforme.**
+El `dl` de resultado usará una grilla de dos columnas (`max-content 1fr`), con `column-gap: 0.75rem` y `row-gap: 0.5rem`, para alinear cada etiqueta a la izquierda de su valor y dejar un pequeño espacio entre filas. Cada `dt` llevará la etiqueta en mayúsculas pequeñas (`0.75rem`) con `--text-muted`; el `:` estará escrito en el texto de la etiqueta en el template, y cada `dd` tendrá `margin: 0` para eliminar el indent predeterminado. El contenido seguirá alineado a la izquierda dentro del panel.
+*Alternativa descartada:* agregar los dos puntos desde `content:` en CSS — no forma parte del texto accesible y no se puede verificar directamente en el HTML.
+
 ## Risks / Trade-offs
 
 - [El botón es global: aparece en todas las vistas para administradoras] → es el comportamiento pedido; los tests de visibilidad en `core/tests.py` lo cubren en varias vistas, junto a los existentes de `Mis entradas`.

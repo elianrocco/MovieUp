@@ -29,10 +29,17 @@
   text-decoration: none;
 }
 
+.site-nav__validation {
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: start;
+}
+
 .site-nav__logo {
   display: block;
   width: 40px;
   height: 40px;
+  object-fit: cover;
   border: 1px solid color-mix(in oklch, var(--gold) 40%, transparent);
   border-radius: 0.25rem;
 }
@@ -94,6 +101,7 @@
 }
 
 .site-nav__ticket,
+.site-nav__validation,
 .site-nav__login,
 .site-nav__logout {
   display: inline-flex;
@@ -115,6 +123,11 @@
   color: var(--on-gold);
 }
 
+.site-nav__validation {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
 .site-nav__login,
 .site-nav__logout {
   background: var(--primary);
@@ -122,6 +135,7 @@
 }
 
 .site-nav__ticket:hover,
+.site-nav__validation:hover,
 .site-nav__login:hover,
 .site-nav__logout:hover {
   opacity: 0.8;
@@ -155,6 +169,13 @@
 
   .site-nav__brand {
     grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+  }
+
+  .site-nav__validation {
+    grid-column: 1;
+    grid-row: 2;
     justify-self: start;
   }
 

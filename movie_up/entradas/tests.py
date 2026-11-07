@@ -480,6 +480,21 @@ class EntradaReadServiceTests(EntradaDataMixin, TestCase):
 
 
 class EntradaViewTests(EntradaDataMixin, TestCase):
+    def test_validation_view_renders_centered_light_panel(self):
+        staff = Cuenta.objects.create_superuser(
+            'validation-panel@example.com',
+            'Validation Panel',
+            password='Strong-test-password-123',
+        )
+        self.client.force_login(staff)
+
+        response = self.client.get(reverse('entradas:entrada_validar'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'entradas/css/entradas.css')
+        self.assertContains(response, 'class="panel panel--light validar-panel"')
+        self.assertContains(response, 'class="btn btn--gold"')
+
     def test_list_shows_only_current_account_entries_and_summary(self):
         own_entry = self.create(seat_number=1)
         other_account = Cuenta.objects.create_user('other@example.com', 'Other')
@@ -617,6 +632,23 @@ class EntradaViewTests(EntradaDataMixin, TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Entrada validada correctamente.')
         self.assertContains(response, 'Película de prueba')
+        panel = response.content.decode().split(
+            '<section class="panel panel--light validar-panel">', 1
+        )[1].split('</section>', 1)[0]
+        self.assertIn('Entrada validada correctamente.', panel)
+        self.assertIn('<dt>Película:</dt>', panel)
+        self.assertIn('<dd>Película de prueba</dd>', panel)
+        self.assertIn('<dt>Sala:</dt>', panel)
+        self.assertIn('<dd>Sala 1</dd>', panel)
+        self.assertIn('<dt>Fila:</dt>', panel)
+        self.assertIn('<dd>A</dd>', panel)
+        self.assertIn('<dt>Asiento:</dt>', panel)
+        self.assertIn('<dd>1</dd>', panel)
+        self.assertIn('<dt>Función:</dt>', panel)
+        self.assertIn(
+            f"<dd>{timezone.localtime(self.funcion.inicio).strftime('%d/%m/%Y %H:%M')}</dd>",
+            panel,
+        )
         entry.refresh_from_db()
         self.assertFalse(entry.activa)
 

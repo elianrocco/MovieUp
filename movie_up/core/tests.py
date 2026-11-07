@@ -63,6 +63,7 @@ class NavStateTests(TestCase):
         self.assertIn('Login', html)
         self.assertNotIn('Logout', html)
         self.assertNotIn('site-nav__ticket', html)
+        self.assertNotIn('site-nav__validation', html)
 
     def test_common_user_sees_ticket_and_logout(self):
         user = SimpleNamespace(
@@ -76,6 +77,7 @@ class NavStateTests(TestCase):
         self.assertIn('site-nav__ticket', html)
         self.assertIn('Mis entradas', html)
         self.assertNotIn('Login', html)
+        self.assertNotIn('site-nav__validation', html)
 
     def test_admin_sees_logout_only(self):
         user = SimpleNamespace(
@@ -88,6 +90,11 @@ class NavStateTests(TestCase):
         self.assertIn('Logout', html)
         self.assertNotIn('site-nav__ticket', html)
         self.assertNotIn('Login', html)
+        self.assertIn('site-nav__validation', html)
+        self.assertIn('Validar entradas', html)
+        self.assertIn(
+            f'href="{reverse("entradas:entrada_validar")}"', html
+        )
 
     def test_user_with_photo_shows_image(self):
         user = SimpleNamespace(
@@ -110,6 +117,12 @@ class NavStateTests(TestCase):
         html = _render_base(user)
         self.assertIn('site-nav__avatar-placeholder', html)
         self.assertIn('P', html)  # First letter of "Pedro"
+
+    def test_brand_logo_uses_the_uploaded_asset(self):
+        html = _render_base(AnonymousUser())
+        self.assertIn('<img', html)
+        self.assertIn('static/img/logo21.jpg', html)
+        self.assertIn('class="site-nav__logo"', html)
 
 
 class LogoutNavTests(TestCase):
