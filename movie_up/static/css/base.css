@@ -15,7 +15,21 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background: var(--bg);
   color: var(--text);
   line-height: 1.6;
+
+  /* Decorative background (palette "Fondo decorativo"): fixed layers behind
+     everything — film grain, the vertical film strips at both sides, then
+     the golden and light radial glows. Layer order: first image is frontmost. */
+  background-color: var(--bg);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0.35 0.35 0.35 0 0.16 0.28 0.28 0.28 0 0.09 0.18 0.18 0.18 0 0.05 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='24'%3E%3Crect width='64' height='24' fill='%232B2224' fill-opacity='0.10'/%3E%3Crect x='8' y='7' width='9' height='10' rx='2' fill='%23FCF8EC' fill-opacity='0.5'/%3E%3Crect x='47' y='7' width='9' height='10' rx='2' fill='%23FCF8EC' fill-opacity='0.5'/%3E%3Crect width='64' height='2' fill='%23E3C67D' opacity='0.35'/%3E%3Crect y='22' width='64' height='2' fill='%23E3C67D' opacity='0.35'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='24'%3E%3Crect width='64' height='24' fill='%232B2224' fill-opacity='0.10'/%3E%3Crect x='8' y='7' width='9' height='10' rx='2' fill='%23FCF8EC' fill-opacity='0.5'/%3E%3Crect x='47' y='7' width='9' height='10' rx='2' fill='%23FCF8EC' fill-opacity='0.5'/%3E%3Crect width='64' height='2' fill='%23E3C67D' opacity='0.35'/%3E%3Crect y='22' width='64' height='2' fill='%23E3C67D' opacity='0.35'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(45deg, transparent 0 92px, oklch(0.985 0.018 90 / 0.9) 92px 94px, oklch(0.23 0.012 20 / 0.06) 94px 150px, oklch(0.985 0.018 90 / 0.9) 150px 152px, transparent 152px 240px),
+    radial-gradient(ellipse at 50% 110%, oklch(0.9 0.05 80 / 0.6) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% -10%, oklch(0.97 0.035 90) 0%, transparent 55%);
+  background-position: 0 0, left top, right top, 0 0, 0 0, 0 0;
+  background-repeat: repeat, repeat-y, repeat-y, repeat, no-repeat, no-repeat;
+  background-attachment: fixed, fixed, fixed, fixed, fixed, fixed;
 }
