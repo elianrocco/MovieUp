@@ -1,0 +1,17 @@
+<img src="{{ pelicula.imagen_portada.url }}" alt="{{ pelicula.titulo }}" class="hero__image">
+<div class="hero__content">
+  <h1 class="hero__title">{{ pelicula.titulo }}</h1>
+  <p class="hero__description">{{ pelicula.descripcion }}</p>
+  <div class="hero__meta">
+    <span class="hero__meta-item">{{ pelicula.genero }}</span>
+    <span class="hero__meta-item">{{ pelicula.clasificacion }}</span>
+  </div>
+  <div class="hero__buttons">
+    <a href="{{ pelicula.url_trailer }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary">
+      Trailer
+    </a>
+    {% if mostrar_compra %}
+      {% include 'includes/comprar_entradas_button.html' with pelicula=pelicula css_class='btn btn--secondary' %}
+    {% endif %}
+  </div>
+</div>

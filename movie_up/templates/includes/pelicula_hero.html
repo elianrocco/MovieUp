@@ -1,19 +1,16 @@
-<section class="hero">
-  <img src="{{ pelicula.imagen_portada.url }}" alt="{{ pelicula.titulo }}" class="hero__image">
-  <div class="hero__content">
-    <h1 class="hero__title">{{ pelicula.titulo }}</h1>
-    <p class="hero__description">{{ pelicula.descripcion }}</p>
-    <div class="hero__meta">
-      <span class="hero__meta-item">{{ pelicula.genero }}</span>
-      <span class="hero__meta-item">{{ pelicula.clasificacion }}</span>
-    </div>
-    <div class="hero__buttons">
-      <a href="{{ pelicula.url_trailer }}" target="_blank" rel="noopener noreferrer" class="btn btn--primary">
-        Trailer
-      </a>
-      {% if mostrar_compra %}
-        {% include 'includes/comprar_entradas_button.html' with pelicula=pelicula css_class='btn btn--secondary' %}
-      {% endif %}
-    </div>
-  </div>
+<section class="hero" data-hero-carousel>
+  {% if hero_peliculas %}
+    {% for pelicula in hero_peliculas %}
+      <article class="hero__slide{% if forloop.first %} is-active{% else %} is-before{% endif %}"
+               data-hero-slide
+               aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
+               {% if not forloop.first %}inert{% endif %}>
+        {% include 'includes/pelicula_hero_slide.html' with pelicula=pelicula mostrar_compra=mostrar_compra %}
+      </article>
+    {% endfor %}
+  {% else %}
+    <article class="hero__slide is-active" data-hero-slide aria-hidden="false">
+      {% include 'includes/pelicula_hero_slide.html' with pelicula=pelicula mostrar_compra=mostrar_compra %}
+    </article>
+  {% endif %}
 </section>

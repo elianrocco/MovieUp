@@ -16,13 +16,13 @@ def home(request):
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('/gestion/')
     
-    # Obtener la película más reciente en cartelera para el hero
-    hero_pelicula = (
+    # Obtener hasta tres películas recientes en cartelera para el hero
+    hero_peliculas = list(
         Pelicula.objects
         .filter(en_cartelera=True)
-        .order_by('-fecha_estreno')
-        .first()
+        .order_by('-fecha_estreno')[:3]
     )
+    hero_pelicula = hero_peliculas[0] if hero_peliculas else None
     
     # Obtener todas las películas en cartelera para el grid
     peliculas_cartelera = (
@@ -33,6 +33,7 @@ def home(request):
     
     context = {
         'hero_pelicula': hero_pelicula,
+        'hero_peliculas': hero_peliculas,
         'peliculas': peliculas_cartelera,
     }
     

@@ -5,7 +5,7 @@
 
 {% block content %}
   {% if hero_pelicula %}
-    {% include 'includes/pelicula_hero.html' with pelicula=hero_pelicula mostrar_compra=True %}
+    {% include 'includes/pelicula_hero.html' with pelicula=hero_pelicula hero_peliculas=hero_peliculas mostrar_compra=True %}
   {% else %}
     <!-- Empty State -->
     <section class="empty-state">
@@ -39,4 +39,8 @@
       {% endfor %}
     </section>
   {% endif %}
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/hero-carousel.js' %}" defer></script>
 {% endblock %}

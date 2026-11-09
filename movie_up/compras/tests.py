@@ -446,6 +446,8 @@ class CompraViewTests(CompraDataMixin, TestCase):
             self.pelicula.url_trailer,
         ):
             self.assertContains(response, value)
+        self.assertEqual(response.content.count(b'data-hero-slide'), 1)
+        self.assertNotContains(response, 'hero-carousel.js')
         self.assertNotContains(response, 'btn--secondary')
 
     def test_function_item_renders_all_fields(self):

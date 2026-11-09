@@ -258,6 +258,49 @@ class HomeViewTests(TestCase):
         # Movie 2 is most recent in cartelera, should be in hero
         self.assertContains(response, 'hero__title')
         self.assertContains(response, 'Movie 2')
+        self.assertEqual(response.content.count(b'data-hero-slide'), 2)
+
+    def test_hero_context_contains_three_most_recent_movies_in_order(self):
+        newer_movie = self.Pelicula.objects.create(
+            titulo='Movie 4',
+            genero='Drama',
+            duracion_minutos=110,
+            descripcion='Description 4',
+            clasificacion='PG',
+            fecha_estreno='2024-04-10',
+            url_trailer='https://example.com/trailer4',
+            en_cartelera=True,
+            imagen_portada=self.imagen_dummy,
+        )
+        newest_movie = self.Pelicula.objects.create(
+            titulo='Movie 5',
+            genero='Drama',
+            duracion_minutos=100,
+            descripcion='Description 5',
+            clasificacion='PG',
+            fecha_estreno='2024-05-10',
+            url_trailer='https://example.com/trailer5',
+            en_cartelera=True,
+            imagen_portada=self.imagen_dummy,
+        )
+
+        response = self.client.get(reverse('home'))
+
+        self.assertEqual(
+            [movie.pk for movie in response.context['hero_peliculas']],
+            [newest_movie.pk, newer_movie.pk, self.pelicula_cartelera_2.pk],
+        )
+        hero_html = response.content.decode().split(
+            '<section class="hero" data-hero-carousel>', 1
+        )[1].split('</section>', 1)[0]
+        self.assertEqual(hero_html.count('data-hero-slide'), 3)
+        self.assertLess(hero_html.index('Movie 5'), hero_html.index('Movie 4'))
+        self.assertLess(hero_html.index('Movie 4'), hero_html.index('Movie 2'))
+
+    def test_home_loads_hero_carousel_script(self):
+        response = self.client.get(reverse('home'))
+
+        self.assertContains(response, 'src="/static/js/hero-carousel.js" defer')
 
     def test_hero_filters_en_cartelera(self):
         """Hero only shows movies with en_cartelera=True."""
