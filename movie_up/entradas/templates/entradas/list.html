@@ -8,40 +8,43 @@
 {% endblock %}
 
 {% block content %}
-    <h1>Mis entradas</h1>
+    <h1 class="panel panel--gold entradas__titulo">Mis entradas</h1>
     <ul class="entradas">
-        {% for entrada in entradas %}
+      {% for entrada in entradas %}
         <li class="entrada-card">
-            <div class="entrada-card__datos">
-                <div class="entrada-card__dato">
-                    <span class="entrada-card__etiqueta">Película</span>
-                    <span class="entrada-card__valor">{{ entrada.funcion.pelicula.titulo }}</span>
-                </div>
-                <div class="entrada-card__dato">
-                    <span class="entrada-card__etiqueta">Sala</span>
-                    <span class="entrada-card__valor">{{ entrada.funcion.sala.nombre }}</span>
-                </div>
-                <div class="entrada-card__dato">
-                    <span class="entrada-card__etiqueta">Inicio</span>
-                    <span class="entrada-card__valor">{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</span>
-                </div>
-                <div class="entrada-card__dato">
-                    <span class="entrada-card__etiqueta">Fila</span>
-                    <span class="entrada-card__valor">{{ entrada.l_fila }}</span>
-                </div>
-                <div class="entrada-card__dato">
-                    <span class="entrada-card__etiqueta">Asiento</span>
-                    <span class="entrada-card__valor">{{ entrada.n_asiento }}</span>
-                </div>
-                <div class="entrada-card__dato">
-                    <span class="entrada-card__etiqueta">Estado</span>
-                    <span class="entrada-card__valor">{% if entrada.activa %}Pendiente de validación{% else %}Validada{% endif %}</span>
-                </div>
+          <div class="entrada-card__datos">
+            <h2 class="entrada-card__pelicula">{{ entrada.funcion.pelicula.titulo }}</h2>
+            <div class="entrada-card__fila entrada-card__fila--resumen">
+              <div class="entrada-card__dato">
+                <span class="entrada-card__etiqueta">Estado</span>
+                <span class="entrada-card__valor entrada-card__valor--estado">
+                  {% if entrada.activa %}Sin usar{% else %}Usada{% endif %}
+                </span>
+              </div>
+              <div class="entrada-card__dato">
+                <span class="entrada-card__etiqueta">Inicio</span>
+                <span class="entrada-card__valor">{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</span>
+              </div>
             </div>
-            <a href="{% url 'entradas:entrada_detail' entrada.pk %}" class="btn btn--gold-outline">Ver entrada</a>
+            <div class="entrada-card__fila entrada-card__fila--asientos">
+              <div class="entrada-card__dato">
+                <span class="entrada-card__etiqueta">Sala</span>
+                <span class="entrada-card__valor">{{ entrada.funcion.sala.nombre }}</span>
+              </div>
+              <div class="entrada-card__dato">
+                <span class="entrada-card__etiqueta">Fila</span>
+                <span class="entrada-card__valor">{{ entrada.l_fila }}</span>
+              </div>
+              <div class="entrada-card__dato">
+                <span class="entrada-card__etiqueta">Asiento</span>
+                <span class="entrada-card__valor">{{ entrada.n_asiento }}</span>
+              </div>
+            </div>
+          </div>
+          <a href="{% url 'entradas:entrada_detail' entrada.pk %}" class="btn btn--gold-outline">Ver entrada</a>
         </li>
-        {% empty %}
+      {% empty %}
         <li class="entradas__vacio">No tenés entradas.</li>
-        {% endfor %}
+      {% endfor %}
     </ul>
 {% endblock %}

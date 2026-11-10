@@ -896,6 +896,13 @@ class CompraExitosaTests(CompraDataMixin, TestCase):
         )
         self.assertContains(response, 'href="/entradas/"')
         self.assertContains(response, '>Mis entradas</a>')
+        html = response.content.decode()
+        panel_content = html.split(
+            '<section class="panel panel--light exito">', 1
+        )[1].split('</section>', 1)[0]
+        self.assertEqual(html.count('class="panel panel--light exito"'), 1)
+        self.assertIn('exito__mensaje', panel_content)
+        self.assertIn('>Mis entradas</a>', panel_content)
 
     def test_success_page_has_no_grid_form_or_data(self):
         funcion = self.create_funcion()

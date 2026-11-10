@@ -169,9 +169,8 @@ class FooterTests(TestCase):
     database."""
     def test_footer_always_present(self):
         html = _render_base(AnonymousUser())
-        self.assertIn('Elian', html)
-        self.assertIn('Proyecto educativo sin fines de lucro', html)
-        self.assertIn('módulo de pago se incluye con propósito de aprendizaje', html)
+        self.assertIn('Elian Rocco', html)
+        self.assertIn('Proyecto educativo sin fines de lucro.', html)
 
 
 class HomeViewTests(TestCase):

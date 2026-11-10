@@ -16,49 +16,55 @@
         {% endif %}
 
         <dl class="detalle__datos">
-            <div class="detalle__item">
-                <dt>Código</dt>
-                <dd>{{ entrada.codigo }}</dd>
+            <div class="detalle__fila detalle__fila--general">
+                <div class="detalle__item">
+                    <dt>Código</dt>
+                    <dd class="detalle__valor">{{ entrada.codigo }}</dd>
+                </div>
+                <div class="detalle__item">
+                    <dt>Estado</dt>
+                    <dd class="detalle__valor">{% if entrada.activa %}Sin usar{% else %}Usada{% endif %}</dd>
+                </div>
+                <div class="detalle__item">
+                    <dt>Fecha y hora de inicio</dt>
+                    <dd class="detalle__valor">{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</dd>
+                </div>
             </div>
-            <div class="detalle__item">
-                <dt>Estado</dt>
-                <dd>{% if entrada.activa %}Pendiente de validación{% else %}Validada{% endif %}</dd>
+            <div class="detalle__fila detalle__fila--asientos">
+                <div class="detalle__item">
+                    <dt>Sala</dt>
+                    <dd class="detalle__valor">{{ entrada.funcion.sala.nombre }}</dd>
+                </div>
+                <div class="detalle__item">
+                    <dt>Fila</dt>
+                    <dd class="detalle__valor">{{ entrada.l_fila }}</dd>
+                </div>
+                <div class="detalle__item">
+                    <dt>Asiento</dt>
+                    <dd class="detalle__valor">{{ entrada.n_asiento }}</dd>
+                </div>
             </div>
-            <div class="detalle__item">
-                <dt>Fecha y hora de inicio</dt>
-                <dd>{{ entrada.funcion.inicio|date:'d/m/Y H:i' }}</dd>
-            </div>
-            <div class="detalle__item">
-                <dt>Fila</dt>
-                <dd>{{ entrada.l_fila }}</dd>
-            </div>
-            <div class="detalle__item">
-                <dt>Asiento</dt>
-                <dd>{{ entrada.n_asiento }}</dd>
-            </div>
-            <div class="detalle__item">
-                <dt>Sala</dt>
-                <dd>{{ entrada.funcion.sala.nombre }}</dd>
-            </div>
-            <div class="detalle__item">
-                <dt>Tipo de sala</dt>
-                <dd>{{ entrada.funcion.sala.tipo_sala }}</dd>
-            </div>
-            <div class="detalle__item">
-                <dt>Tipo de sonido</dt>
-                <dd>{{ entrada.funcion.sala.tipo_sonido }}</dd>
-            </div>
-            <div class="detalle__item">
-                <dt>Capacidad de la sala</dt>
-                <dd>{{ entrada.funcion.sala.capacidad }}</dd>
+            <div class="detalle__fila detalle__fila--sala">
+                <div class="detalle__item">
+                    <dt>Tipo de sala</dt>
+                    <dd class="detalle__valor">{{ entrada.funcion.sala.tipo_sala }}</dd>
+                </div>
+                <div class="detalle__item">
+                    <dt>Tipo de sonido</dt>
+                    <dd class="detalle__valor">{{ entrada.funcion.sala.tipo_sonido }}</dd>
+                </div>
+                <div class="detalle__item">
+                    <dt>Capacidad de la sala</dt>
+                    <dd class="detalle__valor">{{ entrada.funcion.sala.capacidad }}</dd>
+                </div>
             </div>
         </dl>
 
         <div class="detalle__acciones">
-            <a href="{% url 'entradas:entrada_list' %}" class="btn btn--gold-outline">Volver a mis entradas</a>
+            <a href="{% url 'entradas:entrada_list' %}" class="btn btn--gold-outline detalle__boton">Volver a mis entradas</a>
             <form method="post" action="{% url 'entradas:entrada_reembolsar' entrada.pk %}">
                 {% csrf_token %}
-                <button type="submit" class="btn btn--gold-outline">Reembolso</button>
+                <button type="submit" class="btn btn--gold-outline detalle__boton">Reembolso</button>
             </form>
         </div>
     </div>

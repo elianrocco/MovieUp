@@ -182,12 +182,16 @@
 }
 
 .exito {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
   width: 75%;
   margin: 6rem auto;
+  padding: 2rem;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px color-mix(in oklch, var(--ink) 8%, transparent);
   text-align: center;
 }
 
@@ -199,7 +203,15 @@
 }
 
 .exito .btn {
+  box-sizing: border-box;
+  display: inline-flex;
   min-height: 44px;
+  max-height: 56px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-weight: 600;
 }
 
 @media (max-width: 768px) {
@@ -227,5 +239,6 @@
   .exito {
     width: 95%;
     margin: 4rem auto;
+    padding: 1.25rem;
   }
 }

@@ -512,7 +512,8 @@ class EntradaViewTests(EntradaDataMixin, TestCase):
         )
         self.assertContains(response, 'Fila')
         self.assertContains(response, 'Asiento')
-        self.assertContains(response, 'Pendiente de validación')
+        self.assertContains(response, 'Sin usar')
+        self.assertNotContains(response, 'Pendiente de validación')
         self.assertContains(
             response,
             f'href="{reverse("entradas:entrada_detail", args=[own_entry.pk])}"',
@@ -543,6 +544,43 @@ class EntradaViewTests(EntradaDataMixin, TestCase):
         self.assertContains(response, 'btn btn--gold-outline')
         self.assertContains(response, 'Ver entrada')
 
+    def test_list_heading_and_card_data_follow_the_requested_layout(self):
+        self.create(seat_number=1)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(reverse('entradas:entrada_list'))
+        html = response.content.decode()
+        card = html.split('<li class="entrada-card">', 1)[1].split('</li>', 1)[0]
+
+        self.assertContains(response, 'class="panel panel--gold entradas__titulo"')
+        self.assertContains(response, '<h1 class="panel panel--gold entradas__titulo">Mis entradas</h1>')
+        self.assertLess(card.index('entrada-card__pelicula'), card.index('entrada-card__fila--resumen'))
+        self.assertLess(card.index('entrada-card__fila--resumen'), card.index('entrada-card__fila--asientos'))
+        summary_row = card.split('entrada-card__fila--resumen', 1)[1].split(
+            'entrada-card__fila--asientos', 1
+        )[0]
+        self.assertLess(summary_row.index('Estado'), summary_row.index('Sin usar'))
+        inicio = timezone.localtime(self.funcion.inicio).strftime('%d/%m/%Y %H:%M')
+        self.assertLess(summary_row.index('Inicio'), summary_row.index(inicio))
+        self.assertEqual(card.count('class="entrada-card__dato"'), 5)
+        self.assertNotIn('>Película</span>', card)
+        for label in ('Sala', 'Fila', 'Asiento', 'Estado', 'Inicio'):
+            self.assertIn(f'>{label}</span>', card)
+
+    def test_list_shows_both_new_status_labels_and_no_old_labels(self):
+        unused = self.create(seat_number=1)
+        used = self.create(seat_number=2)
+        used.activa = False
+        used.save(update_fields=['activa'])
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(reverse('entradas:entrada_list'))
+
+        self.assertContains(response, 'Sin usar')
+        self.assertContains(response, 'Usada')
+        self.assertNotContains(response, 'Pendiente de validación')
+        self.assertNotContains(response, 'Validada')
+
     def test_detail_shows_allowed_data_without_ids_or_distribution(self):
         entry = self.create(seat_number=1)
         self.client.force_login(self.cuenta)
@@ -565,11 +603,45 @@ class EntradaViewTests(EntradaDataMixin, TestCase):
             'A',
             'Asiento',
             '1',
-            'Pendiente de validación',
+            'Sin usar',
         ):
             self.assertContains(response, text)
+        self.assertNotContains(response, 'Pendiente de validación')
+        self.assertNotContains(response, 'Validada')
         for forbidden in ('funcion_id', 'cuenta_id', 'distribucion', 'entradas_compradas'):
             self.assertNotContains(response, forbidden)
+
+    def test_detail_groups_data_in_white_value_panels(self):
+        entry = self.create(seat_number=1)
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(reverse('entradas:entrada_detail', args=[entry.pk]))
+        html = response.content.decode()
+        details = html.split('<dl class="detalle__datos">', 1)[1].split('</dl>', 1)[0]
+
+        self.assertEqual(details.count('class="detalle__valor"'), 9)
+        self.assertEqual(details.count('class="detalle__item"'), 9)
+        self.assertLess(html.index('detalle__titulo'), html.index('detalle__valor'))
+        self.assertLess(details.index('detalle__fila--asientos'), details.index('detalle__fila--sala'))
+        seat_row = details.split('detalle__fila--asientos', 1)[1].split('detalle__fila--sala', 1)[0]
+        self.assertLess(seat_row.index('Sala'), seat_row.index('Fila'))
+        self.assertLess(seat_row.index('Fila'), seat_row.index('Asiento'))
+        room_row = details.split('detalle__fila--sala', 1)[1]
+        self.assertLess(room_row.index('Tipo de sala'), room_row.index('Tipo de sonido'))
+        self.assertLess(room_row.index('Tipo de sonido'), room_row.index('Capacidad de la sala'))
+        self.assertEqual(html.count('class="btn btn--gold-outline detalle__boton"'), 2)
+
+    def test_detail_shows_used_status_as_usada(self):
+        entry = self.create(seat_number=1)
+        entry.activa = False
+        entry.save(update_fields=['activa'])
+        self.client.force_login(self.cuenta)
+
+        response = self.client.get(reverse('entradas:entrada_detail', args=[entry.pk]))
+
+        self.assertContains(response, 'Usada')
+        self.assertNotContains(response, 'Pendiente de validación')
+        self.assertNotContains(response, 'Validada')
 
     def test_detail_shows_both_buttons_and_refund_form(self):
         entrada = self.create(seat_number=1)

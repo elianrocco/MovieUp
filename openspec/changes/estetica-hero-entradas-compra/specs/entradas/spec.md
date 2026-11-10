@@ -18,17 +18,22 @@ El listado SHALL mostrar el encabezado `Mis entradas` centrado dentro de un pane
 
 ### Requirement: Orden de los datos en cada tarjeta del listado
 
-Cada tarjeta del listado SHALL mostrar el título de la película arriba sin etiqueta, debajo el estado con su etiqueta, debajo la fecha y hora de inicio con su etiqueta y, en la última fila, sala, fila y asiento en una misma fila con sus etiquetas, separando filas y elementos con un margen pequeño.
+Cada tarjeta SHALL centrar todo su contenido, incluido `Ver entrada`. SHALL mostrar el título sin etiqueta, luego Estado e Inicio juntos con etiquetas sobre sus valores y, debajo, Sala/Fila/Asiento juntos con etiquetas sobre sus valores. Ambas filas SHALL mantener todos sus elementos dentro del tercio central.
 
-#### Scenario: Orden de las filas de la tarjeta
+#### Scenario: Orden y alineación centrada de las filas
 
 - **WHEN** se renderiza una entrada en el listado
-- **THEN** el título de la película aparece arriba sin etiqueta, debajo el estado con su etiqueta, debajo la fecha y hora de inicio con su etiqueta y en la última fila sala, fila y asiento juntos, cada uno con su etiqueta
+- **THEN** el título de la película aparece arriba sin etiqueta; debajo, estado e inicio comparten una fila con cada etiqueta encima del valor; y en la última fila sala, fila y asiento comparten una fila con cada etiqueta encima del valor, con todo el contenido de la tarjeta y el botón `Ver entrada` centrados
 
-#### Scenario: Margen pequeño entre filas
+#### Scenario: Espaciado máximo dentro del tercio central
 
-- **WHEN** se renderiza una tarjeta con todas sus filas
-- **THEN** hay un margen pequeño visible entre cada fila y entre los elementos de la fila de sala, fila y asiento
+- **WHEN** se renderiza una tarjeta en un viewport de escritorio
+- **THEN** Estado/Inicio y Sala/Fila/Asiento usan el mismo margen horizontal máximo que mantiene todos sus elementos dentro del tercio central de la tarjeta, sin tocar el primer ni el tercer tercio
+
+#### Scenario: Ancho insuficiente para el espaciado máximo
+
+- **WHEN** el ancho del viewport o el contenido de una entrada impide mantener todos los elementos en una fila dentro del tercio central
+- **THEN** los elementos se reacomodan dentro de ese tercio y no invaden las zonas laterales de la tarjeta
 
 ### Requirement: Textos de estado de la entrada
 
@@ -53,12 +58,12 @@ El sistema SHALL mostrar el estado de una entrada como `Sin usar` cuando está a
 
 ### Requirement: Presentación del detalle de entrada
 
-El detalle SHALL presentarse dentro de un rectángulo de bordes redondeados con el dorado del nav, con el título de la película fuera de los paneles y cada otro dato en su propio panel blanco con la etiqueta fuera del panel, arriba del valor. El enlace `Volver a mis entradas` SHALL renderizarse como un botón con ese dorado y un contorno rojo, y SHALL aparecer al lado un segundo botón con el texto `Reembolso` de igual alto.
+El detalle SHALL presentarse dentro de un rectángulo de bordes redondeados con el dorado del nav, con el título de la película fuera de los paneles y cada otro dato en su propio panel blanco que ocupa todo el ancho disponible de su columna sin sobrepasar el margen interior del panel dorado. Las etiquetas SHALL aparecer centradas fuera del panel, arriba del valor, y el contenido de los paneles SHALL estar centrado. El enlace `Volver a mis entradas` SHALL renderizarse como un botón con ese dorado y un contorno rojo, y SHALL aparecer al lado un segundo botón con el texto `Reembolso` de igual alto.
 
 #### Scenario: Detalle dentro del rectángulo dorado
 
 - **WHEN** se abre el detalle de una entrada
-- **THEN** el título de la película aparece fuera de los paneles y cada dato aparece en su propio panel blanco con su etiqueta fuera del panel, arriba del valor, todo dentro de un rectángulo de bordes redondeados con el dorado del nav
+- **THEN** el título de la película aparece fuera de los paneles y cada dato aparece en su propio panel blanco que llena el ancho disponible de la columna sin sobrepasar el margen interior dorado, con su etiqueta centrada fuera del panel y arriba del valor centrado
 
 #### Scenario: Fila de sala, fila y asiento
 
