@@ -169,12 +169,17 @@ Al hacer clic en `Películas`, `Funciones` o `Salas`, el cuerpo de la vista de g
 
 ### Requirement: Cuentas dentro del shell
 
-El botón `Cuentas` SHALL mostrar en el cuerpo el panel de cuentas de Django integrado con el shell de la web: nav global, subNAV, footer y paleta de colores del sitio.
+El botón `Cuentas` SHALL comportarse como las demás pestañas del subNAV: al hacer clic, el cuerpo SHALL mostrar el listado de cuentas con el shell de la web —nav global, subNAV, footer y paleta—, sin cambiar la URL, sin recargar la página y sin navegar al panel de administración de Django.
 
 #### Scenario: Panel de cuentas integrado
 
 - **WHEN** la administradora hace clic en `Cuentas`
-- **THEN** el panel de cuentas de Django aparece en el cuerpo con el nav, el subNAV, el footer y la paleta de la web
+- **THEN** el listado de cuentas aparece en el cuerpo con el nav, el subNAV, el footer y la paleta de la web, y la URL permanece en `/gestion/`
+
+#### Scenario: Sin navegación al administrador
+
+- **WHEN** la administradora hace clic en `Cuentas`
+- **THEN** el navegador no navega a `/admin/` ni a ninguna otra URL fuera de la gestión
 
 ### Requirement: Botón Estadísticas presente
 
@@ -254,6 +259,25 @@ Los enlaces de acción de los listados, detalles y formularios de películas, fu
 - **WHEN** se renderiza un listado en la gestión o como página completa
 - **THEN** Ver, Editar y Eliminar de cada fila y Crear del encabezado aparecen como botones
 
+### Requirement: Botones del formulario de edición de los CRUDs
+
+El formulario de edición de películas, funciones y salas SHALL ofrecer el botón de envío `Guardar cambios` y la acción `Cancelar`, y `Cancelar` SHALL mostrar el detalle del registro en lugar del listado, tanto en la página completa como dentro del panel de gestión.
+
+#### Scenario: Etiquetas del formulario de edición
+
+- **WHEN** se abre el formulario de edición de una película, una función o una sala
+- **THEN** el botón de envío muestra `Guardar cambios` y la acción de salida muestra `Cancelar`
+
+#### Scenario: Cancelar la edición de una película
+
+- **WHEN** la administradora hace clic en `Cancelar` en el formulario de edición de una película
+- **THEN** el cuerpo muestra el detalle de esa película sin haberla modificado
+
+#### Scenario: Cancelar la edición dentro de la gestión
+
+- **WHEN** se cancela una edición dentro de `/gestion/`
+- **THEN** el cuerpo muestra el detalle del registro y la URL permanece en `/gestion/`
+
 ### Requirement: Carga de operaciones de CRUD dentro de la gestión
 En `/gestion/`, al hacer clic en Ver, Editar, Eliminar o Crear dentro de un listado, el cuerpo de la pestaña activa SHALL mostrar el contenido de esa vista sin cambiar la URL ni recargar la página, manteniendo esa pestaña como activa.
 
@@ -278,17 +302,26 @@ En `/gestion/`, al hacer clic en Ver, Editar, Eliminar o Crear dentro de un list
 - **THEN** el subNAV sigue indicando `Salas` y la URL sigue en `/gestion/`
 
 ### Requirement: Vuelta al listado con datos frescos
-Cada vista cargada dentro de la gestión SHALL ofrecer un control que regresa al listado de la pestaña activa, y ese listado SHALL reflejar el estado actual de los registros.
+
+Cada vista cargada dentro de la gestión SHALL ofrecer un control de salida: desde el detalle o la confirmación SHALL regresar al listado de la pestaña activa y desde un formulario SHALL salir sin crear ni modificar registros; el listado SHALL reflejar el estado actual de los registros.
 
 #### Scenario: Volver desde el detalle o la confirmación
+
 - **WHEN** la administradora activa el control de vuelta desde un detalle o una confirmación
 - **THEN** el cuerpo vuelve a mostrar el listado de la pestaña
 
 #### Scenario: Volver cancelando un formulario
-- **WHEN** la administradora cancela un formulario de alta o de edición
-- **THEN** el cuerpo vuelve al listado sin modificar el registro
+
+- **WHEN** la administradora cancela un formulario de alta
+- **THEN** el cuerpo vuelve al listado sin crear ningún registro
+
+#### Scenario: Cancelar un formulario de edición
+
+- **WHEN** la administradora cancela un formulario de edición
+- **THEN** el cuerpo muestra el detalle del registro sin modificarlo
 
 #### Scenario: Lista actualizada tras una operación
+
 - **WHEN** la administradora crea, actualiza o elimina un registro dentro del panel
 - **THEN** el listado muestra el registro nuevo, sus cambios o su ausencia
 
