@@ -82,9 +82,11 @@ MovieUp/
     │       ├── 2026-11-06-estadisticas-gestion/
     │       ├── 2026-11-07-chatbot-rag/
     │       ├── 2026-11-07-ui-validar-entradas/
-    │       └── 2026-11-07-fondo-decorativo/
+    │       ├── 2026-11-07-fondo-decorativo/
+    │       └── 2026-11-09-estetica-hero-entradas-compra/
     └── specs/
         ├── .gitkeep
+        ├── chatbot/
         ├── compras/
         ├── cuentas/
         ├── entradas/
