@@ -49,6 +49,37 @@ def create_pelicula(data, image_file):
     return pelicula
 
 
+def _normalized_update_value(value):
+    if isinstance(value, str):
+        return value.strip()
+    if hasattr(value, 'isoformat'):
+        return value.isoformat()
+    return str(value)
+
+
+def _guard_associated_movie_update(pelicula, data, image_file):
+    from funciones.models import Funcion
+
+    if not Funcion.objects.filter(pelicula_id=pelicula.pk).exists():
+        return data
+
+    has_restricted_change = image_file is not None
+    for field, value in data.items():
+        if field == 'en_cartelera' or value is None or value == '':
+            continue
+        current_value = getattr(pelicula, field, None)
+        if _normalized_update_value(value) != _normalized_update_value(current_value):
+            has_restricted_change = True
+
+    if has_restricted_change:
+        raise ValueError(
+            'No se puede editar una película con funciones asociadas; '
+            'solo puede cambiarse el estado En cartelera.'
+        )
+
+    return {field: value for field, value in data.items() if field == 'en_cartelera'}
+
+
 def update_pelicula(pk, data, image_file=None):
     """
     Actualiza una película existente con update parcial.
@@ -66,6 +97,7 @@ def update_pelicula(pk, data, image_file=None):
         ValueError: Si otra película ya usa el título enviado
     """
     pelicula = get_pelicula(pk)
+    data = _guard_associated_movie_update(pelicula, data, image_file)
 
     titulo = data.get('titulo')
     if titulo:
@@ -111,12 +143,11 @@ def delete_pelicula(pk):
         Http404: Si la película no existe
     """
     pelicula = get_pelicula(pk)
-    
-    # TODO: Cuando exista la app 'funciones', descomentar las siguientes líneas
-    # para validar que la película no tenga funciones asociadas
-    # from funciones.models import Funcion
-    # if Funcion.objects.filter(pelicula=pelicula).exists():
-    #     raise ValidationError("No se puede eliminar: la película tiene funciones asociadas")
+
+    from funciones.models import Funcion
+
+    if Funcion.objects.filter(pelicula_id=pelicula.pk).exists():
+        raise ValueError('No se puede eliminar una película con funciones asociadas.')
     
     # Eliminar la imagen del sistema de archivos
     if pelicula.imagen_portada:

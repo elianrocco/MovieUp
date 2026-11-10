@@ -1,5 +1,6 @@
 import json
 import re
+from datetime import timedelta
 from pathlib import Path
 
 from urllib.parse import urlencode
@@ -9,8 +10,11 @@ from django.contrib import admin
 from django.http import Http404
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from cuentas.models import Cuenta
+from funciones.models import Funcion
+from peliculas.models import Pelicula
 
 from .models import Sala
 from .templatetags.salas_tags import CELL_CLASS_MAP, celda_clase
@@ -24,6 +28,34 @@ from .services import (
     validar_distribucion,
     versionar_distribucion,
 )
+
+
+def create_function_for_sala(sala, active=True):
+    pelicula = Pelicula.objects.create(
+        titulo=f'Película para {sala.nombre}',
+        imagen_portada='imgs/room-function.jpg',
+        genero='Drama',
+        duracion_minutos=100,
+        descripcion='Descripción de prueba',
+        clasificacion='ATP',
+        fecha_estreno='2026-01-01',
+        url_trailer='https://example.com/trailer',
+        en_cartelera=True,
+    )
+    start = timezone.now() + timedelta(days=3)
+    return Funcion.objects.create(
+        funcion_activa=active,
+        inicio=start,
+        fin=start + timedelta(minutes=pelicula.duracion_minutos),
+        idioma='Español',
+        subtitulada=False,
+        distribucion=sala.distribucion,
+        disponibilidad=sala.capacidad,
+        precio_entrada='1500.00',
+        pelicula=pelicula,
+        sala=sala,
+        entradas_compradas=0,
+    )
 
 
 class DistributionValidationTests(SimpleTestCase):
@@ -195,6 +227,28 @@ class SalaServiceTests(TestCase):
         sala.refresh_from_db()
         self.assertEqual(sala.nombre, 'Sala A')
 
+    def test_update_sala_rejects_any_save_with_an_active_function(self):
+        sala = create_sala(self.valid_data)
+        create_function_for_sala(sala, active=True)
+
+        for data in ({}, {'tipo_sonido': 'DTS'}):
+            with self.subTest(data=data):
+                with self.assertRaisesMessage(
+                    ValueError, 'No se puede actualizar una sala con funciones activas.'
+                ):
+                    update_sala(sala.pk, data)
+
+                sala.refresh_from_db()
+                self.assertEqual(sala.tipo_sonido, 'Dolby')
+
+    def test_update_sala_allows_edits_when_only_inactive_functions_are_associated(self):
+        sala = create_sala(self.valid_data)
+        create_function_for_sala(sala, active=False)
+
+        updated = update_sala(sala.pk, {'tipo_sonido': 'DTS'})
+
+        self.assertEqual(updated.tipo_sonido, 'DTS')
+
     def test_update_sala_replaces_distribution_recalculates_and_increments_version(self):
         sala = create_sala(self.valid_data)
 
@@ -230,6 +284,19 @@ class SalaServiceTests(TestCase):
         delete_sala(sala.pk)
 
         self.assertFalse(Sala.objects.filter(pk=sala.pk).exists())
+
+    def test_delete_sala_rejects_active_or_inactive_associated_functions(self):
+        for active in (True, False):
+            sala = create_sala({**self.valid_data, 'nombre': f'Sala {active}'})
+            create_function_for_sala(sala, active=active)
+
+            with self.subTest(active=active):
+                with self.assertRaisesMessage(
+                    ValueError, 'No se puede eliminar una sala con funciones asociadas.'
+                ):
+                    delete_sala(sala.pk)
+
+                self.assertTrue(Sala.objects.filter(pk=sala.pk).exists())
 
     def test_delete_sala_raises_http_404_for_unknown_id(self):
         with self.assertRaises(Http404):
@@ -625,6 +692,21 @@ class PanelFragmentTests(TestCase):
         self.assertEqual(response['X-Panel-View'], 'list')
         self.assertNotContains(response, 'Sala Panel')
         self.assertFalse(Sala.objects.filter(pk=self.sala.pk).exists())
+
+    def test_delete_with_associated_function_returns_confirmation_fragment_with_error(self):
+        create_function_for_sala(self.sala)
+
+        response = self.client.post(
+            reverse('salas:sala_delete', args=[self.sala.pk]), {}, headers=self.panel
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'form')
+        self.assertContains(
+            response, 'No se puede eliminar una sala con funciones asociadas.'
+        )
+        self.assertContains(response, 'class="error-message"', html=False)
+        self.assertTrue(Sala.objects.filter(pk=self.sala.pk).exists())
 
     def test_error_returns_the_form_with_message_and_sent_data(self):
         response = self.client.post(

@@ -1,13 +1,43 @@
+from datetime import timedelta
 from urllib.parse import urlencode
+from unittest.mock import patch
 
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from cuentas.models import Cuenta
+from funciones.models import Funcion
+from salas.models import Sala
 
 from .models import Pelicula
-from .services import update_pelicula, create_pelicula
+from .services import create_pelicula, delete_pelicula, update_pelicula
+
+
+def create_function_for_pelicula(pelicula, active=True):
+    sala = Sala.objects.create(
+        nombre='Sala para película asociada',
+        tipo_sala='2D',
+        tipo_sonido='Dolby',
+        distribucion={'version': 1, 'filas': ['A']},
+        capacidad=1,
+    )
+    start = timezone.now() + timedelta(days=3)
+    return Funcion.objects.create(
+        funcion_activa=active,
+        inicio=start,
+        fin=start + timedelta(minutes=pelicula.duracion_minutos),
+        idioma='Español',
+        subtitulada=False,
+        distribucion={'version': 1, 'filas': ['A']},
+        disponibilidad=1,
+        precio_entrada='1500.00',
+        pelicula=pelicula,
+        sala=sala,
+        entradas_compradas=0,
+    )
 
 
 class UpdatePeliculaTests(TestCase):
@@ -41,6 +71,75 @@ class UpdatePeliculaTests(TestCase):
         pelicula = update_pelicula(self.pelicula.pk, {'en_cartelera': True})
 
         self.assertTrue(pelicula.en_cartelera)
+
+    def test_associated_movie_allows_only_en_cartelera_change(self):
+        create_function_for_pelicula(self.pelicula)
+
+        pelicula = update_pelicula(self.pelicula.pk, {'en_cartelera': False})
+
+        self.assertFalse(pelicula.en_cartelera)
+        self.assertEqual(pelicula.titulo, 'Test Movie')
+
+    def test_associated_movie_ignores_unchanged_values_after_normalization(self):
+        create_function_for_pelicula(self.pelicula, active=False)
+
+        pelicula = update_pelicula(
+            self.pelicula.pk,
+            {'titulo': ' Test Movie ', 'duracion_minutos': '100'},
+        )
+
+        self.assertEqual(pelicula.titulo, 'Test Movie')
+        self.assertEqual(pelicula.duracion_minutos, 100)
+
+    def test_associated_movie_rejects_title_or_duration_changes(self):
+        create_function_for_pelicula(self.pelicula, active=False)
+
+        for data in ({'titulo': 'Changed Movie'}, {'duracion_minutos': '120'}):
+            with self.subTest(data=data):
+                with self.assertRaisesMessage(
+                    ValueError,
+                    'No se puede editar una película con funciones asociadas; '
+                    'solo puede cambiarse el estado En cartelera.',
+                ):
+                    update_pelicula(self.pelicula.pk, data)
+
+                self.pelicula.refresh_from_db()
+                self.assertEqual(self.pelicula.titulo, 'Test Movie')
+                self.assertEqual(self.pelicula.duracion_minutos, 100)
+
+    def test_associated_movie_rejects_replacing_its_image_before_saving(self):
+        create_function_for_pelicula(self.pelicula)
+        image = SimpleUploadedFile('replacement.jpg', b'image bytes', content_type='image/jpeg')
+
+        with patch.object(Pelicula, 'save') as save:
+            with self.assertRaisesRegex(ValueError, 'solo puede cambiarse el estado'):
+                update_pelicula(self.pelicula.pk, {}, image_file=image)
+
+        save.assert_not_called()
+        self.pelicula.refresh_from_db()
+        self.assertEqual(self.pelicula.imagen_portada.name, 'imgs/test-movie.jpg')
+
+    def test_movie_without_functions_can_update_other_fields(self):
+        pelicula = update_pelicula(self.pelicula.pk, {'titulo': 'Changed Movie'})
+
+        self.assertEqual(pelicula.titulo, 'Changed Movie')
+
+    def test_delete_associated_movie_rejects_before_touching_its_image(self):
+        create_function_for_pelicula(self.pelicula)
+
+        with (
+            patch('peliculas.services.os.path.exists', return_value=True) as path_exists,
+            patch('peliculas.services.os.remove') as remove,
+        ):
+            with self.assertRaisesMessage(
+                ValueError, 'No se puede eliminar una película con funciones asociadas.'
+            ):
+                delete_pelicula(self.pelicula.pk)
+
+        path_exists.assert_not_called()
+        remove.assert_not_called()
+        self.assertTrue(Pelicula.objects.filter(pk=self.pelicula.pk).exists())
+        self.assertTrue(Funcion.objects.filter(pelicula=self.pelicula).exists())
 
     def test_update_rejects_a_title_used_by_another_movie(self):
         Pelicula.objects.create(
@@ -273,6 +372,26 @@ class PanelFragmentTests(TestCase):
                 self.assertNotContains(response, '<html')
                 self.assertContains(response, 'page-card')
 
+    def test_update_form_uses_save_and_cancel_and_cancel_targets_detail(self):
+        url = reverse('peliculas:pelicula_update', args=[self.pelicula.pk])
+        detail_url = reverse('peliculas:pelicula_detail', args=[self.pelicula.pk])
+
+        responses = ((False, self.client.get(url)), (True, self._panel_get(url)))
+        for panel_request, response in responses:
+            with self.subTest(panel=panel_request):
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, 'Guardar cambios')
+                self.assertContains(response, 'Cancelar')
+                self.assertContains(response, f'href="{detail_url}"', html=False)
+                self.assertNotContains(response, 'Volver al listado')
+
+    def test_create_form_keeps_its_existing_action_labels(self):
+        response = self.client.get(reverse('peliculas:pelicula_create'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Crear')
+        self.assertContains(response, 'Volver al listado')
+
     def test_same_urls_answer_the_full_page_without_the_header(self):
         for url in self._page_urls():
             with self.subTest(url=url):
@@ -345,4 +464,22 @@ class PanelFragmentTests(TestCase):
         self.assertEqual(response['X-Panel-View'], 'list')
         self.assertNotContains(response, 'Test Movie')
         self.assertFalse(Pelicula.objects.filter(pk=self.pelicula.pk).exists())
+
+    def test_delete_associated_movie_returns_confirmation_fragment_with_error(self):
+        create_function_for_pelicula(self.pelicula)
+
+        response = self.client.post(
+            reverse('peliculas:pelicula_delete', args=[self.pelicula.pk]),
+            {},
+            headers=self.panel,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'form')
+        self.assertContains(
+            response,
+            'No se puede eliminar una película con funciones asociadas.',
+        )
+        self.assertContains(response, 'class="error-message"', html=False)
+        self.assertTrue(Pelicula.objects.filter(pk=self.pelicula.pk).exists())
 

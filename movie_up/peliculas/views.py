@@ -152,7 +152,17 @@ def pelicula_update(request, pk):
 @staff_required
 def pelicula_delete(request, pk):
     if request.method == 'POST':
-        services.delete_pelicula(pk)
+        try:
+            services.delete_pelicula(pk)
+        except ValueError as exc:
+            pelicula = services.get_pelicula(pk)
+            return render_panel(
+                request,
+                'peliculas/confirm_delete.html',
+                {'pelicula': pelicula, 'error': str(exc)},
+                view='form',
+            )
+
         return panel_list_or_redirect(
             request,
             redirect('peliculas:pelicula_list'),

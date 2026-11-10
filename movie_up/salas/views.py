@@ -126,7 +126,17 @@ def sala_update(request, pk):
 @staff_required
 def sala_delete(request, pk):
     if request.method == 'POST':
-        services.delete_sala(pk)
+        try:
+            services.delete_sala(pk)
+        except ValueError as exc:
+            sala = services.get_sala(pk)
+            return render_panel(
+                request,
+                'salas/confirm_delete.html',
+                {'sala': sala, 'error': str(exc)},
+                view='form',
+            )
+
         return panel_list_or_redirect(
             request,
             redirect('salas:sala_list'),

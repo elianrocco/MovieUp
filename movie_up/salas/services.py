@@ -166,11 +166,10 @@ def create_sala(data):
 def update_sala(pk, data):
     sala = get_sala(pk)
 
-    # TODO: Cuando exista la app 'funciones', descomentar la validación de
-    # funciones activas antes de permitir actualizar una sala.
-    # from funciones.models import Funcion
-    # if Funcion.objects.filter(sala=sala, funcion_activa=True).exists():
-    #     raise ValueError('No se puede actualizar: la sala tiene funciones activas.')
+    from funciones.models import Funcion
+
+    if Funcion.objects.filter(sala_id=sala.pk, funcion_activa=True).exists():
+        raise ValueError('No se puede actualizar una sala con funciones activas.')
 
     _optional_text_update(sala, data, 'nombre', 'El nombre')
     _optional_text_update(sala, data, 'tipo_sala', 'El tipo de sala')
@@ -190,10 +189,9 @@ def update_sala(pk, data):
 def delete_sala(pk):
     sala = get_sala(pk)
 
-    # TODO: Cuando exista la app 'funciones', descomentar la validación de
-    # funciones activas antes de permitir eliminar una sala.
-    # from funciones.models import Funcion
-    # if Funcion.objects.filter(sala=sala, funcion_activa=True).exists():
-    #     raise ValueError('No se puede eliminar: la sala tiene funciones activas.')
+    from funciones.models import Funcion
+
+    if Funcion.objects.filter(sala_id=sala.pk).exists():
+        raise ValueError('No se puede eliminar una sala con funciones asociadas.')
 
     sala.delete()
