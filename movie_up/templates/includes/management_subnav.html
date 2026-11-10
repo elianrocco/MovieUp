@@ -11,10 +11,11 @@
           data-management-tab="rooms" aria-pressed="{% if active_tab == 'rooms' %}true{% else %}false{% endif %}">
     Salas
   </button>
-  <a class="management-subnav__item{% if active_tab == 'accounts' %} is-active{% endif %}"
-     href="{% url 'admin:index' %}"{% if active_tab == 'accounts' %} aria-current="page"{% endif %}>
+  <button type="button" class="management-subnav__item{% if active_tab == 'accounts' %} is-active{% endif %}"
+          data-management-tab="accounts"
+          aria-pressed="{% if active_tab == 'accounts' %}true{% else %}false{% endif %}">
     Cuentas
-  </a>
+  </button>
   <button type="button" class="management-subnav__item"
           data-management-tab="statistics" aria-pressed="false">
     Estadísticas

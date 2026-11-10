@@ -452,7 +452,7 @@ class GestionViewTests(TestCase):
         self.assertContains(response, 'data-management-panel="movies"')
         self.assertContains(response, 'Película del dashboard')
 
-    def test_dashboard_prerenders_all_three_listings_and_five_controls(self):
+    def test_dashboard_prerenders_all_listings_and_five_controls(self):
         self.client.force_login(self.admin)
 
         response = self.client.get(reverse('gestion'))
@@ -462,6 +462,7 @@ class GestionViewTests(TestCase):
             'Sala del dashboard',
             'data-management-panel="functions"',
             'data-management-panel="rooms"',
+            'data-management-panel="accounts"',
             'Películas',
             'Funciones',
             'Salas',
@@ -469,11 +470,13 @@ class GestionViewTests(TestCase):
             'Estadísticas',
         ):
             self.assertContains(response, value)
-        self.assertEqual(response.content.count(b'data-management-tab='), 4)
+        self.assertEqual(response.content.count(b'data-management-tab='), 5)
         self.assertContains(response, 'data-management-tab="statistics"')
         self.assertNotContains(response, 'data-management-tab="statistics" disabled')
         self.assertContains(response, 'Estadísticas')
-        self.assertContains(response, reverse('admin:index'))
+        self.assertContains(response, 'data-management-tab="accounts"')
+        self.assertContains(response, 'gestion-common@example.com')
+        self.assertNotContains(response, reverse('admin:index'))
 
     def test_dashboard_prerenders_statistics_panel_for_all_periods(self):
         self.client.force_login(self.admin)
@@ -503,7 +506,8 @@ class GestionViewTests(TestCase):
         self.assertContains(response, 'class="site-header site-header--admin"')
         self.assertContains(response, '<div class="site-footer" id="site-footer">', html=False)
         self.assertNotContains(response, '<footer class="site-footer"', html=False)
-        self.assertContains(response, 'aria-current="page"')
+        self.assertContains(response, 'data-management-tab="accounts"')
+        self.assertContains(response, 'aria-pressed="true"')
         self.assertContains(response, 'Estadísticas')
 
     def test_account_changelist_and_edit_remain_available_in_admin(self):

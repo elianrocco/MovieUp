@@ -27,6 +27,7 @@ urlpatterns = [
     path('gestion/', views.gestion, name='gestion'),
     path('', views.home, name='home'),
     path('compras/', include('compras.urls')),
+    path('cuentas/', include('cuentas.urls')),
     path('entradas/', include('entradas.urls')),
     path('funciones/', include('funciones.urls')),
     path('peliculas/', include('peliculas.urls')),

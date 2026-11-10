@@ -12,6 +12,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.core.exceptions import FieldDoesNotExist
 from django.db import IntegrityError, close_old_connections, connection, transaction
 from django.db.models.deletion import ProtectedError
+from django.template.loader import render_to_string
 from django.test import Client, RequestFactory, TestCase, TransactionTestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -24,7 +25,7 @@ from salas.models import Sala
 from .adapters import CuentaSocialAccountAdapter
 from .admin import CuentaAdmin
 from .models import Cuenta
-from .services import promote_first_admin
+from .services import list_cuentas, promote_first_admin, toggle_permisos
 
 
 TEST_SOCIALACCOUNT_PROVIDERS = {
@@ -86,6 +87,148 @@ class CuentaModelTests(TestCase):
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.check_password('Strong-test-password-123'))
         self.assertTrue(user.has_usable_password())
+
+
+class CuentaManagementServiceTests(TestCase):
+    def setUp(self):
+        self.admin = Cuenta.objects.create_superuser(
+            'admin@example.com', 'Administrator', password='Strong-test-password-123'
+        )
+        self.common = Cuenta.objects.create_user('common@example.com', 'Common User')
+
+    def test_list_cuentas_orders_by_email(self):
+        Cuenta.objects.create_user('aaa@example.com', 'First')
+
+        self.assertEqual(
+            list(list_cuentas().values_list('correo', flat=True)),
+            ['aaa@example.com', 'admin@example.com', 'common@example.com'],
+        )
+
+    def test_toggle_permisos_promotes_common_account_with_both_flags(self):
+        updated = toggle_permisos(self.common, self.admin)
+
+        self.assertTrue(updated.is_staff)
+        self.assertTrue(updated.is_superuser)
+
+    def test_toggle_permisos_demotes_admin_with_both_flags(self):
+        updated = toggle_permisos(self.common, self.admin)
+        updated = toggle_permisos(updated, self.admin)
+
+        self.assertFalse(updated.is_staff)
+        self.assertFalse(updated.is_superuser)
+
+    def test_toggle_permisos_rejects_the_requesting_account(self):
+        with self.assertRaisesMessage(
+            ValueError, 'No se pueden cambiar los permisos de la cuenta actual.'
+        ):
+            toggle_permisos(self.admin, self.admin)
+
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.is_staff)
+        self.assertTrue(self.admin.is_superuser)
+
+
+class CuentaManagementViewTests(TestCase):
+    panel = {'HTTP_X_PANEL_REQUEST': '1'}
+
+    def setUp(self):
+        self.admin = Cuenta.objects.create_superuser(
+            'admin@example.com', 'Administrator', password='Strong-test-password-123'
+        )
+        self.common = Cuenta.objects.create_user('common@example.com', 'Common User')
+
+    def test_panel_post_toggles_permissions_and_returns_list_fragment(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('cuentas:cuenta_permiso_update', args=[self.common.pk]),
+            **self.panel,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'list')
+        self.assertContains(response, 'Administrador')
+        self.common.refresh_from_db()
+        self.assertTrue(self.common.is_staff)
+        self.assertTrue(self.common.is_superuser)
+
+    def test_post_without_panel_header_redirects_to_management(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('cuentas:cuenta_permiso_update', args=[self.common.pk])
+        )
+
+        self.assertRedirects(response, reverse('gestion'), fetch_redirect_response=False)
+        self.common.refresh_from_db()
+        self.assertTrue(self.common.is_staff)
+        self.assertTrue(self.common.is_superuser)
+
+    def test_non_post_request_redirects_to_management(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse('cuentas:cuenta_permiso_update', args=[self.common.pk])
+        )
+
+        self.assertRedirects(response, reverse('gestion'), fetch_redirect_response=False)
+        self.common.refresh_from_db()
+        self.assertFalse(self.common.is_staff)
+        self.assertFalse(self.common.is_superuser)
+
+    def test_common_account_cannot_toggle_permissions(self):
+        self.client.force_login(self.common)
+
+        response = self.client.post(
+            reverse('cuentas:cuenta_permiso_update', args=[self.admin.pk]),
+            **self.panel,
+        )
+
+        self.assertRedirects(response, '/', fetch_redirect_response=False)
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.is_staff)
+        self.assertTrue(self.admin.is_superuser)
+
+    def test_panel_post_cannot_toggle_the_requesting_account(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse('cuentas:cuenta_permiso_update', args=[self.admin.pk]),
+            **self.panel,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['X-Panel-View'], 'list')
+        self.assertContains(response, 'No se pueden cambiar los permisos')
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.is_staff)
+        self.assertTrue(self.admin.is_superuser)
+
+    def test_listing_template_shows_only_account_fields_and_permission_switches(self):
+        html = render_to_string(
+            'cuentas/_listado.html',
+            {
+                'cuentas': [self.admin, self.common],
+                'current_user': self.admin,
+            },
+        )
+
+        for label in (
+            'Correo',
+            'Nombre',
+            'Permisos',
+            'Acciones',
+            'Administrador',
+            'Usuario común',
+        ):
+            self.assertIn(label, html)
+        self.assertEqual(html.count('data-panel-form'), 2)
+        self.assertEqual(html.count('role="switch"'), 2)
+        self.assertEqual(html.count(' disabled title='), 1)
+        self.assertNotIn('data-panel-link', html)
+        self.assertNotIn('Crear', html)
+        self.assertNotIn('Editar', html)
+        self.assertNotIn('Eliminar', html)
 
 
 class CuentaSocialAccountAdapterTests(TestCase):
