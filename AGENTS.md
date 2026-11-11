@@ -4,13 +4,13 @@
 - **Backend:** Python con Django y LangChain
 - **Frontend:** HTML (Living Standard), CSS3 (Snapshot 2023) y JavaScript (ES2025)
 - **Base de datos:** MySQL LTS
-- **Pasarela de pagos:** Mercado Pago (SDK Python)
+- **Pasarela de pagos:** Mercado Pago (SDK Python instalado; el checkout actual no procesa cobros)
 - **Control de versiones:** Git + GitHub
 - **Containerización:** Docker
 - **Versiones exactas:** en `requirements.txt`, `Dockerfile` y `docker-compose.yml`
 
 ## Descripción del Proyecto
-Sistema web para gestión y comercialización de entradas de cine. Permite a los usuarios comprar entradas, gestionar sus compras, y a los administradores gestionar películas, salas, funciones y ventas.
+Sistema web para gestión y comercialización de entradas de cine. Permite a los usuarios comprar entradas y gestionar sus compras, y a los administradores gestionar películas, salas, funciones y cuentas, además de consultar métricas y validar entradas. La compra actual simula la confirmación y no procesa cobros con Mercado Pago.
 
 ## Estructura del Proyecto
 
@@ -18,11 +18,14 @@ Sistema web para gestión y comercialización de entradas de cine. Permite a los
 MovieUp/
 ├── .dockerignore
 ├── .env                          # NO versionar
+├── .env_ejemplo                  # Plantilla versionada de variables
 ├── .gitignore
 ├── AGENTS.md
+├── chat.py
 ├── docker-compose.yml
 ├── docker-entrypoint.sh
 ├── Dockerfile
+├── ingest.py
 ├── README.md
 ├── requirements.txt
 │
@@ -51,6 +54,7 @@ MovieUp/
 ├── .playwright-mcp/              # logs de Playwright
 ├── movie_up/
 │   ├── manage.py
+│   ├── chatbot/
 │   ├── compras/
 │   ├── cuentas/
 │   ├── entradas/
@@ -58,6 +62,9 @@ MovieUp/
 │   ├── funciones/
 │   ├── peliculas/              # __init__.py, admin.py, apps.py, models.py, views.py, tests.py, migrations/, templates/, urls.py, services.py
 │   ├── salas/
+│   ├── static/                 # CSS, JS e imágenes compartidas
+│   ├── templates/              # base.html, home.html, gestion.html e includes
+│   ├── imgs/                   # Imágenes subidas en local; ignorado por Git
 │   └── core/
 │       ├── __init__.py
 │       ├── asgi.py
@@ -103,15 +110,16 @@ MovieUp/
 - Migraciones: se aplican automáticamente al arrancar (docker-entrypoint.sh)
 - Migraciones manuales (tras crear una migración sin reiniciar): `docker compose exec web python movie_up/manage.py migrate`
 - Crear superusuario: `docker compose exec web python movie_up/manage.py createsuperuser`
-- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas compras core` (agregar cada app nueva a la lista)
+- Correr tests: `docker compose exec web python movie_up/manage.py test peliculas salas funciones cuentas entradas compras estadisticas chatbot core` (agregar cada app nueva a la lista)
   - Gotcha: sin etiquetas el comando termina con código 0 descubriendo 0 tests — el contenedor arranca en `/app`, que queda fuera de los paquetes de las apps, y el discovery de Django no entra a `movie_up/`
 - App: http://localhost:8000/ (usar `localhost`, NO `0.0.0.0`)
 
 ## Arquitectura (MVT de Django)
 - Patrón **Modelo-Vista-Template** de Django: los datos viven en `models.py`, la presentación en templates.
 - **Service Layer**: la lógica de negocio se concentra en `services.py`. Las vistas (`views.py`) delegan la lógica a los services, manteniéndose delgadas (request → service → response).
-- **Convención**: toda app debe incluir `services.py`. Usarlo siempre que sea posible para mantener consistencia entre las apps.
-- El código se organiza en apps de Django (hoy: `movie_up`); se agregarán apps por dominio a medida que crezca.
+- **Convención**: toda app de dominio incluye `services.py`. Usarlo siempre que sea posible para mantener consistencia entre las apps.
+- **Excepción**: `core` es la app de configuración del proyecto (`settings.py`, `urls.py`, `views.py`, `panel.py`, `decorators.py`) y no tiene `services.py`; su lógica compartida vive en esos módulos.
+- El código se organiza en apps de Django dentro de `movie_up/`; se agregan apps por dominio a medida que crece.
 
 ## Convenciones
 - Artefactos (código, identificadores, UI, comentarios): inglés
@@ -123,15 +131,20 @@ MovieUp/
 - Commits: conventional commits, sin atribución a IA.
 
 ## Variables de Entorno
-Definidas en `.env` (nunca versionar):
+Definidas en `.env` (nunca versionar) a partir de la plantilla versionada `.env_ejemplo`:
 - `SECRET_KEY` — clave secreta de Django
-- `DEBUG` — modo depuración
+- `DEBUG` — modo depuración (`True` en desarrollo local)
 - `DB_ROOT_PASSWORD`, `DB_NAME` — credenciales y nombre de MySQL
-- `DB_LOCAL_PORT`, `DB_DOCKER_PORT` — puertos expuesto/interno de MySQL
+- `DB_LOCAL_PORT`, `DB_DOCKER_PORT` — puertos expuesto/interno de MySQL (`DB_DOCKER_PORT=3306`)
 - `DB_HOST`, `DB_PORT` — inyectadas por docker-compose al servicio web
+- `DB_USER` — opcional; si se omite, Django usa `root`
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — credenciales OAuth de Google
+- `GROQ_API_KEY` — clave de Groq que habilita el chatbot
+- `GROQ_MODEL` — opcional; el chatbot usa `openai/gpt-oss-20b` por defecto
 
 ## Testing
-- Los tests de Django van en `<app>/tests.py` y se corren con `python movie_up/manage.py test`.
+- Los tests de Django van en `<app>/tests.py` y se ejecutan etiquetando cada app (ver comando en «Cómo Ejecutar»).
+- La lista de etiquetas incluye todas las apps con tests: `peliculas salas funciones cuentas entradas compras estadisticas chatbot core`.
 - (A definir: cobertura esperada y convenciones)
 
 ## Utilización de MCPs
@@ -147,7 +160,8 @@ Definidas en `.env` (nunca versionar):
 - Modelo de usuario: `cuentas.Cuenta` (`AUTH_USER_MODEL`), con correo único y nombre obtenidos de Google; no se ofrece registro local ni contraseña para cuentas sociales.
 - Login de cuentas mediante Google con `django-allauth`; `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` se guardan en `.env` y no se comparten ni versionan.
 - El primer alta por Google se promueve automáticamente a administrador completo (`is_staff` + `is_superuser`); las siguientes cuentas son comunes. Esta regla es fija.
-- El administrador gestiona cuentas desde Django Admin; correo y nombre son de solo lectura. El indicador de administrador sincroniza `is_staff` e `is_superuser`.
+- El administrador gestiona cuentas desde Django Admin y desde el listado de cuentas de `/gestion/`; en ambos casos el correo y el nombre son de solo lectura.
+- En `/gestion/`, `cuentas.services.toggle_permisos` cambia el indicador de administrador de otra cuenta y sincroniza `is_staff` e `is_superuser`; la cuenta propia no puede modificarse.
 - `createsuperuser` queda como acceso local de recuperación para una cuenta administrativa de emergencia.
 - Las cuentas con entradas asociadas no se deben eliminar; `CuentaAdmin.delete_model` y `delete_queryset` bloquean el borrado individual y masivo, respaldados por `Entrada.cuenta` con `on_delete=PROTECT`.
 - Las entradas se crean solo mediante un servicio interno invocado por la compra; no tienen vista de alta ni edición manual.
@@ -155,6 +169,17 @@ Definidas en `.env` (nunca versionar):
 - El reembolso elimina la entrada y revierte la disponibilidad/asiento de la función, pero la devolución de dinero queda fuera de este servicio. Se rechaza cuando faltan menos de 24 horas para el inicio; exactamente 24 horas se permite.
 - **Verificación manual:** la selección de una cuenta Google y el login OAuth real los completó el usuario en la tarea 6.4 antes de archivar el change.
     
+## Chatbot RAG
+
+- **Componentes:** `movie_up/chatbot` expone `POST /chatbot/api/preguntar/` y usa LangChain con Groq para generar la respuesta; el contexto combina la cartelera vigente en MySQL y fragmentos del documento de ayuda.
+- **Configuración:** requiere `GROQ_API_KEY`; `GROQ_MODEL` es opcional y por defecto usa `openai/gpt-oss-20b`. Sin clave o sin colección vectorial, el endpoint devuelve `503`.
+- **Documento fuente:** `movie_up/chatbot/data/chatbot.md`.
+- **Base vectorial:** Chroma persiste la colección `movieup_chatbot` en `chroma_db/` (ignorado por Git) y usa los embeddings locales `sentence-transformers/all-MiniLM-L6-v2`.
+- **Ingesta:** no es automática. Tras cambiar el documento hay que ejecutar `docker compose exec web python ingest.py movie_up/chatbot/data/chatbot.md`; la primera ingesta necesita red para descargar los embeddings.
+- **CLI:** `chat.py` permite hacer una consulta puntual desde la terminal.
+- **Exposición:** el endpoint es público (solo `@require_POST`), sin autenticación ni limitación de frecuencia.
+- El detalle técnico completo vive en `README.md`, sección «Chatbot de ayuda (RAG)».
+
 ## OpenSpec
 - El proyecto usa **OpenSpec** para desarrollo dirigido por especificaciones (spec-driven development)
 - Especificaciones de verdad en `openspec/specs/` (organizadas por dominio) y cambios propuestos en `openspec/changes/`
@@ -220,3 +245,5 @@ Definidas en `.env` (nunca versionar):
 - Gestionar ventas (CRUD)
 - Consultar métricas de ventas
 - Validar entradas mediante código
+
+> **Estado de implementación:** la lista anterior es la canónica del proyecto. El CRUD de ventas (caso 8) está descartado para el alcance implementado: no existe app, modelo ni vista de ventas, y las métricas se calculan desde las funciones. La compra no procesa cobros con Mercado Pago.
